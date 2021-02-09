@@ -1,5 +1,6 @@
-import { ACESFilmicToneMapping, AmbientLight, DirectionalLight, PerspectiveCamera, Scene, WebGLRenderer, sRGBEncoding } from 'three';
+import { ACESFilmicToneMapping, AmbientLight, DirectionalLight, PMREMGenerator, PerspectiveCamera, Scene, UnsignedByteType, WebGLRenderer, sRGBEncoding } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import { WebIO } from '@gltf-transform/core';
 import { render as renderDoc } from './';
 
@@ -13,6 +14,9 @@ renderer.toneMappingExposure = 1;
 
 const containerEl = document.querySelector('#container');
 containerEl.appendChild(renderer.domElement);
+
+const pmremGenerator = new PMREMGenerator(renderer);
+pmremGenerator.compileEquirectangularShader();
 
 const scene = new Scene();
 
@@ -36,22 +40,37 @@ window.addEventListener( 'resize', onWindowResize );
 
 //
 
+new RGBELoader()
+	.setDataType( UnsignedByteType )
+	.load( 'assets/royal_esplanade_1k.hdr', ( texture ) => {
+		const envMap = pmremGenerator.fromEquirectangular( texture ).texture;
+		scene.background = envMap;
+		scene.environment = envMap;
+
+		texture.dispose();
+		pmremGenerator.dispose();
+
+		render();
+	} );
+
+//
+
 const io = new WebIO();
 io.read('./assets/DamagedHelmet.glb').then(async (doc) => {
-    const model = await renderDoc(doc);
-    scene.add(model);
-    render();
+	const model = await renderDoc(doc);
+	scene.add(model);
+	render();
 });
 
 //
 
 function render () {
-    renderer.render(scene, camera);
+	renderer.render(scene, camera);
 }
 
 function onWindowResize() {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    render();
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+	renderer.setSize(window.innerWidth, window.innerHeight);
+	render();
 }

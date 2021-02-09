@@ -1,5 +1,5 @@
 import { BufferAttribute, BufferGeometry, ClampToEdgeWrapping, DoubleSide, FrontSide, Group, LinearEncoding, LinearFilter, LinearMipmapLinearFilter, LinearMipmapNearestFilter, Mesh, MeshStandardMaterial, MirroredRepeatWrapping, NearestFilter, NearestMipmapLinearFilter, NearestMipmapNearestFilter, Object3D, RepeatWrapping, SkinnedMesh, Texture, TextureLoader, sRGBEncoding } from 'three';
-import { Accessor as AccessorDef, Document, Material as MaterialDef, Mesh as MeshDef, Node as NodeDef, Texture as TextureDef, TextureInfo as TextureInfoDef } from '@gltf-transform/core';
+import { Accessor as AccessorDef, Document, Material as MaterialDef, Mesh as MeshDef, Node as NodeDef, Primitive as PrimitiveDef, Texture as TextureDef, TextureInfo as TextureInfoDef } from '@gltf-transform/core';
 
 /**
  * Constructs a THREE.Group hierarchy for a given glTF-Transform {@link Document}.
@@ -9,7 +9,7 @@ import { Accessor as AccessorDef, Document, Material as MaterialDef, Mesh as Mes
  * - TRS Animation
  * - Skinning
  * - Morph targets
- * - Points, lines, and other modes
+ * - Non-TRIANGLES modes
  *
  * Later:
  * - Cameras
@@ -74,29 +74,30 @@ export async function render(doc: Document): Promise<Group> {
 			side: materialDef.getDoubleSided() ? DoubleSide : FrontSide
 		});
 
-		material.map = resolveTexture('baseColorTexture', materialDef.getBaseColorTexture(), materialDef.getBaseColorTextureInfo(), textures);
-		material.emissiveMap = resolveTexture('emissiveTexture', materialDef.getEmissiveTexture(), materialDef.getEmissiveTextureInfo(), textures);
-		material.roughnessMap = material.metalnessMap = resolveTexture('metallicRoughnessTexture', materialDef.getMetallicRoughnessTexture(), materialDef.getMetallicRoughnessTextureInfo(), textures);
-		material.normalMap = resolveTexture('normalTexture', materialDef.getNormalTexture(), materialDef.getNormalTextureInfo(), textures);
-		material.aoMap = resolveTexture('occlusionTexture', materialDef.getOcclusionTexture(), materialDef.getOcclusionTextureInfo(), textures);
+		material.map = assignFinalTexture('baseColorTexture', materialDef.getBaseColorTexture(), materialDef.getBaseColorTextureInfo(), textures);
+		material.emissiveMap = assignFinalTexture('emissiveTexture', materialDef.getEmissiveTexture(), materialDef.getEmissiveTextureInfo(), textures);
+		material.roughnessMap = material.metalnessMap = assignFinalTexture('metallicRoughnessTexture', materialDef.getMetallicRoughnessTexture(), materialDef.getMetallicRoughnessTextureInfo(), textures);
+		material.normalMap = assignFinalTexture('normalTexture', materialDef.getNormalTexture(), materialDef.getNormalTextureInfo(), textures);
+		material.aoMap = assignFinalTexture('occlusionTexture', materialDef.getOcclusionTexture(), materialDef.getOcclusionTextureInfo(), textures);
 
 		materials.set(materialDef, material);
-		// TODO(bug): All that assignFinalMaterial() reconciliation.
 	}
 
 	// Meshes.
 
 	const meshes = new Map<MeshDef, Group>();
+	let defaultMaterial: MaterialDef;
 	for (const meshDef of root.listMeshes()) {
 		const mesh = new Group();
 		mesh.name = meshDef.getName();
 
 		for (const primDef of meshDef.listPrimitives()) {
 			const primGeometry = new BufferGeometry();
-			const primMaterial = materials.get(primDef.getMaterial()!);
 			const prim = primDef.getAttribute('JOINTS_0')
-				? new SkinnedMesh(primGeometry, primMaterial)
-				: new Mesh(primGeometry, primMaterial);
+				? new SkinnedMesh(primGeometry)
+				: new Mesh(primGeometry);
+			// TODO(bug): Assign default materials when missing.
+			prim.material = assignFinalMaterial(primDef, materials.get(primDef.getMaterial()!)!, prim);
 			prim.name = primDef.getName();
 
 			// Attributes.
@@ -168,7 +169,44 @@ const WEBGL_WRAPPINGS = {
 	10497: RepeatWrapping
 };
 
-function applyTextureInfo(texture: Texture, textureInfo: TextureInfoDef): Texture {
+function assignFinalMaterial(primDef: PrimitiveDef, material: MeshStandardMaterial, mesh: Mesh): MeshStandardMaterial {
+	const useVertexTangents = !!primDef.getAttribute('TANGENT');
+	const useVertexColors = !!primDef.getAttribute('COLOR_0');
+	const useFlatShading = !primDef.getAttribute('NORMAL');
+	const useSkinning = (mesh as unknown as {isSkinnedMesh: boolean|undefined})['isSkinnedMesh'] === true;
+
+	if (useVertexTangents || useVertexColors || useFlatShading || useSkinning) {
+		material = material.clone() as MeshStandardMaterial;
+		material.vertexTangents = useVertexTangents;
+		material.vertexColors = useVertexColors;
+		material.flatShading = useFlatShading;
+		material.skinning = useSkinning;
+	}
+
+	// TODO: morph targets.
+	// TODO: POINTS, LINES, etc.
+
+	return material;
+}
+
+function assignFinalTexture(
+		slot: string,
+		textureDef: TextureDef | null,
+		textureInfoDef: TextureInfoDef | null,
+		textureCache: Map<TextureDef, Texture>): Texture | null {
+	if (!textureDef || !textureInfoDef) return null;
+
+	const texture = _assignFinalTexture(
+		textureCache.get(textureDef)!,
+		textureInfoDef
+	);
+
+	texture.encoding = slot.match(/color|emissive/i) ? sRGBEncoding : LinearEncoding;
+
+	return texture;
+}
+
+function _assignFinalTexture(texture: Texture, textureInfo: TextureInfoDef): Texture {
 	texture = texture.clone();
 
 	texture.flipY = false;
@@ -184,22 +222,5 @@ function applyTextureInfo(texture: Texture, textureInfo: TextureInfoDef): Textur
 	// TODO(feat): Manage uv2.
 
 	texture.needsUpdate = true;
-	return texture;
-}
-
-function resolveTexture(
-		slot: string,
-		textureDef: TextureDef | null,
-		textureInfoDef: TextureInfoDef | null,
-		textureCache: Map<TextureDef, Texture>): Texture | null {
-	if (!textureDef || !textureInfoDef) return null;
-
-	const texture = applyTextureInfo(
-		textureCache.get(textureDef)!,
-		textureInfoDef
-	);
-
-	if (slot.match(/color|emissive/i)) texture.encoding = sRGBEncoding;
-
 	return texture;
 }
