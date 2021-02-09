@@ -1,11 +1,28 @@
-import { BufferAttribute, BufferGeometry, DoubleSide, FrontSide, Group, Mesh, MeshStandardMaterial, Object3D, SkinnedMesh, Texture, TextureLoader } from 'three';
-import { Accessor as AccessorDef, Document, Material as MaterialDef, Mesh as MeshDef, Node as NodeDef, Texture as TextureDef } from '@gltf-transform/core';
+import { BufferAttribute, BufferGeometry, ClampToEdgeWrapping, DoubleSide, FrontSide, Group, LinearEncoding, LinearFilter, LinearMipmapLinearFilter, LinearMipmapNearestFilter, Mesh, MeshStandardMaterial, MirroredRepeatWrapping, NearestFilter, NearestMipmapLinearFilter, NearestMipmapNearestFilter, Object3D, RepeatWrapping, SkinnedMesh, Texture, TextureLoader, sRGBEncoding } from 'three';
+import { Accessor as AccessorDef, Document, Material as MaterialDef, Mesh as MeshDef, Node as NodeDef, Texture as TextureDef, TextureInfo as TextureInfoDef } from '@gltf-transform/core';
 
-export function render(doc: Document): Group {
+/**
+ * Constructs a THREE.Group hierarchy for a given glTF-Transform {@link Document}.
+ *
+ * Next:
+ * - assignFinalMaterial()
+ * - TRS Animation
+ * - Skinning
+ * - Morph targets
+ * - Points, lines, and other modes
+ *
+ * Later:
+ * - Cameras
+ * - Extensions
+ *
+ * @param doc
+ */
+export async function render(doc: Document): Promise<Group> {
 	const root = doc.getRoot();
 
 	const sceneDef = root.listScenes()[0];
 	const scene = new Group();
+	scene.name = sceneDef.getName();
 
 	// Accessors.
 
@@ -22,42 +39,48 @@ export function render(doc: Document): Group {
 
 	const textures = new Map<TextureDef, Texture>();
 	const textureLoader = new TextureLoader();
+	const texturesPending: Promise<void>[] = [];
 	for (const textureDef of root.listTextures()) {
 		const blob = new Blob([textureDef.getImage()!], {type: textureDef.getMimeType()});
 		const blobURL = URL.createObjectURL(blob);
-		const texture = textureLoader.load(blobURL, () => {
-			URL.revokeObjectURL(blobURL); // TODO: Firefox?
-		});
-		textures.set(textureDef, texture);
+		texturesPending.push(new Promise((resolve, reject) => {
+			textureLoader.load(blobURL, (texture) => {
+				textures.set(textureDef, texture);
+				resolve();
+				URL.revokeObjectURL(blobURL);
+			}, undefined, reject);
+		}));
 	}
+	await Promise.all(texturesPending);
 
 	// Materials.
 
 	const materials = new Map<MaterialDef, MeshStandardMaterial>();
 	for (const materialDef of root.listMaterials()) {
 		const material = new MeshStandardMaterial({
+			name: materialDef.getName(),
+
 			color: materialDef.getBaseColorHex(),
-			map: materialDef.getBaseColorTexture() ? textures.get(materialDef.getBaseColorTexture()!) : null,
-			opacity: materialDef.getBaseColorFactor()[3],
-			alphaTest: materialDef.getAlphaCutoff(),
+			opacity: materialDef.getAlpha(),
+			alphaTest: materialDef.getAlphaMode() === 'MASK' ? materialDef.getAlphaCutoff() : 0,
 			transparent: materialDef.getAlphaMode() === 'BLEND',
 
 			emissive: materialDef.getEmissiveHex(),
-			emissiveMap: materialDef.getEmissiveTexture() ? textures.get(materialDef.getEmissiveTexture()!) : null,
 
 			roughness: materialDef.getRoughnessFactor(),
-			roughnessMap: materialDef.getMetallicRoughnessTexture() ? textures.get(materialDef.getMetallicRoughnessTexture()!) : null,
 			metalness: materialDef.getMetallicFactor(),
-			metalnessMap: materialDef.getMetallicRoughnessTexture() ? textures.get(materialDef.getMetallicRoughnessTexture()!) : null,
 			aoMapIntensity: materialDef.getOcclusionStrength(),
-			aoMap: materialDef.getOcclusionTexture() ? textures.get(materialDef.getOcclusionTexture()!) : null,
 
 			side: materialDef.getDoubleSided() ? DoubleSide : FrontSide
-		})
+		});
+
+		material.map = resolveTexture('baseColorTexture', materialDef.getBaseColorTexture(), materialDef.getBaseColorTextureInfo(), textures);
+		material.emissiveMap = resolveTexture('emissiveTexture', materialDef.getEmissiveTexture(), materialDef.getEmissiveTextureInfo(), textures);
+		material.roughnessMap = material.metalnessMap = resolveTexture('metallicRoughnessTexture', materialDef.getMetallicRoughnessTexture(), materialDef.getMetallicRoughnessTextureInfo(), textures);
+		material.normalMap = resolveTexture('normalTexture', materialDef.getNormalTexture(), materialDef.getNormalTextureInfo(), textures);
+		material.aoMap = resolveTexture('occlusionTexture', materialDef.getOcclusionTexture(), materialDef.getOcclusionTextureInfo(), textures);
 
 		materials.set(materialDef, material);
-		// TODO(bug): Textures.
-		// TODO(bug): TextureInfos.
 		// TODO(bug): All that assignFinalMaterial() reconciliation.
 	}
 
@@ -66,12 +89,15 @@ export function render(doc: Document): Group {
 	const meshes = new Map<MeshDef, Group>();
 	for (const meshDef of root.listMeshes()) {
 		const mesh = new Group();
+		mesh.name = meshDef.getName();
+
 		for (const primDef of meshDef.listPrimitives()) {
 			const primGeometry = new BufferGeometry();
 			const primMaterial = materials.get(primDef.getMaterial()!);
 			const prim = primDef.getAttribute('JOINTS_0')
 				? new SkinnedMesh(primGeometry, primMaterial)
 				: new Mesh(primGeometry, primMaterial);
+			prim.name = primDef.getName();
 
 			// Attributes.
 			for (const semantic of primDef.listSemantics()) {
@@ -96,9 +122,9 @@ export function render(doc: Document): Group {
 	const nodes = new Map<NodeDef, Object3D>();
 	sceneDef.traverse((nodeDef) => {
 		const node = new Object3D();
-		// node.matrix.fromArray(nodeDef.getMatrix());
+		node.name = nodeDef.getName();
 		node.position.fromArray(nodeDef.getTranslation());
-		node.rotation.fromArray(nodeDef.getRotation());
+		node.quaternion.fromArray(nodeDef.getRotation());
 		node.scale.fromArray(nodeDef.getScale());
 
 		const meshDef = nodeDef.getMesh();
@@ -125,4 +151,55 @@ function semanticToAttributeName(semantic: string): string {
 		case 'TEXCOORD_1': return 'uv2';
 		default: return '_' + semantic.toLowerCase();
 	}
+}
+
+const WEBGL_FILTERS = {
+	9728: NearestFilter,
+	9729: LinearFilter,
+	9984: NearestMipmapNearestFilter,
+	9985: LinearMipmapNearestFilter,
+	9986: NearestMipmapLinearFilter,
+	9987: LinearMipmapLinearFilter
+};
+
+const WEBGL_WRAPPINGS = {
+	33071: ClampToEdgeWrapping,
+	33648: MirroredRepeatWrapping,
+	10497: RepeatWrapping
+};
+
+function applyTextureInfo(texture: Texture, textureInfo: TextureInfoDef): Texture {
+	texture = texture.clone();
+
+	texture.flipY = false;
+	texture.magFilter = textureInfo.getMagFilter() != null
+		? WEBGL_FILTERS[ textureInfo.getMagFilter()! ]
+		: LinearFilter;
+	texture.minFilter = textureInfo.getMinFilter() != null
+		? WEBGL_FILTERS[ textureInfo.getMinFilter()! ]
+		: LinearMipmapLinearFilter;
+	texture.wrapS = WEBGL_WRAPPINGS[ textureInfo.getWrapS() ];
+	texture.wrapT = WEBGL_WRAPPINGS[ textureInfo.getWrapT() ];
+
+	// TODO(feat): Manage uv2.
+
+	texture.needsUpdate = true;
+	return texture;
+}
+
+function resolveTexture(
+		slot: string,
+		textureDef: TextureDef | null,
+		textureInfoDef: TextureInfoDef | null,
+		textureCache: Map<TextureDef, Texture>): Texture | null {
+	if (!textureDef || !textureInfoDef) return null;
+
+	const texture = applyTextureInfo(
+		textureCache.get(textureDef)!,
+		textureInfoDef
+	);
+
+	if (slot.match(/color|emissive/i)) texture.encoding = sRGBEncoding;
+
+	return texture;
 }

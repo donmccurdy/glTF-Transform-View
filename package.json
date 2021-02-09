@@ -23,7 +23,7 @@
   },
   "scripts": {
     "dist": "microbundle --format modern,cjs",
-    "watch": "microbundle watch --format modern,cjs"
+    "watch": "microbundle watch --no-compress --format modern,cjs"
   },
   "staticFiles": {
     "staticPath": [
@@ -32,5 +32,13 @@
         "staticOutDir": "assets"
       }
     ]
-  }
+  },
+  "browserslist": [
+    "last 2 and_chr versions",
+    "last 2 chrome versions",
+    "last 2 opera versions",
+    "last 2 ios_saf versions",
+    "last 2 safari versions",
+    "last 2 firefox versions"
+  ]
 }

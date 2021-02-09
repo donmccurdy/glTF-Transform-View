@@ -37,8 +37,8 @@ window.addEventListener( 'resize', onWindowResize );
 //
 
 const io = new WebIO();
-io.read('./assets/DamagedHelmet.glb').then((doc) => {
-    const model = renderDoc(doc);
+io.read('./assets/DamagedHelmet.glb').then(async (doc) => {
+    const model = await renderDoc(doc);
     scene.add(model);
     render();
 });
