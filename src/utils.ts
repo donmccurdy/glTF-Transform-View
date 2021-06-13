@@ -41,7 +41,6 @@ export function assignFinalMaterial(primDef: PrimitiveDef, material: MeshStandar
 		material.vertexTangents = useVertexTangents;
 		material.vertexColors = useVertexColors;
 		material.flatShading = useFlatShading;
-		material.skinning = useSkinning;
 	}
 
 	// TODO: morph targets.
