@@ -2,7 +2,7 @@ import { ACESFilmicToneMapping, AmbientLight, DirectionalLight, PMREMGenerator, 
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import { WebIO } from '@gltf-transform/core';
-import { render as renderDoc } from './';
+import { DocumentRenderer, render as renderDocument } from './';
 
 const renderer = new WebGLRenderer({antialias: true});
 renderer.setPixelRatio( window.devicePixelRatio );
@@ -57,8 +57,22 @@ new RGBELoader()
 
 const io = new WebIO();
 io.read('./assets/DamagedHelmet.glb').then(async (doc) => {
-	const model = await renderDoc(doc);
+	const documentRenderer = new DocumentRenderer(doc);
+	// documentRenderer.sync(); // TODO(cleanup): Redundant. Should it be?
+	const model = documentRenderer.toObject3D();
+	window.model = model;
+	console.log(model);
+	model.position.x -= 1;
+
+	window.model2 = await renderDocument(doc);
+	console.log(model2);
+	model2.position.x += 1;
+
 	scene.add(model);
+	scene.add(model2);
+
+	debug(model);
+	debug(model2);
 	render();
 });
 
@@ -73,4 +87,15 @@ function onWindowResize() {
 	camera.updateProjectionMatrix();
 	renderer.setSize(window.innerWidth, window.innerHeight);
 	render();
+}
+
+function debug(group) {
+	console.log(`-------`);
+	group.traverse((child) => {
+		console.log(`"${child.name}" <${child.type}> -> t: ${child.position.toArray().map(round)}, r: ${child.quaternion.toArray().map(round)}, s: ${child.scale.toArray().map(round)}`);
+	});
+}
+
+function round(v) {
+	return Math.round(v * 10000) / 10000;
 }

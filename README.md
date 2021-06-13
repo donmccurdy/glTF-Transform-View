@@ -20,5 +20,22 @@ parcel index.html
 Proposed:
 
 ```
-...
+import {DocumentRenderer} from '@gltf-transform/render';
+import {WebIO} from '@gltf-transform/core';
+
+// ...
+
+const documentRenderer = new DocumentRenderer(doc);
+
+const group = documentRenderer.toObject3D();
+
+documentRenderer.sync(); // full update
+documentRenderer.update(mesh); // partial update
+
+scene.add(group);
+renderer.render(scene, camera);
 ```
+
+It's going to be very easy to create memory leaks without some way to detect when a GL resource
+like an accessor or texture has left the scene... some kind of "dirty" flag? ... should be able
+to detect removed resources from the PropertyGraph?
