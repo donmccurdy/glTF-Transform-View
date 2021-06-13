@@ -2,10 +2,12 @@ import { Accessor as AccessorDef, Mesh as MeshDef, Node as NodeDef, Primitive as
 import { AccessorSyncPair, MeshSyncPair, NodeSyncPair, PrimitiveSyncPair, SceneSyncPair, SyncPair } from './SyncPair';
 
 export class SyncContext {
-	private _map = new WeakMap<PropertyDef, SyncPair<PropertyDef, unknown>>();
+	private _sourceMap = new WeakMap<PropertyDef, SyncPair<PropertyDef, unknown>>();
+	private _targetMap = new WeakMap<object, SyncPair<PropertyDef, unknown>>();
 
-	public add(source: PropertyDef, pair: SyncPair<PropertyDef, unknown>): void {
-		this._map.set(source, pair);
+	public add(pair: SyncPair<PropertyDef, unknown>): void {
+		this._sourceMap.set(pair.source, pair);
+		this._targetMap.set(pair.target as object, pair);
 	}
 
 	public pair(source: null): null;
@@ -14,10 +16,10 @@ export class SyncContext {
 	public pair(source: NodeDef): NodeSyncPair;
 	public pair(source: PrimitiveDef): PrimitiveSyncPair;
 	public pair(source: SceneDef): SceneSyncPair;
-    public pair(source: PropertyDef): SyncPair<PropertyDef, unknown>;
+	public pair(source: PropertyDef): SyncPair<PropertyDef, unknown>;
 	public pair(source: PropertyDef | null): SyncPair<PropertyDef, unknown> | null {
 		if (!source) return null;
-		if (this._map.has(source)) return this._map.get(source)!;
+		if (this._sourceMap.has(source)) return this._sourceMap.get(source)!;
 
 		switch (source.propertyType) {
 			case PropertyType.ACCESSOR:

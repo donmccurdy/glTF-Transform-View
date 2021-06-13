@@ -7,7 +7,7 @@ const DEFAULT_MATERIAL = new MeshStandardMaterial({color: 0x808080, roughness: 1
 
 export abstract class SyncPair <Source extends PropertyDef, Target> {
 	protected constructor (public context: SyncContext, public source: Source, public target: Target) {
-		context.add(source, this);
+		context.add(this);
 	}
 	public abstract sync(): this;
 	public dispose(): void {}
