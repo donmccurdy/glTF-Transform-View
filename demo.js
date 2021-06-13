@@ -58,9 +58,7 @@ new RGBELoader()
 const io = new WebIO();
 io.read('./assets/DamagedHelmet.glb').then(async (doc) => {
 	const documentRenderer = new DocumentRenderer(doc);
-	// documentRenderer.sync(); // TODO(cleanup): Redundant. Should it be?
-	const model = documentRenderer.toObject3D();
-	window.model = model;
+	window.model = documentRenderer.toObject3D();
 	console.log(model);
 	model.position.x -= 1;
 
@@ -70,9 +68,6 @@ io.read('./assets/DamagedHelmet.glb').then(async (doc) => {
 
 	scene.add(model);
 	scene.add(model2);
-
-	debug(model);
-	debug(model2);
 	render();
 });
 
@@ -87,15 +82,4 @@ function onWindowResize() {
 	camera.updateProjectionMatrix();
 	renderer.setSize(window.innerWidth, window.innerHeight);
 	render();
-}
-
-function debug(group) {
-	console.log(`-------`);
-	group.traverse((child) => {
-		console.log(`"${child.name}" <${child.type}> -> t: ${child.position.toArray().map(round)}, r: ${child.quaternion.toArray().map(round)}, s: ${child.scale.toArray().map(round)}`);
-	});
-}
-
-function round(v) {
-	return Math.round(v * 10000) / 10000;
 }

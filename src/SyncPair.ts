@@ -10,6 +10,7 @@ export abstract class SyncPair <Source extends PropertyDef, Target> {
 		context.add(source, this);
 	}
 	public abstract sync(): this;
+	public dispose(): void {}
 }
 
 export class AccessorSyncPair extends SyncPair<AccessorDef, BufferAttribute> {
@@ -22,6 +23,7 @@ export class AccessorSyncPair extends SyncPair<AccessorDef, BufferAttribute> {
 
 		return new AccessorSyncPair(context, source, target);
 	}
+
 	public sync(): this {
 		const source = this.source;
 		const target = this.target;
@@ -56,32 +58,23 @@ const _vec4: vec4 = [0, 0, 0, 0];
 
 export class SceneSyncPair extends SyncPair<SceneDef, Group> {
 	public static init(context: SyncContext, source: SceneDef): SceneSyncPair {
-		const target = new Group();
-		target.name = source.getName();
-
-		for (const nodeDef of source.listChildren()) {
-			target.add(NodeSyncPair.init(context, nodeDef).target);
-		}
-
-		// TODO(cleanup): Reduce init()/sync() redundancy.
-		return new SceneSyncPair(context, source, target);
+		return new SceneSyncPair(context, source, new Group()).sync();
 	}
 
 	public sync(): this {
 		const source = this.source;
 		const target = this.target;
+		const context = this.context;
 
 		if (source.getName() !== target.name) {
 			target.name = source.getName();
 		}
 
-		// TODO(bug): Do not modify .children directly.
-		const sourceChildren = source.listChildren();
-		target.children.length = sourceChildren.length;
-		for (let i = 0; i < sourceChildren.length; i++) {
-			const targetChild = this.context.pair(sourceChildren[i]);
-			targetChild.sync();
-			target.children[i] = targetChild.target;
+		target.clear();
+
+		// Update children.
+		for (const childDef of source.listChildren()) {
+			target.add(context.pair(childDef).sync().target);
 		}
 
 		return this;
@@ -90,27 +83,13 @@ export class SceneSyncPair extends SyncPair<SceneDef, Group> {
 
 export class NodeSyncPair extends SyncPair<NodeDef, Object3D> {
 	public static init(context: SyncContext, source: NodeDef): NodeSyncPair {
-		const target = new Object3D();
-		target.name = source.getName();
-		target.position.fromArray(source.getTranslation());
-		target.quaternion.fromArray(source.getRotation());
-		target.scale.fromArray(source.getScale());
-
-		for (const nodeDef of source.listChildren()) {
-			target.add(context.pair(nodeDef).target);
-		}
-
-		const meshDef = source.getMesh();
-		if (meshDef) {
-			target.add(context.pair(meshDef).target);
-		}
-
-		return new NodeSyncPair(context, source, target);
+		return new NodeSyncPair(context, source, new Object3D()).sync();
 	}
 
 	public sync(): this {
 		const source = this.source;
 		const target = this.target;
+		const context = this.context;
 
 		if (source.getName() !== target.name) {
 			target.name = source.getName();
@@ -128,22 +107,16 @@ export class NodeSyncPair extends SyncPair<NodeDef, Object3D> {
 			target.scale.fromArray(source.getScale());
 		}
 
-		// TODO(bug): Do not modify .children directly.
-		const sourceChildren = source.listChildren();
-		target.children.length = sourceChildren.length;
-		for (let i = 0; i < sourceChildren.length; i++) {
-			const childPair = this.context.pair(sourceChildren[i]);
-			childPair.sync();
-			target.children[i] = childPair.target;
+		target.clear();
+
+		// Update children.
+		for (const childDef of source.listChildren()) {
+			target.add(context.pair(childDef).sync().target);
 		}
 
-		// TODO(bug): Do not modify .children directly.
+		// Update mesh.
 		const meshDef = source.getMesh();
-		if (meshDef) {
-			const meshPair = this.context.pair(meshDef);
-			meshPair.sync();
-			target.children.push(meshPair.target);
-		}
+		if (meshDef) target.add(context.pair(meshDef).sync().target);
 
 		return this;
 	}
@@ -151,14 +124,7 @@ export class NodeSyncPair extends SyncPair<NodeDef, Object3D> {
 
 export class MeshSyncPair extends SyncPair<MeshDef, Group> {
 	public static init(context: SyncContext, source: MeshDef): MeshSyncPair {
-		const target = new Group();
-		target.name = source.getName();
-
-		for (const primDef of source.listPrimitives()) {
-			target.add(context.pair(primDef).target);
-		}
-
-		return new MeshSyncPair(context, source, target);
+		return new MeshSyncPair(context, source, new Group()).sync();
 	}
 	public sync(): this {
 		const source = this.source;
@@ -168,13 +134,11 @@ export class MeshSyncPair extends SyncPair<MeshDef, Group> {
 			target.name = source.getName();
 		}
 
-		// TODO(bug): Do not modify .children directly.
-		const sourcePrims = source.listPrimitives();
-		target.children.length = sourcePrims.length;
-		for (let i = 0; i < sourcePrims.length; i++) {
-			const primPair = this.context.pair(sourcePrims[i]);
-			primPair.sync();
-			target.children[i] = primPair.target;
+		target.clear();
+
+		// Update primitives.
+		for (const primDef of source.listPrimitives()) {
+			target.add(this.context.pair(primDef).sync().target);
 		}
 
 		return this;
@@ -183,34 +147,47 @@ export class MeshSyncPair extends SyncPair<MeshDef, Group> {
 
 export class PrimitiveSyncPair extends SyncPair<PrimitiveDef, Mesh> {
 	public static init(context: SyncContext, source: PrimitiveDef): PrimitiveSyncPair {
-		const geometry = new BufferGeometry();
-		geometry.name = source.getName();
-
-		const indicesDef = source.getIndices();
-		if (indicesDef) {
-			geometry.setIndex(context.pair(indicesDef).target);
-		}
-
-		for (const semantic of source.listSemantics()) {
-			const attributeDef = source.getAttribute(semantic)!;
-			geometry.setAttribute(semanticToAttributeName(semantic), context.pair(attributeDef).target);
-		}
-
-		const target = new Mesh(geometry, DEFAULT_MATERIAL);
-
-		return new PrimitiveSyncPair(context, source, target);
+		const target = new Mesh(new BufferGeometry(), DEFAULT_MATERIAL);
+		return new PrimitiveSyncPair(context, source, target).sync();
 	}
 
 	public sync(): this {
 		const source = this.source;
 		const target = this.target;
 		const context = this.context;
+		const geometry = target.geometry;
 
-		// const indicesDef = source.getIndices();
-		// const indicesPair = context.pair(indicesDef);
-		// if (indicesPair && !target)
-		console.warn('primitive sync() not implemented.');
+		if (source.getName() !== target.name) {
+			target.name = source.getName();
+		}
+
+		// Update indices.
+		const indicesDef = source.getIndices();
+		if (indicesDef) {
+			geometry.setIndex(context.pair(indicesDef).target);
+		} else if (geometry.index) {
+			geometry.setIndex(null);
+		}
+
+		// Remove inactive attributes.
+		const prevAttributes = Object.keys(geometry.attributes);
+		const nextAttributes = new Set(source.listSemantics().map(semanticToAttributeName));
+		for (const attribute of prevAttributes) {
+			if (!nextAttributes.has(attribute)) {
+				geometry.deleteAttribute(attribute);
+			}
+		}
+
+		// Update current attributes.
+		for (const semantic of source.listSemantics()) {
+			const attributeDef = source.getAttribute(semantic)!;
+			geometry.setAttribute(semanticToAttributeName(semantic), context.pair(attributeDef).target);
+		}
 
 		return this;
+	}
+
+	public dispose(): void {
+		this.target.geometry.dispose();
 	}
 }
