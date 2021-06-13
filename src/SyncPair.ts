@@ -9,7 +9,7 @@ export abstract class SyncPair <Source extends PropertyDef, Target> {
 	protected constructor (public context: SyncContext, public source: Source, public target: Target) {
 		context.add(this);
 	}
-	public abstract sync(): this;
+	public abstract sync(deep: boolean): this;
 	public dispose(): void {}
 }
 
@@ -20,11 +20,10 @@ export class AccessorSyncPair extends SyncPair<AccessorDef, BufferAttribute> {
 			source.getElementSize(),
 			source.getNormalized()
 		);
-
-		return new AccessorSyncPair(context, source, target);
+		return new AccessorSyncPair(context, source, target).sync(false);
 	}
 
-	public sync(): this {
+	public sync(deep: boolean): this {
 		const source = this.source;
 		const target = this.target;
 
@@ -58,10 +57,10 @@ const _vec4: vec4 = [0, 0, 0, 0];
 
 export class SceneSyncPair extends SyncPair<SceneDef, Group> {
 	public static init(context: SyncContext, source: SceneDef): SceneSyncPair {
-		return new SceneSyncPair(context, source, new Group()).sync();
+		return new SceneSyncPair(context, source, new Group()).sync(false);
 	}
 
-	public sync(): this {
+	public sync(deep: boolean): this {
 		const source = this.source;
 		const target = this.target;
 		const context = this.context;
@@ -74,7 +73,9 @@ export class SceneSyncPair extends SyncPair<SceneDef, Group> {
 
 		// Update children.
 		for (const childDef of source.listChildren()) {
-			target.add(context.pair(childDef).sync().target);
+			const childPair = context.pair(childDef);
+			target.add(childPair.target);
+			if (deep) childPair.sync(true);
 		}
 
 		return this;
@@ -83,10 +84,10 @@ export class SceneSyncPair extends SyncPair<SceneDef, Group> {
 
 export class NodeSyncPair extends SyncPair<NodeDef, Object3D> {
 	public static init(context: SyncContext, source: NodeDef): NodeSyncPair {
-		return new NodeSyncPair(context, source, new Object3D()).sync();
+		return new NodeSyncPair(context, source, new Object3D()).sync(false);
 	}
 
-	public sync(): this {
+	public sync(deep: boolean): this {
 		const source = this.source;
 		const target = this.target;
 		const context = this.context;
@@ -111,12 +112,18 @@ export class NodeSyncPair extends SyncPair<NodeDef, Object3D> {
 
 		// Update children.
 		for (const childDef of source.listChildren()) {
-			target.add(context.pair(childDef).sync().target);
+			const childPair = context.pair(childDef);
+			target.add(childPair.target);
+			if (deep) childPair.sync(true);
 		}
 
 		// Update mesh.
 		const meshDef = source.getMesh();
-		if (meshDef) target.add(context.pair(meshDef).sync().target);
+		if (meshDef) {
+			const meshPair = context.pair(meshDef);
+			target.add(meshPair.target);
+			if (deep) meshPair.sync(true);
+		}
 
 		return this;
 	}
@@ -124,9 +131,9 @@ export class NodeSyncPair extends SyncPair<NodeDef, Object3D> {
 
 export class MeshSyncPair extends SyncPair<MeshDef, Group> {
 	public static init(context: SyncContext, source: MeshDef): MeshSyncPair {
-		return new MeshSyncPair(context, source, new Group()).sync();
+		return new MeshSyncPair(context, source, new Group()).sync(false);
 	}
-	public sync(): this {
+	public sync(deep: boolean): this {
 		const source = this.source;
 		const target = this.target;
 
@@ -138,7 +145,9 @@ export class MeshSyncPair extends SyncPair<MeshDef, Group> {
 
 		// Update primitives.
 		for (const primDef of source.listPrimitives()) {
-			target.add(this.context.pair(primDef).sync().target);
+			const primPair = this.context.pair(primDef);
+			target.add(primPair.target);
+			if (deep) primPair.sync(true);
 		}
 
 		return this;
@@ -148,10 +157,10 @@ export class MeshSyncPair extends SyncPair<MeshDef, Group> {
 export class PrimitiveSyncPair extends SyncPair<PrimitiveDef, Mesh> {
 	public static init(context: SyncContext, source: PrimitiveDef): PrimitiveSyncPair {
 		const target = new Mesh(new BufferGeometry(), DEFAULT_MATERIAL);
-		return new PrimitiveSyncPair(context, source, target).sync();
+		return new PrimitiveSyncPair(context, source, target).sync(false);
 	}
 
-	public sync(): this {
+	public sync(deep: boolean): this {
 		const source = this.source;
 		const target = this.target;
 		const context = this.context;
@@ -164,7 +173,9 @@ export class PrimitiveSyncPair extends SyncPair<PrimitiveDef, Mesh> {
 		// Update indices.
 		const indicesDef = source.getIndices();
 		if (indicesDef) {
-			geometry.setIndex(context.pair(indicesDef).target);
+			const indicesPair = context.pair(indicesDef);
+			geometry.setIndex(indicesPair.target);
+			if (deep) indicesPair.sync(true);
 		} else if (geometry.index) {
 			geometry.setIndex(null);
 		}
@@ -181,7 +192,9 @@ export class PrimitiveSyncPair extends SyncPair<PrimitiveDef, Mesh> {
 		// Update current attributes.
 		for (const semantic of source.listSemantics()) {
 			const attributeDef = source.getAttribute(semantic)!;
-			geometry.setAttribute(semanticToAttributeName(semantic), context.pair(attributeDef).target);
+			const attributePair = context.pair(attributeDef);
+			geometry.setAttribute(semanticToAttributeName(semantic), attributePair.target);
+			if (deep) attributePair.sync(true);
 		}
 
 		return this;
