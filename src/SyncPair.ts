@@ -5,6 +5,15 @@ import { Accessor as AccessorDef, Mesh as MeshDef, Node as NodeDef, Primitive as
 
 const DEFAULT_MATERIAL = new MeshStandardMaterial({color: 0x808080, roughness: 1.0, metalness: 0.0});
 
+// TODO(bug): Need to model pair.target as a observable (or similar), such that
+// its value can change over time. Examples:
+//   - {Mesh, SkinnedMesh, Points, Lines, ...}
+//   - {BufferAttribute...}
+//   - {MeshStandardMaterial, MeshBasicMaterial, MeshPhysicalMaterial, ...}
+//
+// TODO(bug): Mapping may not be 1:1. Examples:
+//   - Materials (temporary)
+//   - Textures (temporary)
 export abstract class SyncPair <Source extends PropertyDef, Target> {
 	protected constructor (public context: SyncContext, public source: Source, public target: Target) {
 		context.add(this);
@@ -29,6 +38,7 @@ export class AccessorSyncPair extends SyncPair<AccessorDef, BufferAttribute> {
 
 		let needsUpdate = false;
 
+		// TODO(bug): THREE.BufferAttribute is not resizable.
 		if (source.getArray() !== target.array) {
 			target.array = source.getArray()!;
 			needsUpdate = true;
