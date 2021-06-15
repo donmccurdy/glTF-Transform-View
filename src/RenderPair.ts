@@ -1,10 +1,10 @@
-import { PropertyListObserver } from 'PropertyListObserver';
-import { PropertyMapObserver } from 'PropertyMapObserver';
-import { PropertyObserver } from 'PropertyObserver';
+import { PropertyListObserver } from 'observers/PropertyListObserver';
+import { PropertyMapObserver } from 'observers/PropertyMapObserver';
+import { PropertyObserver } from 'observers/PropertyObserver';
 import { BufferAttribute, BufferGeometry, Group, Mesh, MeshStandardMaterial, Object3D } from 'three';
 import { Accessor as AccessorDef, Mesh as MeshDef, Node as NodeDef, Primitive as PrimitiveDef, Property as PropertyDef, Scene as SceneDef, vec3, vec4 } from '@gltf-transform/core';
-import { Observer, Subscription } from './Observer';
 import type { UpdateContext } from './SyncContext';
+import { Observer, Subscription } from './observers/Observer';
 import { eq, semanticToAttributeName } from './utils';
 
 const DEFAULT_MATERIAL = new MeshStandardMaterial({color: 0x808080, roughness: 1.0, metalness: 0.0});

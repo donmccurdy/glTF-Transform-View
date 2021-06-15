@@ -1,7 +1,7 @@
-import { Property as PropertyDef } from '@gltf-transform/core';
+import type { Property as PropertyDef } from '@gltf-transform/core';
+import type { RenderPair } from '../RenderPair';
+import type { UpdateContext } from '../SyncContext';
 import { Observer, Subscription } from './Observer';
-import type { RenderPair } from './RenderPair';
-import { UpdateContext } from './SyncContext';
 
 export interface ListUpdate<T> {
 	remove?: T,
