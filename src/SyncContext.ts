@@ -1,13 +1,26 @@
 import { Accessor as AccessorDef, Mesh as MeshDef, Node as NodeDef, Primitive as PrimitiveDef, Property as PropertyDef, PropertyType, Scene as SceneDef } from '@gltf-transform/core';
-import { AccessorSyncPair, MeshSyncPair, NodeSyncPair, PrimitiveSyncPair, SceneSyncPair, SyncPair } from './SyncPair';
+import { AccessorSyncPair, MeshSyncPair, NodeSyncPair, PrimitiveSyncPair, RenderPair, SceneSyncPair } from './RenderPair';
 
-export class SyncContext {
-	private _sourceMap = new WeakMap<PropertyDef, SyncPair<PropertyDef, unknown>>();
-	private _targetMap = new WeakMap<object, SyncPair<PropertyDef, unknown>>();
+// export enum UpdateMask {
+// 	SHALLOW = 0x0000,
+// 	DEEP = 0x1000,
+// 	TEXTURE_DATA = 0x0100,
+// 	VERTEX_DATA = 0x00100,
+// }
 
-	public add(pair: SyncPair<PropertyDef, unknown>): void {
+// TODO(bug): Deep syncs are pretty messy... how do we prevent updating the same (reused) Mesh many times? Front recursion?
+export class UpdateContext {
+	public id = 1;
+	public deep = true;
+
+	private _pairs = new Set<RenderPair<PropertyDef, any>>();
+	private _sourceMap = new WeakMap<PropertyDef, RenderPair<PropertyDef, any>>();
+	// private _targetMap = new WeakMap<any, SyncPair<PropertyDef, any>>();
+
+	public add(pair: RenderPair<PropertyDef, any>): void {
+		this._pairs.add(pair);
 		this._sourceMap.set(pair.source, pair);
-		this._targetMap.set(pair.target as object, pair);
+		// this._targetMap.set(pair._target as object, pair);
 	}
 
 	public pair(source: null): null;
@@ -16,24 +29,30 @@ export class SyncContext {
 	public pair(source: NodeDef): NodeSyncPair;
 	public pair(source: PrimitiveDef): PrimitiveSyncPair;
 	public pair(source: SceneDef): SceneSyncPair;
-	public pair(source: PropertyDef): SyncPair<PropertyDef, unknown>;
-	public pair(source: PropertyDef | null): SyncPair<PropertyDef, unknown> | null {
+	public pair(source: PropertyDef): RenderPair<PropertyDef, any>;
+	public pair(source: PropertyDef | null): RenderPair<PropertyDef, any> | null {
 		if (!source) return null;
 		if (this._sourceMap.has(source)) return this._sourceMap.get(source)!;
 
 		switch (source.propertyType) {
 			case PropertyType.ACCESSOR:
-				return AccessorSyncPair.init(this, source as AccessorDef);
+				return new AccessorSyncPair(this, source as AccessorDef).update();
 			case PropertyType.MESH:
-				return MeshSyncPair.init(this, source as MeshDef);
+				return new MeshSyncPair(this, source as MeshDef).update();
 			case PropertyType.NODE:
-				return NodeSyncPair.init(this, source as NodeDef);
+				return new NodeSyncPair(this, source as NodeDef).update();
 			case PropertyType.PRIMITIVE:
-				return PrimitiveSyncPair.init(this, source as PrimitiveDef);
+				return new PrimitiveSyncPair(this, source as PrimitiveDef).update();
 			case PropertyType.SCENE:
-				return SceneSyncPair.init(this, source as SceneDef);
+				return new SceneSyncPair(this, source as SceneDef).update();
 			default:
 				throw new Error(`Unimplemented type: ${source.propertyType}`);
+		}
+	}
+
+	public dispose(): void {
+		for (const pair of this._pairs) {
+			pair.dispose();
 		}
 	}
 }

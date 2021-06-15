@@ -1,7 +1,7 @@
 import { Object3D } from 'three';
 import { Document, Property } from '@gltf-transform/core';
-import { SyncContext } from './SyncContext';
-import { SceneSyncPair } from './SyncPair';
+import { SceneSyncPair } from './RenderPair';
+import { UpdateContext } from './SyncContext';
 
 /**
  * Constructs a THREE.Object3D from a glTF-Transform Document, and maintains a
@@ -11,13 +11,13 @@ import { SceneSyncPair } from './SyncPair';
  */
 export class DocumentRenderer {
 	private _document: Document;
-	private _context: SyncContext;
+	private _context: UpdateContext;
 	private _scenePair: SceneSyncPair;
 
 	/** Constructs a new DocumentRenderer. */
 	constructor(document: Document) {
 		this._document = document;
-		this._context = new SyncContext();
+		this._context = new UpdateContext();
 		this._scenePair = this._context.pair(document.getRoot().listScenes().pop()!);
 	}
 
@@ -26,14 +26,14 @@ export class DocumentRenderer {
 	 * based on the first Scene in the Document; later scenes are ignored.
 	 */
 	public toObject3D(): Object3D {
-		return this._scenePair.target;
+		return this._scenePair.value;
 	}
 
 	/**
 	 * Performs a deep update of the entire scene.
 	 */
 	public updateAll(): void {
-		this._scenePair.sync(true);
+		this._scenePair.update();
 	}
 
 	/**
@@ -42,6 +42,11 @@ export class DocumentRenderer {
 	 * the resource dependency graph.
 	 */
 	public update(property: Property, deep = false): void {
-		this._context.pair(property).sync(deep);
+		this._context.pair(property).update();
+	}
+
+	/** Destroys the renderer and cleans up its resources. */
+	public dispose(): void {
+		this._context.dispose();
 	}
 }
