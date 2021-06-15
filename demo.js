@@ -57,12 +57,16 @@ new RGBELoader()
 
 const io = new WebIO();
 io.read('./assets/DamagedHelmet.glb').then(async (doc) => {
+	console.time('DocumentRenderer');
 	const documentRenderer = new DocumentRenderer(doc);
+	console.timeEnd('DocumentRenderer');
 	window.model = documentRenderer.toObject3D();
 	console.log(model);
 	model.position.x -= 1;
 
+	console.time('renderDocument');
 	window.model2 = await renderDocument(doc);
+	console.timeEnd('renderDocument');
 	console.log(model2);
 	model2.position.x += 1;
 
