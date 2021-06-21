@@ -10,7 +10,8 @@
   "license": "MIT",
   "private": false,
   "dependencies": {
-    "@gltf-transform/core": "^0.11.3",
+    "@gltf-transform/core": "^0.11.4",
+    "@gltf-transform/extensions": "^0.11.4",
     "@types/three": "^0.129.1",
     "three": "^0.129.0"
   },
