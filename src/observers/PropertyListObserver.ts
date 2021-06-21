@@ -1,5 +1,5 @@
 import type { Property as PropertyDef } from '@gltf-transform/core';
-import type { RenderPair } from '../RenderPair';
+import type { Renderer } from '../RenderPair';
 import type { UpdateContext } from '../SyncContext';
 import { Observer, Subscription } from './Observer';
 
@@ -26,8 +26,8 @@ export class PropertyListObserver<S extends PropertyDef, T> extends Observer<Lis
 
 			this._sources.delete(prevSource);
 			this.unsubscribeSource(prevSource);
-			const prevPair = context.pair(prevSource) as RenderPair<S, T>;
-			this.next({remove: prevPair.value}); // Emit removed item.
+			const prevRenderer = context.get(prevSource) as Renderer<S, T>;
+			this.next({remove: prevRenderer.value}); // Emit removed item.
 		}
 
 		// Add.
@@ -47,8 +47,8 @@ export class PropertyListObserver<S extends PropertyDef, T> extends Observer<Lis
 	}
 
 	protected subscribeSource(source: S) {
-		const pair = this._context.pair(source) as RenderPair<S, T>;
-		const unsubscribe = pair.subscribe((next, prev) => {
+		const renderer = this._context.get(source) as Renderer<S, T>;
+		const unsubscribe = renderer.subscribe((next, prev) => {
 			const update = {} as ListUpdate<T>;
 			if (prev) update.remove = prev;
 			if (next) update.add = next;

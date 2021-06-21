@@ -1,5 +1,5 @@
 import { Accessor as AccessorDef, Mesh as MeshDef, Node as NodeDef, Primitive as PrimitiveDef, Property as PropertyDef, PropertyType, Scene as SceneDef } from '@gltf-transform/core';
-import { AccessorSyncPair, MeshSyncPair, NodeSyncPair, PrimitiveSyncPair, RenderPair, SceneSyncPair } from './RenderPair';
+import { AccessorRenderer, MeshRenderer, NodeRenderer, PrimitiveRenderer, Renderer, SceneRenderer } from './RenderPair';
 
 // export enum UpdateMask {
 // 	SHALLOW = 0x0000,
@@ -13,45 +13,43 @@ export class UpdateContext {
 	public id = 1;
 	public deep = true;
 
-	private _pairs = new Set<RenderPair<PropertyDef, any>>();
-	private _sourceMap = new WeakMap<PropertyDef, RenderPair<PropertyDef, any>>();
-	// private _targetMap = new WeakMap<any, SyncPair<PropertyDef, any>>();
+	private renderers = new Set<Renderer<PropertyDef, any>>();
+	private _sourceMap = new WeakMap<PropertyDef, Renderer<PropertyDef, any>>();
 
-	public add(pair: RenderPair<PropertyDef, any>): void {
-		this._pairs.add(pair);
-		this._sourceMap.set(pair.source, pair);
-		// this._targetMap.set(pair._target as object, pair);
+	public add(renderer: Renderer<PropertyDef, any>): void {
+		this.renderers.add(renderer);
+		this._sourceMap.set(renderer.source, renderer);
 	}
 
-	public pair(source: null): null;
-	public pair(source: AccessorDef): AccessorSyncPair;
-	public pair(source: MeshDef): MeshSyncPair;
-	public pair(source: NodeDef): NodeSyncPair;
-	public pair(source: PrimitiveDef): PrimitiveSyncPair;
-	public pair(source: SceneDef): SceneSyncPair;
-	public pair(source: PropertyDef): RenderPair<PropertyDef, any>;
-	public pair(source: PropertyDef | null): RenderPair<PropertyDef, any> | null {
+	public get(source: null): null;
+	public get(source: AccessorDef): AccessorRenderer;
+	public get(source: MeshDef): MeshRenderer;
+	public get(source: NodeDef): NodeRenderer;
+	public get(source: PrimitiveDef): PrimitiveRenderer;
+	public get(source: SceneDef): SceneRenderer;
+	public get(source: PropertyDef): Renderer<PropertyDef, any>;
+	public get(source: PropertyDef | null): Renderer<PropertyDef, any> | null {
 		if (!source) return null;
 		if (this._sourceMap.has(source)) return this._sourceMap.get(source)!;
 
 		switch (source.propertyType) {
 			case PropertyType.ACCESSOR:
-				return new AccessorSyncPair(this, source as AccessorDef).update();
+				return new AccessorRenderer(this, source as AccessorDef).update();
 			case PropertyType.MESH:
-				return new MeshSyncPair(this, source as MeshDef).update();
+				return new MeshRenderer(this, source as MeshDef).update();
 			case PropertyType.NODE:
-				return new NodeSyncPair(this, source as NodeDef).update();
+				return new NodeRenderer(this, source as NodeDef).update();
 			case PropertyType.PRIMITIVE:
-				return new PrimitiveSyncPair(this, source as PrimitiveDef).update();
+				return new PrimitiveRenderer(this, source as PrimitiveDef).update();
 			case PropertyType.SCENE:
-				return new SceneSyncPair(this, source as SceneDef).update();
+				return new SceneRenderer(this, source as SceneDef).update();
 			default:
 				throw new Error(`Unimplemented type: ${source.propertyType}`);
 		}
 	}
 
 	public dispose(): void {
-		for (const pair of this._pairs) {
+		for (const pair of this.renderers) {
 			pair.dispose();
 		}
 	}

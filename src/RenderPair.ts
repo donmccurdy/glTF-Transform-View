@@ -9,10 +9,11 @@ import { eq, semanticToAttributeName } from './utils';
 
 const DEFAULT_MATERIAL = new MeshStandardMaterial({color: 0x808080, roughness: 1.0, metalness: 0.0});
 
+// TODO(cleanup): Naming. FooRenderer?
 // TODO(bug): Mapping may not be 1:1. Model as derived Observable? Examples:
 //   - Materials (temporary)
 //   - Textures (temporary)
-export abstract class RenderPair <Source extends PropertyDef, Target> extends Observer<Target> {
+export abstract class Renderer <Source extends PropertyDef, Target> extends Observer<Target> {
 	public source: Source;
 
 	protected _context: UpdateContext;
@@ -41,9 +42,9 @@ export abstract class RenderPair <Source extends PropertyDef, Target> extends Ob
 	public disposeTarget(target: Target) {}
 }
 
-export class AccessorSyncPair extends RenderPair<AccessorDef, BufferAttribute> {
+export class AccessorRenderer extends Renderer<AccessorDef, BufferAttribute> {
 	public constructor(context: UpdateContext, source: AccessorDef) {
-		super(context, source, AccessorSyncPair.createTarget(source));
+		super(context, source, AccessorRenderer.createTarget(source));
 	}
 
 	private static createTarget(source: AccessorDef): BufferAttribute {
@@ -61,7 +62,7 @@ export class AccessorSyncPair extends RenderPair<AccessorDef, BufferAttribute> {
 		if (source.getArray() !== target.array
 			|| source.getElementSize() !== target.itemSize
 			|| source.getNormalized() !== target.normalized) {
-			this.next(AccessorSyncPair.createTarget(source));
+			this.next(AccessorRenderer.createTarget(source));
 		} else {
 			// TODO(feat): Conditional?
 			target.needsUpdate = true;
@@ -74,7 +75,7 @@ export class AccessorSyncPair extends RenderPair<AccessorDef, BufferAttribute> {
 const _vec3: vec3 = [0, 0, 0];
 const _vec4: vec4 = [0, 0, 0, 0];
 
-export class SceneSyncPair extends RenderPair<SceneDef, Group> {
+export class SceneRenderer extends Renderer<SceneDef, Group> {
 	protected children = new PropertyListObserver<NodeDef, Object3D>(this._context);
 
 	public constructor(context: UpdateContext, source: SceneDef) {
@@ -104,7 +105,7 @@ export class SceneSyncPair extends RenderPair<SceneDef, Group> {
 	}
 }
 
-export class NodeSyncPair extends RenderPair<NodeDef, Object3D> {
+export class NodeRenderer extends Renderer<NodeDef, Object3D> {
 	protected children = new PropertyListObserver<NodeDef, Object3D>(this._context);
 	protected mesh = new PropertyObserver<MeshDef, Group>(this._context);
 
@@ -154,7 +155,7 @@ export class NodeSyncPair extends RenderPair<NodeDef, Object3D> {
 	}
 }
 
-export class MeshSyncPair extends RenderPair<MeshDef, Group> {
+export class MeshRenderer extends Renderer<MeshDef, Group> {
 	protected primitives = new PropertyListObserver<PrimitiveDef, Mesh>(this._context);
 
 	public constructor(context: UpdateContext, source: MeshDef) {
@@ -184,7 +185,7 @@ export class MeshSyncPair extends RenderPair<MeshDef, Group> {
 	}
 }
 
-export class PrimitiveSyncPair extends RenderPair<PrimitiveDef, Mesh> {
+export class PrimitiveRenderer extends Renderer<PrimitiveDef, Mesh> {
 	protected indices = new PropertyObserver<AccessorDef, BufferAttribute>(this._context);
 	protected attributes = new PropertyMapObserver<AccessorDef, BufferAttribute>(this._context);
 

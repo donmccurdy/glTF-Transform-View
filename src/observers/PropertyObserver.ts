@@ -22,8 +22,8 @@ export class PropertyObserver<S extends PropertyDef, T> extends Observer<T | nul
 			return;
 		}
 
-		const pair = this._context.pair(source);
-		this._unsubscribe = pair.subscribe((target: T | null) => {
+		const renderer = this._context.get(source);
+		this._unsubscribe = renderer.subscribe((target: T | null) => {
 			this.next(target);
 		});
 	}

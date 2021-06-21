@@ -1,5 +1,5 @@
 import type { Property as PropertyDef } from '@gltf-transform/core';
-import type { RenderPair } from '../RenderPair';
+import type { Renderer } from '../RenderPair';
 import type { UpdateContext } from '../SyncContext';
 import { Observer, Subscription } from './Observer';
 
@@ -44,8 +44,8 @@ export class PropertyMapObserver<S extends PropertyDef, T> extends Observer<MapU
 			this._sources[key] = nextSource;
 			this.subscribeSource(key, nextSource);
 
-			const nextPair = context.pair(nextSource) as RenderPair<S, T>;
-			this.next({key, value: nextPair.value}) // Emit added item.
+			const nextRenderer = context.get(nextSource) as Renderer<S, T>;
+			this.next({key, value: nextRenderer.value}) // Emit added item.
 		}
 	}
 
@@ -57,8 +57,8 @@ export class PropertyMapObserver<S extends PropertyDef, T> extends Observer<MapU
 	}
 
 	protected subscribeSource(key: string, source: S) {
-		const pair = this._context.pair(source) as RenderPair<S, T>;
-		const unsubscribe = pair.subscribe((next) => this.next({key, value: next}));
+		const renderer = this._context.get(source) as Renderer<S, T>;
+		const unsubscribe = renderer.subscribe((next) => this.next({key, value: next}));
 		this._unsubscribeMap.set(source, unsubscribe);
 	}
 
