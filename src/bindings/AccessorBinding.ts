@@ -1,11 +1,11 @@
 import { BufferAttribute } from 'three';
 import { Accessor as AccessorDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
-import { Renderer } from './Renderer';
+import { Binding } from './Binding';
 
-export class AccessorRenderer extends Renderer<AccessorDef, BufferAttribute> {
+export class AccessorBinding extends Binding<AccessorDef, BufferAttribute> {
 	public constructor(context: UpdateContext, source: AccessorDef) {
-		super(context, source, AccessorRenderer.createTarget(source));
+		super(context, source, AccessorBinding.createTarget(source));
 	}
 
 	private static createTarget(source: AccessorDef): BufferAttribute {
@@ -23,7 +23,7 @@ export class AccessorRenderer extends Renderer<AccessorDef, BufferAttribute> {
 		if (source.getArray() !== target.array
 			|| source.getElementSize() !== target.itemSize
 			|| source.getNormalized() !== target.normalized) {
-			this.next(AccessorRenderer.createTarget(source));
+			this.next(AccessorBinding.createTarget(source));
 		} else {
 			// TODO(feat): Conditional?
 			target.needsUpdate = true;

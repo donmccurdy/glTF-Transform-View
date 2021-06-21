@@ -1,6 +1,6 @@
 import type { Property as PropertyDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
-import type { Renderer } from '../renderers';
+import type { Binding } from '../bindings';
 import { Observer, Subscription } from './Observer';
 
 export interface MapUpdate<K, V> {
@@ -44,7 +44,7 @@ export class PropertyMapObserver<S extends PropertyDef, T> extends Observer<MapU
 			this._sources[key] = nextSource;
 			this.subscribeSource(key, nextSource);
 
-			const nextRenderer = context.get(nextSource) as Renderer<S, T>;
+			const nextRenderer = context.bind(nextSource) as Binding<S, T>;
 			this.next({key, value: nextRenderer.value}) // Emit added item.
 		}
 	}
@@ -57,7 +57,7 @@ export class PropertyMapObserver<S extends PropertyDef, T> extends Observer<MapU
 	}
 
 	protected subscribeSource(key: string, source: S) {
-		const renderer = this._context.get(source) as Renderer<S, T>;
+		const renderer = this._context.bind(source) as Binding<S, T>;
 		const unsubscribe = renderer.subscribe((next) => this.next({key, value: next}));
 		this._unsubscribeMap.set(source, unsubscribe);
 	}

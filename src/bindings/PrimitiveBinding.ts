@@ -2,7 +2,7 @@ import { BufferAttribute, BufferGeometry, Material, Mesh, MeshStandardMaterial }
 import { Accessor as AccessorDef, Material as MaterialDef, Primitive as PrimitiveDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
 import { PropertyMapObserver, PropertyObserver } from '../observers';
-import { Renderer } from './Renderer';
+import { Binding } from './Binding';
 
 // TODO(cleanup): Use glTF spec defaults, and move this constant somewhere else.
 const DEFAULT_MATERIAL = new MeshStandardMaterial({color: 0x808080, roughness: 1.0, metalness: 0.0});
@@ -21,7 +21,7 @@ function semanticToAttributeName(semantic: string): string {
 	}
 }
 
-export class PrimitiveRenderer extends Renderer<PrimitiveDef, Mesh> {
+export class PrimitiveBinding extends Binding<PrimitiveDef, Mesh> {
 	protected material = new PropertyObserver<MaterialDef, Material>(this._context);
 	protected indices = new PropertyObserver<AccessorDef, BufferAttribute>(this._context);
 	protected attributes = new PropertyMapObserver<AccessorDef, BufferAttribute>(this._context);

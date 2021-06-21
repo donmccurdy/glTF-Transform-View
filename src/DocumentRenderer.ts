@@ -1,7 +1,7 @@
 import { Object3D } from 'three';
 import { Document, Property } from '@gltf-transform/core';
 import { UpdateContext } from './UpdateContext';
-import { SceneRenderer } from './renderers';
+import { SceneBinding } from './bindings';
 
 /**
  * Constructs a THREE.Object3D from a glTF-Transform Document, and maintains a
@@ -12,13 +12,13 @@ import { SceneRenderer } from './renderers';
 export class DocumentRenderer {
 	private _document: Document;
 	private _context: UpdateContext;
-	private _sceneRenderer: SceneRenderer;
+	private _sceneBinding: SceneBinding;
 
 	/** Constructs a new DocumentRenderer. */
 	constructor(document: Document) {
 		this._document = document;
 		this._context = new UpdateContext();
-		this._sceneRenderer = this._context.get(document.getRoot().listScenes().pop()!);
+		this._sceneBinding = this._context.bind(document.getRoot().listScenes().pop()!);
 	}
 
 	/**
@@ -26,7 +26,7 @@ export class DocumentRenderer {
 	 * based on the first Scene in the Document; later scenes are ignored.
 	 */
 	public toObject3D(): Object3D {
-		return this._sceneRenderer.value;
+		return this._sceneBinding.value;
 	}
 
 	/**
@@ -34,7 +34,7 @@ export class DocumentRenderer {
 	 */
 	public updateAll(): void {
 		// TODO(bug): Deep updates not connected...
-		this._sceneRenderer.update();
+		this._sceneBinding.update();
 	}
 
 	/**
@@ -43,7 +43,7 @@ export class DocumentRenderer {
 	 * the resource dependency graph.
 	 */
 	public update(property: Property, deep = false): void {
-		this._context.get(property).update();
+		this._context.bind(property).update();
 	}
 
 	/** Destroys the renderer and cleans up its resources. */

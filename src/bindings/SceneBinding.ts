@@ -2,9 +2,9 @@ import { Group, Object3D } from 'three';
 import { Node as NodeDef, Scene as SceneDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
 import { PropertyListObserver } from '../observers';
-import { Renderer } from './Renderer';
+import { Binding } from './Binding';
 
-export class SceneRenderer extends Renderer<SceneDef, Group> {
+export class SceneBinding extends Binding<SceneDef, Group> {
 	protected children = new PropertyListObserver<NodeDef, Object3D>(this._context);
 
 	public constructor(context: UpdateContext, source: SceneDef) {

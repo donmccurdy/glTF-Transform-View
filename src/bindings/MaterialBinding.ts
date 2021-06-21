@@ -4,7 +4,7 @@ import { Clearcoat, Transmission } from '@gltf-transform/extensions';
 import type { UpdateContext } from '../UpdateContext';
 import { PropertyObserver, Subscription } from '../observers';
 import { eq } from '../utils';
-import { Renderer } from './Renderer';
+import { Binding } from './Binding';
 
 const _vec3: vec3 = [0, 0, 0];
 
@@ -29,7 +29,7 @@ enum ShadingModel {
 	PHYSICAL = 2,
 }
 
-export class MaterialRenderer extends Renderer<MaterialDef, Material> {
+export class MaterialBinding extends Binding<MaterialDef, Material> {
 	protected baseColorTexture = new PropertyObserver<TextureDef, Texture>(this._context);
 	protected emissiveTexture = new PropertyObserver<TextureDef, Texture>(this._context);
 	protected normalTexture = new PropertyObserver<TextureDef, Texture>(this._context);
@@ -43,7 +43,7 @@ export class MaterialRenderer extends Renderer<MaterialDef, Material> {
 	protected transmissionTexture = new PropertyObserver<TextureDef, Texture>(this._context);
 
 	public constructor(context: UpdateContext, source: MaterialDef) {
-		super(context, source, MaterialRenderer.createTarget(source));
+		super(context, source, MaterialBinding.createTarget(source));
 
 		this.bindTexture(['map'], this.baseColorTexture, source.getBaseColorTextureInfo()!, sRGBEncoding);
 		this.bindTexture(['emissiveMap'], this.emissiveTexture, source.getEmissiveTextureInfo()!, sRGBEncoding);
@@ -133,11 +133,11 @@ export class MaterialRenderer extends Renderer<MaterialDef, Material> {
 		const source = this.source;
 		let target = this.value;
 
-		const shadingModel = MaterialRenderer.getShadingModel(source);
+		const shadingModel = MaterialBinding.getShadingModel(source);
 		if (shadingModel === ShadingModel.UNLIT && !(target instanceof MeshBasicMaterial)
 			|| shadingModel === ShadingModel.STANDARD && !(target instanceof MeshStandardMaterial)
 			|| shadingModel === ShadingModel.PHYSICAL && !(target instanceof MeshPhysicalMaterial)) {
-			const nextTarget = MaterialRenderer.createTarget(source);
+			const nextTarget = MaterialBinding.createTarget(source);
 			this.updateTargetTextures(nextTarget as unknown as MeshStandardMaterial);
 			this.next(nextTarget);
 			this.disposeTarget(target);

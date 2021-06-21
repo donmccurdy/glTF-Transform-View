@@ -3,12 +3,12 @@ import { Mesh as MeshDef, Node as NodeDef, vec3, vec4 } from '@gltf-transform/co
 import type { UpdateContext } from '../UpdateContext';
 import { PropertyListObserver, PropertyObserver } from '../observers';
 import { eq } from '../utils';
-import { Renderer } from './Renderer';
+import { Binding } from './Binding';
 
 const _vec3: vec3 = [0, 0, 0];
 const _vec4: vec4 = [0, 0, 0, 0];
 
-export class NodeRenderer extends Renderer<NodeDef, Object3D> {
+export class NodeBinding extends Binding<NodeDef, Object3D> {
 	protected children = new PropertyListObserver<NodeDef, Object3D>(this._context);
 	protected mesh = new PropertyObserver<MeshDef, Group>(this._context);
 

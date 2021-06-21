@@ -1,6 +1,6 @@
 import type { Property as PropertyDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
-import type { Renderer } from '../renderers';
+import type { Binding } from '../bindings';
 import { Observer, Subscription } from './Observer';
 
 export interface ListUpdate<T> {
@@ -26,7 +26,7 @@ export class PropertyListObserver<S extends PropertyDef, T> extends Observer<Lis
 
 			this._sources.delete(prevSource);
 			this.unsubscribeSource(prevSource);
-			const prevRenderer = context.get(prevSource) as Renderer<S, T>;
+			const prevRenderer = context.bind(prevSource) as Binding<S, T>;
 			this.next({remove: prevRenderer.value}); // Emit removed item.
 		}
 
@@ -47,7 +47,7 @@ export class PropertyListObserver<S extends PropertyDef, T> extends Observer<Lis
 	}
 
 	protected subscribeSource(source: S) {
-		const renderer = this._context.get(source) as Renderer<S, T>;
+		const renderer = this._context.bind(source) as Binding<S, T>;
 		const unsubscribe = renderer.subscribe((next, prev) => {
 			const update = {} as ListUpdate<T>;
 			if (prev) update.remove = prev;

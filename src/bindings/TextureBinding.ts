@@ -1,9 +1,9 @@
 import { Texture } from 'three';
 import { Texture as TextureDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
-import { Renderer } from './Renderer';
+import { Binding } from './Binding';
 
-export class TextureRenderer extends Renderer<TextureDef, Texture> {
+export class TextureBinding extends Binding<TextureDef, Texture> {
 	private _image: ArrayBuffer | null = null;
 	private _imageEl: HTMLImageElement | null = null;
 	private _imageURL = '';

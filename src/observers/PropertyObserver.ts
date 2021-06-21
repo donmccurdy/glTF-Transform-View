@@ -22,7 +22,7 @@ export class PropertyObserver<S extends PropertyDef, T> extends Observer<T | nul
 			return;
 		}
 
-		const renderer = this._context.get(source);
+		const renderer = this._context.bind(source);
 		this._unsubscribe = renderer.subscribe((target: T | null) => {
 			this.next(target);
 		});

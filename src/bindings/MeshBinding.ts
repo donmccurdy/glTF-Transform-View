@@ -2,9 +2,9 @@ import { Group, Mesh } from 'three';
 import { Mesh as MeshDef, Primitive as PrimitiveDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
 import { PropertyListObserver } from '../observers';
-import { Renderer } from './Renderer';
+import { Binding } from './Binding';
 
-export class MeshRenderer extends Renderer<MeshDef, Group> {
+export class MeshBinding extends Binding<MeshDef, Group> {
 	protected primitives = new PropertyListObserver<PrimitiveDef, Mesh>(this._context);
 
 	public constructor(context: UpdateContext, source: MeshDef) {
