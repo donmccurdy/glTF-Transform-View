@@ -2,7 +2,7 @@ import { ClampToEdgeWrapping, DoubleSide, FrontSide, LinearEncoding, LinearFilte
 import { Material as MaterialDef, Texture as TextureDef, TextureInfo as TextureInfoDef, vec3 } from '@gltf-transform/core';
 import { Clearcoat, Transmission } from '@gltf-transform/extensions';
 import type { UpdateContext } from '../UpdateContext';
-import { PropertyObserver } from '../observers';
+import { PropertyObserver, Subscription } from '../observers';
 import { eq } from '../utils';
 import { Renderer } from './Renderer';
 
@@ -45,65 +45,35 @@ export class MaterialRenderer extends Renderer<MaterialDef, Material> {
 	public constructor(context: UpdateContext, source: MaterialDef) {
 		super(context, source, MaterialRenderer.createTarget(source));
 
-		const target = this.value as MeshStandardMaterial;
-
-		this.baseColorTexture.subscribe((texture) => {
-			if (!texture) { target.map = null; return; }
-			if (target.map) target.map.dispose();
-			target.map = this.configureTexture(texture, source.getBaseColorTextureInfo()!, sRGBEncoding);
-		});
-		this.emissiveTexture.subscribe((texture) => {
-			if (!texture) { target.map = null; return; }
-			if (target.emissiveMap) target.emissiveMap.dispose();
-			target.emissiveMap = this.configureTexture(texture, source.getEmissiveTextureInfo()!, sRGBEncoding);
-		});
-		this.normalTexture.subscribe((texture) => {
-			if (!texture) { target.map = null; return; }
-			if (target.normalMap) target.normalMap.dispose();
-			target.normalMap = this.configureTexture(texture, source.getNormalTextureInfo()!, LinearEncoding);
-		});
-		this.occlusionTexture.subscribe((texture) => {
-			if (!texture) { target.map = null; return; }
-			if (target.aoMap) target.aoMap.dispose();
-			target.aoMap = this.configureTexture(texture, source.getOcclusionTextureInfo()!, LinearEncoding);
-		});
-		this.metallicRoughnessTexture.subscribe((texture) => {
-			if (!texture) { target.map = null; return; }
-			if (target.metalnessMap) target.metalnessMap.dispose();
-			texture = this.configureTexture(texture, source.getMetallicRoughnessTextureInfo()!, LinearEncoding);
-			target.metalnessMap = target.roughnessMap = texture;
-		});
+		this.bindTexture(['map'], this.baseColorTexture, source.getBaseColorTextureInfo()!, sRGBEncoding);
+		this.bindTexture(['emissiveMap'], this.emissiveTexture, source.getEmissiveTextureInfo()!, sRGBEncoding);
+		this.bindTexture(['normalMap'], this.normalTexture, source.getNormalTextureInfo()!, LinearEncoding);
+		this.bindTexture(['aoMap'], this.occlusionTexture, source.getOcclusionTextureInfo()!, LinearEncoding);
+		this.bindTexture(['roughnessMap', 'metalnessMap'], this.metallicRoughnessTexture, source.getMetallicRoughnessTextureInfo()!, LinearEncoding);
 
 		// KHR_materials_clearcoat
-		this.clearcoatTexture.subscribe((texture) => {
-			let target = this.value as MeshPhysicalMaterial;
-			if (!texture) { target.clearcoatMap = null; return; }
-			if (target.clearcoatMap) target.clearcoatMap.dispose();
-			const clearcoat = source.getExtension<Clearcoat>('KHR_materials_clearcoat')!;
-			target.clearcoatMap = this.configureTexture(texture, clearcoat.getClearcoatTextureInfo()!, LinearEncoding);
-		});
-		this.clearcoatRoughnessTexture.subscribe((texture) => {
-			let target = this.value as MeshPhysicalMaterial;
-			if (!texture) { target.clearcoatRoughnessMap = null; return; }
-			if (target.clearcoatRoughnessMap) target.clearcoatRoughnessMap.dispose();
-			const clearcoat = source.getExtension<Clearcoat>('KHR_materials_clearcoat')!;
-			target.clearcoatRoughnessMap = this.configureTexture(texture, clearcoat.getClearcoatRoughnessTextureInfo()!, LinearEncoding);
-		});
-		this.clearcoatNormalTexture.subscribe((texture) => {
-			let target = this.value as MeshPhysicalMaterial;
-			if (!texture) { target.clearcoatNormalMap = null; return; }
-			if (target.clearcoatNormalMap) target.clearcoatNormalMap.dispose();
-			const clearcoat = source.getExtension<Clearcoat>('KHR_materials_clearcoat')!;
-			target.clearcoatNormalMap = this.configureTexture(texture, clearcoat.getClearcoatNormalTextureInfo()!, LinearEncoding);
-		});
+		// const clearcoat = source.getExtension<Clearcoat>('KHR_materials_clearcoat')!;
+		// this.bindTexture(['clearcoatMap'], this.clearcoatTexture, clearcoat.getClearcoatTextureInfo()!, LinearEncoding);
+		// this.bindTexture(['clearcoatRoughnessMap'], this.clearcoatRoughnessTexture, clearcoat.getClearcoatRoughnessTextureInfo()!, LinearEncoding);
+		// this.bindTexture(['clearcoatNormalMap'], this.clearcoatNormalTexture, clearcoat.getClearcoatNormalTextureInfo()!, LinearEncoding);
 
 		// KHR_materials_transmission
-		this.transmissionTexture.subscribe((texture) => {
-			let target = this.value as MeshPhysicalMaterial;
-			if (!texture) { target.transmissionMap = null; return; }
-			if (target.transmissionMap) target.transmissionMap.dispose();
-			const transmission = source.getExtension<Transmission>('KHR_materials_transmission')!;
-			target.transmissionMap = this.configureTexture(texture, transmission.getTransmissionTextureInfo()!, LinearEncoding);
+		// const transmission = source.getExtension<Transmission>('KHR_materials_transmission')!;
+		// this.bindTexture(['transmissionMap'], this.transmissionTexture, transmission.getTransmissionTextureInfo()!, LinearEncoding);
+	}
+
+	private bindTexture(
+			maps: string[],
+			observer: PropertyObserver<TextureDef, Texture>,
+			textureInfo: TextureInfoDef,
+			encoding: TextureEncoding): Subscription {
+		return observer.subscribe((texture) => {
+			const material = this.value as any;
+			texture = texture ? this.configureTexture(texture, textureInfo, encoding) : null;
+			for (const map of maps) {
+				if (material[map] && material[map] !== texture) material[map].dispose();
+				material[map] = texture;
+			}
 		});
 	}
 

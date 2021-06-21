@@ -17,6 +17,8 @@ export class TextureRenderer extends Renderer<TextureDef, Texture> {
 		const source = this.source;
 		const target = this.value;
 
+		// TODO(bug): "THREE.WebGLRenderer: Texture marked for update but image is incomplete"
+		// TODO(bug): ^x18 (!)
 		if (source.getImage() !== this._image) {
 			this._image = source.getImage() as ArrayBuffer;
 			const blob = new Blob([this._image], {type: source.getMimeType()});
