@@ -1,6 +1,6 @@
 import type { Property as PropertyDef } from '@gltf-transform/core';
-import type { Renderer } from '../RenderPair';
-import type { UpdateContext } from '../SyncContext';
+import type { UpdateContext } from '../UpdateContext';
+import type { Renderer } from '../renderers';
 import { Observer, Subscription } from './Observer';
 
 export interface MapUpdate<K, V> {

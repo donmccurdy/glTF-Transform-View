@@ -1,7 +1,7 @@
 import { Object3D } from 'three';
 import { Document, Property } from '@gltf-transform/core';
-import { SceneRenderer } from './RenderPair';
-import { UpdateContext } from './SyncContext';
+import { UpdateContext } from './UpdateContext';
+import { SceneRenderer } from './renderers';
 
 /**
  * Constructs a THREE.Object3D from a glTF-Transform Document, and maintains a

@@ -1,5 +1,5 @@
 import { Accessor as AccessorDef, Mesh as MeshDef, Node as NodeDef, Primitive as PrimitiveDef, Property as PropertyDef, PropertyType, Scene as SceneDef } from '@gltf-transform/core';
-import { AccessorRenderer, MeshRenderer, NodeRenderer, PrimitiveRenderer, Renderer, SceneRenderer } from './RenderPair';
+import { AccessorRenderer, MeshRenderer, NodeRenderer, PrimitiveRenderer, Renderer, SceneRenderer } from './renderers';
 
 // export enum UpdateMask {
 // 	SHALLOW = 0x0000,

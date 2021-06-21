@@ -1,4 +1,4 @@
-import type { UpdateContext } from 'SyncContext';
+import type { UpdateContext } from 'UpdateContext';
 import type { Property as PropertyDef } from '@gltf-transform/core';
 import { Observer, Subscription } from './Observer';
 
