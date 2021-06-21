@@ -21,6 +21,9 @@ const WEBGL_WRAPPINGS: Record<number, Wrapping> = {
 	10497: RepeatWrapping
 };
 
+// TODO(feat): KHR_materials_unlit
+// TODO(feat): KHR_materials_clearcoat
+// TODO(feat): KHR_materials_transmission
 export class MaterialRenderer extends Renderer<MaterialDef, Material> {
 	protected baseColorTexture = new PropertyObserver<TextureDef, Texture>(this._context);
 	protected emissiveTexture = new PropertyObserver<TextureDef, Texture>(this._context);
@@ -31,8 +34,8 @@ export class MaterialRenderer extends Renderer<MaterialDef, Material> {
 	public constructor(context: UpdateContext, source: MaterialDef) {
 		super(context, source, new MeshStandardMaterial());
 
-		// TODO(bug): Resolve... min/mag filter, transform, colorspace.
 		const target = this.value as MeshStandardMaterial;
+
 		this.baseColorTexture.subscribe((texture) => {
 			if (!texture) { target.map = null; return; }
 			target.map = this.configureTexture(texture, source.getBaseColorTextureInfo()!, sRGBEncoding);
