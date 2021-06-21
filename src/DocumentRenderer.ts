@@ -33,6 +33,7 @@ export class DocumentRenderer {
 	 * Performs a deep update of the entire scene.
 	 */
 	public updateAll(): void {
+		// TODO(bug): Deep updates not connected...
 		this._sceneRenderer.update();
 	}
 

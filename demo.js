@@ -2,7 +2,7 @@ import { ACESFilmicToneMapping, AmbientLight, DirectionalLight, PMREMGenerator, 
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import { WebIO } from '@gltf-transform/core';
-import { DocumentRenderer, render as renderDocument } from './';
+import { DocumentRenderer } from './';
 
 const renderer = new WebGLRenderer({antialias: true});
 renderer.setPixelRatio( window.devicePixelRatio );
@@ -49,35 +49,68 @@ new RGBELoader()
 
 		texture.dispose();
 		pmremGenerator.dispose();
-
-		render();
 	} );
 
 //
 
+let mat;
+let needsUpdate = false;
+let documentRenderer;
+
 const io = new WebIO();
 io.read('./assets/DamagedHelmet.glb').then(async (doc) => {
-	console.time('DocumentRenderer');
-	const documentRenderer = new DocumentRenderer(doc);
-	console.timeEnd('DocumentRenderer');
-	window.model = documentRenderer.toObject3D();
-	console.log(model);
-	model.position.x -= 1;
+	console.time('DocumentRenderer::init');
+	documentRenderer = new DocumentRenderer(doc);
+	console.timeEnd('DocumentRenderer::init');
 
-	console.time('renderDocument');
-	window.model2 = await renderDocument(doc);
-	console.timeEnd('renderDocument');
-	console.log(model2);
-	model2.position.x += 1;
+	window.doc = doc;
+	window.model = documentRenderer.toObject3D();
 
 	scene.add(model);
-	scene.add(model2);
-	render();
+	animate();
+
+	// GUI - Testing.
+	const params = {
+		baseColor: 0x808080,
+		alpha: 1,
+		alphaMode: 'OPAQUE',
+		emissive: 0x000000,
+		roughness: 1,
+		metalness: 0
+	};
+	const pane = new Tweakpane.Pane({title: 'DamagedHelmet.glb'});
+	mat = doc.getRoot().listMaterials().pop();
+	pane.addInput(params, 'baseColor', {view: 'color'})
+		.on('change', () => mat.setBaseColorHex(params.baseColor));
+	pane.addInput(params, 'alpha', {min: 0, max: 1})
+		.on('change', () => mat.setAlpha(params.alpha));
+	pane.addInput(params, 'alphaMode', {options: {opaque: 'OPAQUE', blend: 'BLEND', mask: 'MASK'}})
+		.on('change', () => mat.setAlphaMode(params.alphaMode));
+	pane.addInput(params, 'emissive', {view: 'color'})
+		.on('change', () => mat.setEmissiveHex(params.emissive));
+	pane.addInput(params, 'roughness', {min: 0, max: 1})
+		.on('change', () => mat.setRoughnessFactor(params.roughness));
+	pane.addInput(params, 'metalness', {min: 0, max: 1})
+		.on('change', () => mat.setMetallicFactor(params.metalness));
+	pane.on('change', () => (needsUpdate = true));
 });
 
 //
 
-function render () {
+function animate() {
+	requestAnimationFrame(animate);
+
+	if (needsUpdate) {
+		console.time('DocumentRenderer::updateAll');
+		documentRenderer.update(mat);
+		console.timeEnd('DocumentRenderer::updateAll');
+		needsUpdate = false;
+	}
+
+	render();
+}
+
+function render() {
 	renderer.render(scene, camera);
 }
 

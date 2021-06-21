@@ -1,5 +1,5 @@
-import { Accessor as AccessorDef, Mesh as MeshDef, Node as NodeDef, Primitive as PrimitiveDef, Property as PropertyDef, PropertyType, Scene as SceneDef } from '@gltf-transform/core';
-import { AccessorRenderer, MeshRenderer, NodeRenderer, PrimitiveRenderer, Renderer, SceneRenderer } from './renderers';
+import { Accessor as AccessorDef, Material as MaterialDef, Mesh as MeshDef, Node as NodeDef, Primitive as PrimitiveDef, Property as PropertyDef, PropertyType, Scene as SceneDef, Texture as TextureDef } from '@gltf-transform/core';
+import { AccessorRenderer, MaterialRenderer, MeshRenderer, NodeRenderer, PrimitiveRenderer, Renderer, SceneRenderer, TextureRenderer } from './renderers';
 
 // export enum UpdateMask {
 // 	SHALLOW = 0x0000,
@@ -23,6 +23,7 @@ export class UpdateContext {
 
 	public get(source: null): null;
 	public get(source: AccessorDef): AccessorRenderer;
+	public get(source: MaterialDef): MaterialRenderer;
 	public get(source: MeshDef): MeshRenderer;
 	public get(source: NodeDef): NodeRenderer;
 	public get(source: PrimitiveDef): PrimitiveRenderer;
@@ -35,6 +36,8 @@ export class UpdateContext {
 		switch (source.propertyType) {
 			case PropertyType.ACCESSOR:
 				return new AccessorRenderer(this, source as AccessorDef).update();
+			case PropertyType.MATERIAL:
+				return new MaterialRenderer(this, source as MaterialDef).update();
 			case PropertyType.MESH:
 				return new MeshRenderer(this, source as MeshDef).update();
 			case PropertyType.NODE:
@@ -43,6 +46,8 @@ export class UpdateContext {
 				return new PrimitiveRenderer(this, source as PrimitiveDef).update();
 			case PropertyType.SCENE:
 				return new SceneRenderer(this, source as SceneDef).update();
+			case PropertyType.TEXTURE:
+				return new TextureRenderer(this, source as TextureDef).update();
 			default:
 				throw new Error(`Unimplemented type: ${source.propertyType}`);
 		}
