@@ -29,4 +29,12 @@ export class TextureRenderer extends Renderer<TextureDef, Texture> {
 
 		return this;
 	}
+
+	public disposeTarget(target: Texture): void {
+		target.dispose();
+	}
+
+	public dispose() {
+		super.dispose();
+	}
 }

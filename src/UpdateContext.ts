@@ -21,6 +21,7 @@ export class UpdateContext {
 		this._sourceMap.set(renderer.source, renderer);
 	}
 
+	// TODO(cleanup): .bind() -> PropertyBinding?
 	public get(source: null): null;
 	public get(source: AccessorDef): AccessorRenderer;
 	public get(source: MaterialDef): MaterialRenderer;
@@ -54,8 +55,8 @@ export class UpdateContext {
 	}
 
 	public dispose(): void {
-		for (const pair of this.renderers) {
-			pair.dispose();
+		for (const renderer of this.renderers) {
+			renderer.dispose();
 		}
 	}
 }

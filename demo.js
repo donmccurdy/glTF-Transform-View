@@ -2,6 +2,7 @@ import { ACESFilmicToneMapping, AmbientLight, DirectionalLight, PMREMGenerator, 
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import { WebIO } from '@gltf-transform/core';
+import { MaterialsClearcoat, MaterialsUnlit } from '@gltf-transform/extensions';
 import { DocumentRenderer } from './';
 
 const renderer = new WebGLRenderer({antialias: true});
@@ -76,7 +77,8 @@ io.read('./assets/DamagedHelmet.glb').then(async (doc) => {
 		alphaMode: 'OPAQUE',
 		emissive: 0x000000,
 		roughness: 1,
-		metalness: 0
+		metalness: 0,
+		model: 'STANDARD'
 	};
 	const pane = new Tweakpane.Pane({title: 'DamagedHelmet.glb'});
 	mat = doc.getRoot().listMaterials().pop();
@@ -92,6 +94,26 @@ io.read('./assets/DamagedHelmet.glb').then(async (doc) => {
 		.on('change', () => mat.setRoughnessFactor(params.roughness));
 	pane.addInput(params, 'metalness', {min: 0, max: 1})
 		.on('change', () => mat.setMetallicFactor(params.metalness));
+	pane.addInput(params, 'model', {options: {standard: 'STANDARD', unlit: 'UNLIT', physical: 'PHYSICAL'}})
+		.on('change', () => {
+			mat.listExtensions().forEach((ext) => ext.dispose());
+			switch (params.model) {
+				case 'UNLIT':
+					mat.setExtension(
+						'KHR_materials_unlit',
+						doc.createExtension(MaterialsUnlit).createUnlit()
+					);
+					break;
+				case 'PHYSICAL':
+					mat.setExtension(
+						'KHR_materials_clearcoat',
+						doc.createExtension(MaterialsClearcoat)
+							.createClearcoat()
+								.setClearcoatFactor(1)
+					);
+					break;
+			}
+		});
 	pane.on('change', () => (needsUpdate = true));
 });
 
