@@ -1,36 +1,37 @@
 # @gltf-transform/render
 
-> _**IN DEVELOPMENT:** This project is currently in development, and missing key functionality.
+> _**IN DEVELOPMENT:** This project is currently in development, and missing key functionality._
 
 Syncs a glTF-Transform [Document](https://gltf-transform.donmccurdy.com/classes/document.html)
-with three.js / WebGL, keeping the three.js scene graph in sync over time as
-changes are made to the Document.
+with a [three.js](https://threejs.org/) scene graph, keeping three.js in sync
+over time as changes are made to the Document. When changes are complete,
+export the exact glTF model — losslessly — with the
+[glTF-Transform I/O](https://gltf-transform.donmccurdy.com/classes/core.platformio.html) tools.
 
-three.js can render glTF 2.0 files out of the box, with
-[THREE.GLTFLoader](https://threejs.org/docs/index.html#examples/en/loaders/GLTFLoader),
-which is both more efficient (it will parse a glTF file faster) and better
-tested (it supports many extensions) compared to this package. However, for
-applications that need to preview the effect of changes to a glTF 2.0 file,
+three.js can render glTF 2.0 files without this package. However, for
+web applications that need to preview repeated changes to a glTF 2.0 file,
 existing options have major limitations:
 
-- **A.** Load with THREE.GLTFLoader, apply changes in three.js, export with
-  THREE.GLTFExporter. For a small set of closely-controlled assets, this might
-  be a good workflow. However, GLTFExporter<->GLTFLoader round-trip loading is
-  lossy, and doesn't support all features of glTF.
-- **B.** Apply changes in glTF-Transform, export with WebIO after each change,
-  and load with THREE.GLTFLoader. This workflow is accurate, but slow — even a
-  simple change to a material parameter requires reloading the entire file.
+- **A.** Load with [THREE.GLTFLoader](https://threejs.org/docs/index.html#examples/en/loaders/GLTFLoader),
+  apply changes in three.js, export with [THREE.GLTFExporter](https://threejs.org/docs/#examples/en/exporters/GLTFExporter).
+  For a small set of closely-controlled assets, this might
+  be a good workflow. However, THREE.GLTFExporter↔THREE.GLTFLoader round-trip
+  loading is lossy, and doesn't support all features of glTF.
+- **B.** Apply changes in glTF-Transform, export with [WebIO](https://gltf-transform.donmccurdy.com/classes/core.webio.html)
+  after each change, and load with THREE.GLTFLoader. This workflow is accurate,
+  but slow to repeat — even a simple change to a material parameter requires
+  reloading the entire file.
 
 The goal of `@gltf-transform/render` is to provide a tighter integration
-between a Document and a three.js scene graph, so that changes to the Document
+between a glTF Document and a three.js scene graph, so that changes to the Document
 are reflected quickly in the rendered result. For example, changes to a
 [Material](https://gltf-transform.donmccurdy.com/classes/material.html)
-can be applied instantly. The cost of this integration is a somewhat slower
-first-time load — interleaved accessors are unpacked, and more intermediate
-structures are created — so the project is not meant to replace
-THREE.GLTFLoader for most users.
+can be applied instantly. In addition, any features that three.js doesn't
+support won't be lost — they just aren't rendered in the preview. The cost of
+this integration is a somewhat slower first-time load, so the project is not
+meant to replace THREE.GLTFLoader for most users.
 
-The workflow will:
+Basic workflow:
 
 1. Load a glTF Document with glTF-Transform API.
 2. Construct initial three.js scene state.
