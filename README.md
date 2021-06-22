@@ -40,7 +40,7 @@ Basic workflow:
 
  ## Quickstart
 
-```
+```shell
 # Build source.
 yarn watch
 
@@ -51,7 +51,7 @@ parcel index.html
 
 ## API
 
-```
+```typescript
 import { DocumentRenderer } from '@gltf-transform/render';
 import { WebIO } from '@gltf-transform/core';
 import { KHRONOS_EXTENSIONS } from '@gltf-transform/extensions';
