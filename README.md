@@ -91,9 +91,16 @@ function animate () {
 ### Extensions Supported
 
 - [x] KHR_draco_mesh_compression
+- [ ] KHR_lights_punctual
 - [x] KHR_mesh_quantization
-- [ ] KHR_materials_unlit
 - [ ] KHR_materials_clearcoat
-- [ ] KHR_materials_transmission
+- [ ] KHR_materials_ior
+- [ ] KHR_materials_pbrSpecularGlossiness
 - [ ] KHR_materials_sheen
+- [ ] KHR_materials_specular
+- [ ] KHR_materials_transmission
+- [x] KHR_materials_unlit
+- [ ] KHR_materials_variants
+- [ ] KHR_materials_volume
+- [ ] KHR_texture_basisu
 - [ ] KHR_texture_transform
