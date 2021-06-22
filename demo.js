@@ -78,6 +78,7 @@ io.read('./assets/DamagedHelmet.glb').then(async (doc) => {
 		emissive: 0x000000,
 		roughness: 1,
 		metalness: 0,
+		clearcoat: 0,
 		model: 'STANDARD'
 	};
 	const pane = new Tweakpane.Pane({title: 'DamagedHelmet.glb'});
@@ -94,7 +95,20 @@ io.read('./assets/DamagedHelmet.glb').then(async (doc) => {
 		.on('change', () => mat.setRoughnessFactor(params.roughness));
 	pane.addInput(params, 'metalness', {min: 0, max: 1})
 		.on('change', () => mat.setMetallicFactor(params.metalness));
-	pane.addInput(params, 'model', {options: {standard: 'STANDARD', unlit: 'UNLIT', physical: 'PHYSICAL'}})
+	pane.addInput(params, 'clearcoat', {min: 0, max: 1})
+		.on('change', () => {
+			let clearcoat = mat.getExtension('KHR_materials_clearcoat');
+			if (params.clearcoat > 0) {
+				if (!clearcoat) {
+					clearcoat = doc.createExtension(MaterialsClearcoat).createClearcoat();
+					mat.setExtension('KHR_materials_clearcoat', clearcoat);
+				}
+				clearcoat.setClearcoatFactor(params.clearcoat);
+			} else {
+				if (clearcoat) clearcoat.dispose();
+			}
+		});
+	pane.addInput(params, 'model', {options: {standard: 'STANDARD', unlit: 'UNLIT'}})
 		.on('change', () => {
 			mat.listExtensions().forEach((ext) => ext.dispose());
 			switch (params.model) {
@@ -102,14 +116,6 @@ io.read('./assets/DamagedHelmet.glb').then(async (doc) => {
 					mat.setExtension(
 						'KHR_materials_unlit',
 						doc.createExtension(MaterialsUnlit).createUnlit()
-					);
-					break;
-				case 'PHYSICAL':
-					mat.setExtension(
-						'KHR_materials_clearcoat',
-						doc.createExtension(MaterialsClearcoat)
-							.createClearcoat()
-								.setClearcoatFactor(1)
 					);
 					break;
 			}

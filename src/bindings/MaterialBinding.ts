@@ -45,31 +45,31 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 	public constructor(context: UpdateContext, source: MaterialDef) {
 		super(context, source, MaterialBinding.createTarget(source));
 
-		this.bindTexture(['map'], this.baseColorTexture, source.getBaseColorTextureInfo()!, sRGBEncoding);
-		this.bindTexture(['emissiveMap'], this.emissiveTexture, source.getEmissiveTextureInfo()!, sRGBEncoding);
-		this.bindTexture(['normalMap'], this.normalTexture, source.getNormalTextureInfo()!, LinearEncoding);
-		this.bindTexture(['aoMap'], this.occlusionTexture, source.getOcclusionTextureInfo()!, LinearEncoding);
-		this.bindTexture(['roughnessMap', 'metalnessMap'], this.metallicRoughnessTexture, source.getMetallicRoughnessTextureInfo()!, LinearEncoding);
+		this.bindTexture(['map'], this.baseColorTexture, () => source.getBaseColorTextureInfo(), sRGBEncoding);
+		this.bindTexture(['emissiveMap'], this.emissiveTexture, () => source.getEmissiveTextureInfo(), sRGBEncoding);
+		this.bindTexture(['normalMap'], this.normalTexture, () => source.getNormalTextureInfo(), LinearEncoding);
+		this.bindTexture(['aoMap'], this.occlusionTexture, () => source.getOcclusionTextureInfo(), LinearEncoding);
+		this.bindTexture(['roughnessMap', 'metalnessMap'], this.metallicRoughnessTexture, () => source.getMetallicRoughnessTextureInfo(), LinearEncoding);
 
 		// KHR_materials_clearcoat
-		// const clearcoat = source.getExtension<Clearcoat>('KHR_materials_clearcoat')!;
-		// this.bindTexture(['clearcoatMap'], this.clearcoatTexture, clearcoat.getClearcoatTextureInfo()!, LinearEncoding);
-		// this.bindTexture(['clearcoatRoughnessMap'], this.clearcoatRoughnessTexture, clearcoat.getClearcoatRoughnessTextureInfo()!, LinearEncoding);
-		// this.bindTexture(['clearcoatNormalMap'], this.clearcoatNormalTexture, clearcoat.getClearcoatNormalTextureInfo()!, LinearEncoding);
+		const clearcoatExt = (): Clearcoat | null => source.getExtension<Clearcoat>('KHR_materials_clearcoat');
+		this.bindTexture(['clearcoatMap'], this.clearcoatTexture, () => clearcoatExt()?.getClearcoatTextureInfo(), LinearEncoding);
+		this.bindTexture(['clearcoatRoughnessMap'], this.clearcoatRoughnessTexture, () => clearcoatExt()?.getClearcoatRoughnessTextureInfo(), LinearEncoding);
+		this.bindTexture(['clearcoatNormalMap'], this.clearcoatNormalTexture, () => clearcoatExt()?.getClearcoatNormalTextureInfo(), LinearEncoding);
 
 		// KHR_materials_transmission
-		// const transmission = source.getExtension<Transmission>('KHR_materials_transmission')!;
-		// this.bindTexture(['transmissionMap'], this.transmissionTexture, transmission.getTransmissionTextureInfo()!, LinearEncoding);
+		const transmissionExt = (): Transmission | null => source.getExtension<Transmission>('KHR_materials_transmission');
+		this.bindTexture(['transmissionMap'], this.transmissionTexture, () => transmissionExt()?.getTransmissionTextureInfo(), LinearEncoding);
 	}
 
 	private bindTexture(
 			maps: string[],
 			observer: PropertyObserver<TextureDef, Texture>,
-			textureInfo: TextureInfoDef,
+			textureInfoFn: () => TextureInfoDef | undefined | null,
 			encoding: TextureEncoding): Subscription {
 		return observer.subscribe((texture) => {
 			const material = this.value as any;
-			texture = texture ? this.configureTexture(texture, textureInfo, encoding) : null;
+			texture = texture ? this.configureTexture(texture, textureInfoFn()!, encoding) : null;
 			for (const map of maps) {
 				if (material[map] && material[map] !== texture) material[map].dispose();
 				material[map] = texture;
@@ -144,10 +144,17 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 			target = this.value;
 		}
 
-		switch (shadingModel) { // falls through.
-			case ShadingModel.PHYSICAL: this.updatePhysical();
-			case ShadingModel.STANDARD: this.updateStandard();
-			default: this.updateCommon();
+		// TODO(testing): Test some of the edge cases here. When switching from
+		// 'standard' to 'unlit' model, do unwanted properties like AO get
+		// set on the MeshBasicMaterial?
+		switch (shadingModel) {
+			case ShadingModel.STANDARD:
+			case ShadingModel.PHYSICAL:
+				this.updatePhysical();
+				this.updateStandard();
+				// ⬇ falls through.
+			default:
+				this.updateCommon();
 		}
 
 		return this;
