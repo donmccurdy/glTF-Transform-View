@@ -71,23 +71,18 @@ documentRenderer.update(mesh); // partial update
 
 // Render.
 function animate () {
-    requestAnimationFrame(animate);
-    renderer.render(scene, camera);
+	requestAnimationFrame(animate);
+	renderer.render(scene, camera);
 }
 ```
 
 ## Bugs / Limitations / To Do
 
-- [ ] Dispose of resources removed from PropertyGraph.
+- [ ] Support more control of the update process (e.g. vertex data flag)
+- [ ] Better handling of 1:many bindings (e.g. glTF Material → three.js Material)
 - [ ] `.updateAll()` not yet implemented.
-- [ ] Support more control of the update process. For example, flags for
-    whether to re-upload vertex data or not.
-- [ ] Certain bindings are not 1:1, for example multiple three.js Material
-    instances may be needed to represent a single glTF Material. Currently
-    these cases are handled naively.
 - [ ] Animation not yet implemented.
-- [ ] Material changes are incompletely supported. For example, Clearcoat
-    and Transmission extensions are not fully observed.
+- [ ] Dispose of resources removed from PropertyGraph.
 
 ### Extensions Supported
 
