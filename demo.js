@@ -77,7 +77,7 @@ io.read('./assets/DamagedHelmet.glb').then(async (doc) => {
 		alphaMode: 'OPAQUE',
 		emissive: 0x000000,
 		roughness: 1,
-		metalness: 0,
+		metalness: 1,
 		clearcoat: 0,
 		model: 'STANDARD'
 	};
@@ -129,9 +129,10 @@ function animate() {
 	requestAnimationFrame(animate);
 
 	if (needsUpdate) {
-		console.time('DocumentRenderer::updateAll');
+		console.time('DocumentRenderer::update');
+		// documentRenderer.updateAll();
 		documentRenderer.update(mat);
-		console.timeEnd('DocumentRenderer::updateAll');
+		console.timeEnd('DocumentRenderer::update');
 		needsUpdate = false;
 	}
 

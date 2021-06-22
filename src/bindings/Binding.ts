@@ -9,6 +9,7 @@ export abstract class Binding <Source extends PropertyDef, Target> extends Obser
 	public source: Source;
 
 	protected _context: UpdateContext;
+	protected _lastUpdateID: number = -1;
 	protected _targetUnsubscribe: Subscription;
 
 	protected constructor (context: UpdateContext, source: Source, target: Target) {
@@ -24,6 +25,14 @@ export abstract class Binding <Source extends PropertyDef, Target> extends Obser
 	}
 
 	public abstract update(): this;
+
+	public updateOnce(): this {
+		if (this._context.deep && this._lastUpdateID < this._context.updateID) {
+			this._lastUpdateID = this._context.updateID;
+			this.update();
+		}
+		return this;
+	}
 
 	public dispose(): void {
 		this._targetUnsubscribe();

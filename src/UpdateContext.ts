@@ -10,14 +10,14 @@ import { AccessorBinding, Binding, MaterialBinding, MeshBinding, NodeBinding, Pr
 
 // TODO(bug): Deep syncs are pretty messy... how do we prevent updating the same (reused) Mesh many times? Front recursion?
 export class UpdateContext {
-	public id = 1;
+	public updateID = 1;
 	public deep = true;
 
-	private bindings = new Set<Binding<PropertyDef, any>>();
+	private _bindings = new Set<Binding<PropertyDef, any>>();
 	private _sourceMap = new WeakMap<PropertyDef, Binding<PropertyDef, any>>();
 
 	public add(renderer: Binding<PropertyDef, any>): void {
-		this.bindings.add(renderer);
+		this._bindings.add(renderer);
 		this._sourceMap.set(renderer.source, renderer);
 	}
 
@@ -53,8 +53,17 @@ export class UpdateContext {
 		}
 	}
 
+	public startUpdate(deep = false) {
+		this.updateID++;
+		this.deep = deep;
+	}
+
+	public endUpdate() {
+		// noop.
+	}
+
 	public dispose(): void {
-		for (const renderer of this.bindings) {
+		for (const renderer of this._bindings) {
 			renderer.dispose();
 		}
 	}

@@ -11,18 +11,19 @@ export class PropertyObserver<S extends PropertyDef, T> extends Observer<T | nul
 	}
 
 	public update(source: S | null): void {
+		const renderer = source ? this._context.bind(source).updateOnce() : null;
+
 		if (this._source === source) return;
 
 		this.unsubscribe();
 
 		this._source = source;
 
-		if (!source) {
+		if (!source || !renderer) {
 			this.next(null);
 			return;
 		}
 
-		const renderer = this._context.bind(source);
 		this._unsubscribe = renderer.subscribe((target: T | null) => {
 			this.next(target);
 		});

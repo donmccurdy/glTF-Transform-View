@@ -66,8 +66,8 @@ const group = documentRenderer.toObject3D();
 scene.add(group);
 
 // When glTF Document is edited, trigger change detection.
-documentRenderer.updateAll(); // full update (not yet implemented)
-documentRenderer.update(mesh); // partial update
+documentRenderer.updateAll(); // (a) full update
+documentRenderer.update(mesh); // (b) partial update
 
 // Render.
 function animate () {
@@ -80,7 +80,6 @@ function animate () {
 
 - [ ] Support more control of the update process (e.g. vertex data flag)
 - [ ] Better handling of 1:many bindings (e.g. glTF Material → three.js Material)
-- [ ] Deep change detection not yet implemented
 - [ ] Dispose of resources removed from PropertyGraph
 - [ ] Animation
 - [ ] Cameras

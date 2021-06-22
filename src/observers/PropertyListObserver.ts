@@ -37,6 +37,11 @@ export class PropertyListObserver<S extends PropertyDef, T> extends Observer<Lis
 			this._sources.add(nextSource);
 			this.subscribeSource(nextSource); // Emit added item.
 		}
+
+		// Update.
+		for (const source of this._sources) {
+			context.bind(source).updateOnce();
+		}
 	}
 
 	public dispose() {

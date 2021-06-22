@@ -47,6 +47,11 @@ export class PropertyMapObserver<S extends PropertyDef, T> extends Observer<MapU
 			const nextRenderer = context.bind(nextSource) as Binding<S, T>;
 			this.next({key, value: nextRenderer.value}) // Emit added item.
 		}
+
+		// Update.
+		for (const key in this._sources) {
+			context.bind(this._sources[key]).updateOnce();
+		}
 	}
 
 	public dispose() {

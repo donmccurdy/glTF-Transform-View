@@ -33,8 +33,9 @@ export class DocumentRenderer {
 	 * Performs a deep update of the entire scene.
 	 */
 	public updateAll(): void {
-		// TODO(bug): Deep updates not connected...
+		this._context.startUpdate(true);
 		this._sceneBinding.update();
+		this._context.endUpdate();
 	}
 
 	/**
@@ -43,7 +44,9 @@ export class DocumentRenderer {
 	 * the resource dependency graph.
 	 */
 	public update(property: Property, deep = false): void {
+		this._context.startUpdate(deep);
 		this._context.bind(property).update();
+		this._context.endUpdate();
 	}
 
 	/** Destroys the renderer and cleans up its resources. */
