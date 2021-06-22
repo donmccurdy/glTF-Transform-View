@@ -80,9 +80,11 @@ function animate () {
 
 - [ ] Support more control of the update process (e.g. vertex data flag)
 - [ ] Better handling of 1:many bindings (e.g. glTF Material → three.js Material)
-- [ ] `.updateAll()` not yet implemented.
-- [ ] Animation not yet implemented.
-- [ ] Dispose of resources removed from PropertyGraph.
+- [ ] Deep change detection not yet implemented
+- [ ] Dispose of resources removed from PropertyGraph
+- [ ] Animation
+- [ ] Cameras
+- [ ] Extras / Custom Properties
 
 ### Extensions Supported
 
