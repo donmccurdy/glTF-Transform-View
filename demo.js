@@ -3,7 +3,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import { WebIO } from '@gltf-transform/core';
 import { MaterialsClearcoat, MaterialsUnlit } from '@gltf-transform/extensions';
-import { DocumentRenderer } from './';
+import { DocumentRenderer } from './dist/render.modern.js';
 
 const renderer = new WebGLRenderer({antialias: true});
 renderer.setPixelRatio( window.devicePixelRatio );

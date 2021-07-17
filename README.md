@@ -41,12 +41,14 @@ Basic workflow:
  ## Quickstart
 
 ```shell
-# Build source.
+# Install dependencies.
+yarn
+
+# Build source, watch for changes.
 yarn watch
 
 # Run demo.
-npm install --global parcel-cli
-parcel index.html
+yarn dev
 ```
 
 ## API
