@@ -61,7 +61,7 @@ export function createMaterialPane(document: Document, material: Material): Twea
 	let needsUpdate = false;
 	pane.on('change', () => (needsUpdate = true));
 
-	const coreFolder = pane.addFolder({title: 'Core'});
+	const coreFolder = pane.addFolder({title: 'Basic'});
 	coreFolder.addInput(params, 'baseColorFactor', {view: 'color'});
 	coreFolder.addInput(params, 'alpha', {min: 0, max: 1});
 	coreFolder.addInput(params, 'alphaMode', {options: {OPAQUE: 'OPAQUE', BLEND: 'BLEND', MASK: 'MASK'}});
@@ -78,7 +78,7 @@ export function createMaterialPane(document: Document, material: Material): Twea
 			.setMetallicFactor(params.metallicFactor);
 	});
 
-	const clearcoatFolder = pane.addFolder({title: 'Clearcoat', expanded: false});
+	const clearcoatFolder = pane.addFolder({title: 'KHR_materials_clearcoat', expanded: false});
 	clearcoatFolder.addInput(params, 'clearcoatEnabled');
 	clearcoatFolder.addInput(params, 'clearcoatFactor', {min: 0, max: 1});
 	clearcoatFolder.addInput(params, 'clearcoatRoughnessFactor', {min: 0, max: 1});
@@ -89,15 +89,15 @@ export function createMaterialPane(document: Document, material: Material): Twea
 			.setClearcoatRoughnessFactor(params.clearcoatRoughnessFactor);
 	});
 
-	const iorFolder = pane.addFolder({title: 'IOR', expanded: false});
+	const iorFolder = pane.addFolder({title: 'KHR_materials_ior', expanded: false});
 	iorFolder.addInput(params, 'iorEnabled');
-	iorFolder.addInput(params, 'ior', {min: 0, max: 1});
+	iorFolder.addInput(params, 'ior', {min: 1, max: 2});
 	iorFolder.on('change', () => {
 		material.setExtension('KHR_materials_ior', params.iorEnabled ? ior : null);
 		ior.setIOR(params.ior);
 	});
 
-	const sheenFolder = pane.addFolder({title: 'Sheen', expanded: false});
+	const sheenFolder = pane.addFolder({title: 'KHR_materials_sheen', expanded: false, hidden: true});
 	sheenFolder.addInput(params, 'sheenEnabled');
 	sheenFolder.addInput(params, 'sheenColorFactor', {view: 'color'});
 	sheenFolder.addInput(params, 'sheenRoughnessFactor', {min: 0, max: 1});
@@ -108,7 +108,7 @@ export function createMaterialPane(document: Document, material: Material): Twea
 			.setSheenRoughnessFactor(params.sheenRoughnessFactor);
 	});
 
-	const specularFolder = pane.addFolder({title: 'Specular', expanded: false});
+	const specularFolder = pane.addFolder({title: 'KHR_materials_specular', expanded: false, hidden: true});
 	specularFolder.addInput(params, 'specularEnabled');
 	specularFolder.addInput(params, 'specularFactor', {min: 0, max: 1});
 	specularFolder.addInput(params, 'specularColorFactor', {view: 'color'});
@@ -119,7 +119,7 @@ export function createMaterialPane(document: Document, material: Material): Twea
 			.setSpecularColorHex(params.specularColorFactor);
 	});
 
-	const transmissionFolder = pane.addFolder({title: 'Transmission', expanded: false});
+	const transmissionFolder = pane.addFolder({title: 'KHR_materials_transmission', expanded: false});
 	transmissionFolder.addInput(params, 'transmissionEnabled');
 	transmissionFolder.addInput(params, 'transmissionFactor', {min: 0, max: 1});
 	transmissionFolder.on('change', () => {
@@ -127,7 +127,7 @@ export function createMaterialPane(document: Document, material: Material): Twea
 		transmission.setTransmissionFactor(params.transmissionFactor);
 	});
 
-	const volumeFolder = pane.addFolder({title: 'Volume', expanded: false});
+	const volumeFolder = pane.addFolder({title: 'KHR_materials_volume', expanded: false, hidden: true});
 	volumeFolder.addInput(params, 'volumeEnabled');
 	volumeFolder.addInput(params, 'thicknessFactor', {min: 0, max: 1});
 	volumeFolder.addInput(params, 'attenuationColorFactor', {view: 'color'});

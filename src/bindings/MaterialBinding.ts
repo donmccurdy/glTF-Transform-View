@@ -1,6 +1,6 @@
 import { ClampToEdgeWrapping, DoubleSide, FrontSide, LinearEncoding, LinearFilter, LinearMipmapLinearFilter, LinearMipmapNearestFilter, Material, MeshBasicMaterial, MeshPhysicalMaterial, MeshStandardMaterial, MirroredRepeatWrapping, NearestFilter, NearestMipmapLinearFilter, NearestMipmapNearestFilter, RepeatWrapping, Texture, TextureEncoding, TextureFilter, Wrapping, sRGBEncoding } from 'three';
 import { Material as MaterialDef, Texture as TextureDef, TextureInfo as TextureInfoDef, vec3 } from '@gltf-transform/core';
-import { Clearcoat, Transmission } from '@gltf-transform/extensions';
+import { Clearcoat, IOR, Transmission } from '@gltf-transform/extensions';
 import type { UpdateContext } from '../UpdateContext';
 import { PropertyObserver, Subscription } from '../observers';
 import { eq } from '../utils';
@@ -249,6 +249,7 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 		const clearcoat = source.getExtension<Clearcoat>('KHR_materials_clearcoat');
 		if (clearcoat) {
 			if (clearcoat.getClearcoatFactor() !== target.clearcoat) {
+				if (target.clearcoat === 0) target.needsUpdate = true;
 				target.clearcoat = clearcoat.getClearcoatFactor();
 			}
 			if (clearcoat.getClearcoatRoughnessFactor() !== target.clearcoatRoughness) {
@@ -265,10 +266,21 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 			target.clearcoat = 0;
 		}
 
+		// KHR_materials_ior
+		const ior = source.getExtension<IOR>('KHR_materials_ior');
+		if (ior) {
+			if (ior.getIOR() !== target.ior) {
+				target.ior = ior.getIOR();
+			}
+		} else {
+			target.transmission = 0;
+		}
+
 		// KHR_materials_transmission
 		const transmission = source.getExtension<Transmission>('KHR_materials_transmission');
 		if (transmission) {
 			if (transmission.getTransmissionFactor() !== target.transmission) {
+				if (target.transmission === 0) target.needsUpdate = true;
 				target.transmission = transmission.getTransmissionFactor();
 			}
 			this.transmissionTexture.update(transmission.getTransmissionTexture());
