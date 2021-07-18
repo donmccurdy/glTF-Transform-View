@@ -97,27 +97,27 @@ export function createMaterialPane(document: Document, material: Material): Twea
 		ior.setIOR(params.ior);
 	});
 
-	const sheenFolder = pane.addFolder({title: 'KHR_materials_sheen', expanded: false, hidden: true});
-	sheenFolder.addInput(params, 'sheenEnabled');
-	sheenFolder.addInput(params, 'sheenColorFactor', {view: 'color'});
-	sheenFolder.addInput(params, 'sheenRoughnessFactor', {min: 0, max: 1});
-	sheenFolder.on('change', () => {
-		material.setExtension('KHR_materials_sheen', params.sheenEnabled ? sheen : null);
-		sheen
-			.setSheenColorHex(params.sheenColorFactor)
-			.setSheenRoughnessFactor(params.sheenRoughnessFactor);
-	});
+	// const sheenFolder = pane.addFolder({title: 'KHR_materials_sheen', expanded: false});
+	// sheenFolder.addInput(params, 'sheenEnabled');
+	// sheenFolder.addInput(params, 'sheenColorFactor', {view: 'color'});
+	// sheenFolder.addInput(params, 'sheenRoughnessFactor', {min: 0, max: 1});
+	// sheenFolder.on('change', () => {
+	// 	material.setExtension('KHR_materials_sheen', params.sheenEnabled ? sheen : null);
+	// 	sheen
+	// 		.setSheenColorHex(params.sheenColorFactor)
+	// 		.setSheenRoughnessFactor(params.sheenRoughnessFactor);
+	// });
 
-	const specularFolder = pane.addFolder({title: 'KHR_materials_specular', expanded: false, hidden: true});
-	specularFolder.addInput(params, 'specularEnabled');
-	specularFolder.addInput(params, 'specularFactor', {min: 0, max: 1});
-	specularFolder.addInput(params, 'specularColorFactor', {view: 'color'});
-	specularFolder.on('change', () => {
-		material.setExtension('KHR_materials_specular', params.specularEnabled ? specular : null);
-		specular
-			.setSpecularFactor(params.specularFactor)
-			.setSpecularColorHex(params.specularColorFactor);
-	});
+	// const specularFolder = pane.addFolder({title: 'KHR_materials_specular', expanded: false});
+	// specularFolder.addInput(params, 'specularEnabled');
+	// specularFolder.addInput(params, 'specularFactor', {min: 0, max: 1});
+	// specularFolder.addInput(params, 'specularColorFactor', {view: 'color'});
+	// specularFolder.on('change', () => {
+	// 	material.setExtension('KHR_materials_specular', params.specularEnabled ? specular : null);
+	// 	specular
+	// 		.setSpecularFactor(params.specularFactor)
+	// 		.setSpecularColorHex(params.specularColorFactor);
+	// });
 
 	const transmissionFolder = pane.addFolder({title: 'KHR_materials_transmission', expanded: false});
 	transmissionFolder.addInput(params, 'transmissionEnabled');
@@ -127,18 +127,18 @@ export function createMaterialPane(document: Document, material: Material): Twea
 		transmission.setTransmissionFactor(params.transmissionFactor);
 	});
 
-	const volumeFolder = pane.addFolder({title: 'KHR_materials_volume', expanded: false, hidden: true});
-	volumeFolder.addInput(params, 'volumeEnabled');
-	volumeFolder.addInput(params, 'thicknessFactor', {min: 0, max: 1});
-	volumeFolder.addInput(params, 'attenuationColorFactor', {view: 'color'});
-	volumeFolder.addInput(params, 'attenuationDistance', {min: 0, max: 1000});
-	volumeFolder.on('change', () => {
-		material.setExtension('KHR_materials_volume', params.volumeEnabled ? volume : null);
-		volume
-			.setThicknessFactor(params.thicknessFactor)
-			.setAttenuationColorHex(params.attenuationColorFactor)
-			.setAttenuationDistance(params.attenuationDistance);
-	});
+	// const volumeFolder = pane.addFolder({title: 'KHR_materials_volume', expanded: false});
+	// volumeFolder.addInput(params, 'volumeEnabled');
+	// volumeFolder.addInput(params, 'thicknessFactor', {min: 0, max: 1});
+	// volumeFolder.addInput(params, 'attenuationColorFactor', {view: 'color'});
+	// volumeFolder.addInput(params, 'attenuationDistance', {min: 0, max: 1000});
+	// volumeFolder.on('change', () => {
+	// 	material.setExtension('KHR_materials_volume', params.volumeEnabled ? volume : null);
+	// 	volume
+	// 		.setThicknessFactor(params.thicknessFactor)
+	// 		.setAttenuationColorHex(params.attenuationColorFactor)
+	// 		.setAttenuationDistance(params.attenuationDistance);
+	// });
 
 	return pane;
 }

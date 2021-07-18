@@ -2,6 +2,7 @@ html, body {
 	padding: 0;
 	margin: 0;
 }
+
 .back {
 	position: fixed;
 	top: 1em;
@@ -11,6 +12,22 @@ html, body {
 	text-decoration: none;
 	opacity: 0.75;
 }
+
 .back:hover {
 	opacity: 1;
+}
+
+/* Tweakpane */
+
+.tp-colv_t .tp-txtv {
+	position: relative;
+}
+
+.tp-colv_t .tp-txtv::after {
+	content: 'sRGB';
+	position: absolute;
+	right: 0.5em;
+	top: 0.3em;
+	color: #888;
+	font-size: 1em;
 }
