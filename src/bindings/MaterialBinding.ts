@@ -85,7 +85,7 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 			case ShadingModel.STANDARD:
 				return new MeshStandardMaterial();
 			case ShadingModel.PHYSICAL:
-				// TODO(https://github.com/three-types/three-ts-types/pull/106)
+				// TODO(cleanup): https://github.com/three-types/three-ts-types/pull/106
 				return new MeshPhysicalMaterial({});
 			default:
 				throw new Error('Unsupported shading model.');
@@ -145,7 +145,7 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 			target = this.value;
 		}
 
-		// TODO(testing): Test some of the edge cases here. When switching from
+		// TODO(bug): Test some of the edge cases here. When switching from
 		// 'standard' to 'unlit' model, do unwanted properties like AO get
 		// set on the MeshBasicMaterial?
 		switch (shadingModel) {
@@ -279,14 +279,14 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 	}
 
 	public configureTexture(texture: Texture, textureInfo: TextureInfoDef, encoding: TextureEncoding): Texture {
-		// TODO(bug): Make a copy if needed...
-		// TODO(bug): Dispose the copy (not just deref it!) if no longer needed...
+		// TODO(perf): Make a copy only if needed.
+		texture = texture.clone();
 		texture.minFilter = WEBGL_FILTERS[textureInfo.getMinFilter() as number] || LinearMipmapLinearFilter;
 		texture.magFilter = WEBGL_FILTERS[textureInfo.getMagFilter() as number] || LinearFilter;
 		texture.wrapS = WEBGL_WRAPPINGS[textureInfo.getWrapS()] || RepeatWrapping;
 		texture.wrapT = WEBGL_WRAPPINGS[textureInfo.getWrapT()] || RepeatWrapping;
 		texture.encoding = encoding;
-		texture.needsUpdate = true;
+		texture.image.onload = () => (texture.needsUpdate = true);
 		return texture;
 	}
 

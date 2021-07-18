@@ -4,8 +4,8 @@ import type { UpdateContext } from '../UpdateContext';
 import { PropertyMapObserver, PropertyObserver } from '../observers';
 import { Binding } from './Binding';
 
-// TODO(cleanup): Use glTF spec defaults, and move this constant somewhere else.
-const DEFAULT_MATERIAL = new MeshStandardMaterial({color: 0x808080, roughness: 1.0, metalness: 0.0});
+// https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#default-material
+const DEFAULT_MATERIAL = new MeshStandardMaterial({color: 0xFFFFFF, roughness: 1.0, metalness: 1.0});
 
 function semanticToAttributeName(semantic: string): string {
 	switch (semantic) {

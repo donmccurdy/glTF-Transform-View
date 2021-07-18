@@ -17,8 +17,6 @@ export class TextureBinding extends Binding<TextureDef, Texture> {
 		const source = this.source;
 		const target = this.value;
 
-		// TODO(bug): "THREE.WebGLRenderer: Texture marked for update but image is incomplete"
-		// TODO(bug): ^x18 (!)
 		if (source.getImage() !== this._image) {
 			this._image = source.getImage() as ArrayBuffer;
 			const blob = new Blob([this._image], {type: source.getMimeType()});
@@ -26,7 +24,7 @@ export class TextureBinding extends Binding<TextureDef, Texture> {
 			this._imageEl = document.createElement('img');
 			this._imageEl.src = this._imageURL;
 			target.image = this._imageEl;
-			target.needsUpdate = true;
+			target.image.onload = () => (target.needsUpdate = true);
 		}
 
 		return this;
