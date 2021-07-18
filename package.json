@@ -20,6 +20,7 @@
     "@typescript-eslint/parser": "^4.28.3",
     "microbundle": "^0.13.3",
     "snowpack": "^3.8.2",
+    "tweakpane": "^2.4.3",
     "typescript": "^4.3.5"
   },
   "scripts": {

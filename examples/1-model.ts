@@ -3,7 +3,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import { WebIO } from '@gltf-transform/core';
 import { MaterialsClearcoat, MaterialsUnlit } from '@gltf-transform/extensions';
-import { DocumentRenderer } from './dist/render.modern.js';
+import { DocumentRenderer } from '../dist/render.modern.js';
+import Tweakpane from 'tweakpane';
 
 const renderer = new WebGLRenderer({antialias: true});
 renderer.setPixelRatio( window.devicePixelRatio );
@@ -43,7 +44,7 @@ window.addEventListener( 'resize', onWindowResize );
 
 new RGBELoader()
 	.setDataType( UnsignedByteType )
-	.load( 'assets/royal_esplanade_1k.hdr', ( texture ) => {
+	.load( '../assets/royal_esplanade_1k.hdr', ( texture ) => {
 		const envMap = pmremGenerator.fromEquirectangular( texture ).texture;
 		scene.background = envMap;
 		scene.environment = envMap;
@@ -59,13 +60,13 @@ let needsUpdate = false;
 let documentRenderer;
 
 const io = new WebIO();
-io.read('./assets/DamagedHelmet.glb').then(async (doc) => {
+io.read('../assets/DamagedHelmet.glb').then(async (doc) => {
 	console.time('DocumentRenderer::init');
 	documentRenderer = new DocumentRenderer(doc);
 	console.timeEnd('DocumentRenderer::init');
 
-	window.doc = doc;
-	window.model = documentRenderer.toObject3D();
+	window['doc'] = doc;
+	const model = window['model'] = documentRenderer.toObject3D();
 
 	scene.add(model);
 	animate();
@@ -81,7 +82,8 @@ io.read('./assets/DamagedHelmet.glb').then(async (doc) => {
 		clearcoat: 0,
 		model: 'STANDARD'
 	};
-	const pane = new Tweakpane.Pane({title: 'DamagedHelmet.glb'});
+
+	const pane = new (Tweakpane['Pane'] as any)({title: 'DamagedHelmet.glb'}) as Tweakpane;
 	mat = doc.getRoot().listMaterials().pop();
 	pane.addInput(params, 'baseColor', {view: 'color'})
 		.on('change', () => mat.setBaseColorHex(params.baseColor));

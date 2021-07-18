@@ -47,7 +47,7 @@ yarn
 # Build source, watch for changes.
 yarn watch
 
-# Run demo.
+# Run examples.
 yarn dev
 ```
 

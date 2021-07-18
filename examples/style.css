@@ -1,0 +1,16 @@
+html, body {
+	padding: 0;
+	margin: 0;
+}
+.back {
+	position: fixed;
+	top: 1em;
+	left: 1em;
+	z-index: 1;
+	color: #FFFFFF;
+	text-decoration: none;
+	opacity: 0.75;
+}
+.back:hover {
+	opacity: 1;
+}
