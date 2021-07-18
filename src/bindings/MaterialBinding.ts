@@ -191,8 +191,7 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 				break;
 		}
 
-		const sourceBaseColor = source.getBaseColorFactor() as number[];
-		sourceBaseColor.length = 3;
+		const sourceBaseColor = source.getBaseColorFactor().slice(0, 3);
 		if (!eq(sourceBaseColor, target.color.toArray(_vec3))) {
 			target.color.fromArray(sourceBaseColor);
 		}

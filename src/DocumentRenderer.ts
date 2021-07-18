@@ -10,9 +10,9 @@ import { SceneBinding } from './bindings';
  * THREE.GLTFLoader each time.
  */
 export class DocumentRenderer {
-	private _document: Document;
-	private _context: UpdateContext;
-	private _sceneBinding: SceneBinding;
+	/** @internal */ private _document: Document;
+	/** @internal */ private _context: UpdateContext;
+	/** @internal */ private _sceneBinding: SceneBinding;
 
 	/** Constructs a new DocumentRenderer. */
 	constructor(document: Document) {
