@@ -5,6 +5,7 @@ import { Document, Material } from '@gltf-transform/core';
 import { DocumentRenderer } from '../dist/render.modern.js';
 import { createMaterialPane } from './material-pane';
 import { createStatsPane } from './stats-pane.js';
+import { Pane } from 'tweakpane';
 
 const renderer = new WebGLRenderer({antialias: true});
 renderer.setPixelRatio( window.devicePixelRatio );
@@ -83,7 +84,8 @@ scene.add(model);
 
 //
 
-const pane = createMaterialPane(doc, material);
+const pane = new Pane({title: 'DamagedHelmet.glb'});
+createMaterialPane(pane, doc, material);
 const updateStats = createStatsPane(renderer, pane);
 
 let needsUpdate = false;
