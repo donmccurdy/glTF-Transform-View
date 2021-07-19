@@ -19,6 +19,10 @@ html, body {
 
 /* Tweakpane */
 
+.tp-dfwv {
+	width: 350px !important;
+}
+
 .tp-colv_t .tp-txtv {
 	position: relative;
 }

@@ -24,7 +24,10 @@ export class TextureBinding extends Binding<TextureDef, Texture> {
 			this._imageEl = document.createElement('img');
 			this._imageEl.src = this._imageURL;
 			target.image = this._imageEl;
-			target.image.onload = () => (target.needsUpdate = true);
+			target.image.onload = () => {
+				URL.revokeObjectURL(this._imageURL);
+				target.needsUpdate = true;
+			};
 		}
 
 		return this;

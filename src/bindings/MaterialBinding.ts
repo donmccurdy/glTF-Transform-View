@@ -71,7 +71,9 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 			const material = this.value as any;
 			texture = texture ? this.configureTexture(texture, textureInfoFn()!, encoding) : null;
 			for (const map of maps) {
+				// TODO(perf): Don't make so many copies. ID::TEXTURE_CLONE
 				if (material[map] && material[map] !== texture) material[map].dispose();
+				if (!!material[map] !== !!texture) material.needsUpdate = true;
 				material[map] = texture;
 			}
 		});
@@ -290,14 +292,20 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 	}
 
 	public configureTexture(texture: Texture, textureInfo: TextureInfoDef, encoding: TextureEncoding): Texture {
-		// TODO(perf): Make a copy only if needed.
+		// TODO(perf): Make a copy only if needed. ID::TEXTURE_CLONE
 		texture = texture.clone();
 		texture.minFilter = WEBGL_FILTERS[textureInfo.getMinFilter() as number] || LinearMipmapLinearFilter;
 		texture.magFilter = WEBGL_FILTERS[textureInfo.getMagFilter() as number] || LinearFilter;
 		texture.wrapS = WEBGL_WRAPPINGS[textureInfo.getWrapS()] || RepeatWrapping;
 		texture.wrapT = WEBGL_WRAPPINGS[textureInfo.getWrapT()] || RepeatWrapping;
 		texture.encoding = encoding;
-		texture.image.onload = () => (texture.needsUpdate = true);
+
+		if (texture.image.complete) {
+			texture.needsUpdate = true;
+		} else {
+			texture.image.onload = () => (texture.needsUpdate = true);
+		}
+
 		return texture;
 	}
 

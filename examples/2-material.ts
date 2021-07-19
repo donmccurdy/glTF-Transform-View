@@ -4,6 +4,7 @@ import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import { Document, Material } from '@gltf-transform/core';
 import { DocumentRenderer } from '../dist/render.modern.js';
 import { createMaterialPane } from './material-pane';
+import { createStatsPane } from './stats-pane.js';
 
 const renderer = new WebGLRenderer({antialias: true});
 renderer.setPixelRatio( window.devicePixelRatio );
@@ -83,13 +84,10 @@ scene.add(model);
 //
 
 const pane = createMaterialPane(doc, material);
+const updateStats = createStatsPane(renderer, pane);
 
 let needsUpdate = false;
 pane.on('change', () => (needsUpdate = true));
-
-let stats = {info: ''};
-const monitorFolder = pane.addFolder({index: 0, title: 'Monitor'})
-monitorFolder.addMonitor(stats, 'info', {bufferSize: 1, multiline: true, lineCount: 3});
 
 //
 
@@ -108,13 +106,7 @@ function animate() {
 	}
 
 	render();
-
-	const info = renderer.info;
-	stats.info = `
-programs     ${info.programs.length}
-geometries   ${info.memory.geometries}
-textures     ${info.memory.textures}
-	`.trim();
+	updateStats();
 }
 
 function render() {

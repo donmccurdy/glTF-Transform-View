@@ -1,9 +1,11 @@
 import { Document, Material } from '@gltf-transform/core';
 import { MaterialsClearcoat, MaterialsIOR, MaterialsSheen, MaterialsSpecular, MaterialsTransmission, MaterialsVolume } from '@gltf-transform/extensions';
-import Tweakpane from 'tweakpane';
+import { Pane } from 'tweakpane';
+import * as TweakpanePluginThumbnailList from 'tweakpane-plugin-thumbnail-list';
 
-export function createMaterialPane(document: Document, material: Material): Tweakpane {
-	const pane = new (Tweakpane['Pane'] as any)({title: 'Material'}) as Tweakpane;
+export function createMaterialPane(document: Document, material: Material): Pane {
+	const pane = new Pane({title: 'Material'});
+	pane.registerPlugin(TweakpanePluginThumbnailList);
 
 	const clearcoatExtension = document.createExtension(MaterialsClearcoat);
 	const clearcoat = clearcoatExtension.createClearcoat();
@@ -21,11 +23,14 @@ export function createMaterialPane(document: Document, material: Material): Twea
 	const params = {
 		// Core.
 		baseColorFactor: material.getBaseColorHex(),
+		baseColorTexture: 'baseColorTexture',
 		alpha: material.getAlpha(),
 		alphaMode: material.getAlphaMode(),
 		emissiveFactor: material.getEmissiveHex(),
+		emissiveTexture: 'emissiveTexture',
 		roughnessFactor: material.getRoughnessFactor(),
 		metallicFactor: material.getMetallicFactor(),
+		normalTexture: 'normalTexture',
 
 		// Clearcoat.
 		clearcoatEnabled: !!material.getExtension('KHR_materials_clearcoat'),
@@ -61,13 +66,32 @@ export function createMaterialPane(document: Document, material: Material): Twea
 	let needsUpdate = false;
 	pane.on('change', () => (needsUpdate = true));
 
+	// const textureOptions = document.getRoot().listTextures().map((texture, index) => {
+	// 	return {
+	// 		value: `#${index}: ${texture.getName() || texture.getURI()}`,
+	// 		src: URL.createObjectURL(new Blob([texture.getImage()], {type: texture.getMimeType()}))
+	// 	}
+	// }) as any;
+
 	const coreFolder = pane.addFolder({title: 'Basic'});
 	coreFolder.addInput(params, 'baseColorFactor', {view: 'color'});
+	// coreFolder.addInput(params, 'baseColorTexture', {
+	// 	view: 'thumbnail-list',
+	// 	options: textureOptions
+	// });
 	coreFolder.addInput(params, 'alpha', {min: 0, max: 1});
 	coreFolder.addInput(params, 'alphaMode', {options: {OPAQUE: 'OPAQUE', BLEND: 'BLEND', MASK: 'MASK'}});
 	coreFolder.addInput(params, 'emissiveFactor', {view: 'color'});
+	// coreFolder.addInput(params, 'emissiveTexture', {
+	// 	view: 'thumbnail-list',
+	// 	options: textureOptions
+	// });
 	coreFolder.addInput(params, 'roughnessFactor', {min: 0, max: 1});
 	coreFolder.addInput(params, 'metallicFactor', {min: 0, max: 1});
+	// coreFolder.addInput(params, 'normalTexture', {
+	// 	view: 'thumbnail-list',
+	// 	options: textureOptions
+	// });
 	coreFolder.on('change', () => {
 		material
 			.setBaseColorHex(params.baseColorFactor)

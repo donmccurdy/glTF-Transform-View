@@ -1,10 +1,12 @@
 import { ACESFilmicToneMapping, AmbientLight, DirectionalLight, PMREMGenerator, PerspectiveCamera, Scene, UnsignedByteType, WebGLRenderer, sRGBEncoding } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
-import { WebIO } from '@gltf-transform/core';
-import { MaterialsClearcoat, MaterialsUnlit } from '@gltf-transform/extensions';
+import { Material, Texture, WebIO } from '@gltf-transform/core';
+import { Clearcoat, MaterialsClearcoat, MaterialsUnlit } from '@gltf-transform/extensions';
 import { DocumentRenderer } from '../dist/render.modern.js';
-import Tweakpane from 'tweakpane';
+import {Pane} from 'tweakpane';
+import * as TweakpanePluginThumbnailList from 'tweakpane-plugin-thumbnail-list';
+import { createStatsPane } from './stats-pane.js';
 
 const renderer = new WebGLRenderer({antialias: true});
 renderer.setPixelRatio( window.devicePixelRatio );
@@ -55,9 +57,13 @@ new RGBELoader()
 
 //
 
-let mat;
+let mat: Material;
 let needsUpdate = false;
 let documentRenderer;
+
+const pane = new Pane({title: 'DamagedHelmet.glb'});
+pane.registerPlugin(TweakpanePluginThumbnailList);
+const updateStats = createStatsPane(renderer, pane);
 
 const io = new WebIO();
 io.read('../assets/DamagedHelmet.glb').then(async (doc) => {
@@ -72,34 +78,68 @@ io.read('../assets/DamagedHelmet.glb').then(async (doc) => {
 	animate();
 
 	// GUI - Testing.
+
+	interface TextureOption {
+		value: string,
+		src: string,
+		data: Texture,
+	}
+
+	const textureOptions: TextureOption[] = doc.getRoot().listTextures().map((texture, index) => {
+		return {
+			value: texture.getName() || texture.getURI() || `${index}`,
+			src: URL.createObjectURL(new Blob([texture.getImage()], {type: texture.getMimeType()})),
+			data: texture,
+		}
+	});
+
+	const textureFromEvent = (event): Texture | null => {
+		const value = event.value as unknown as TextureOption | null;
+		return value ? value.data : null;
+	}
+
 	const params = {
-		baseColor: 0x808080,
+		baseColor: 0xFFFFFF,
+		baseColorTexture: textureOptions[0].value,
 		alpha: 1,
 		alphaMode: 'OPAQUE',
-		emissive: 0x000000,
+		emissive: 0xFFFFFF,
+		emissiveTexture: textureOptions[2].value,
 		roughness: 1,
 		metalness: 1,
+		metallicRoughnessTexture: textureOptions[1].value,
+		normalTexture: textureOptions[3].value,
+
 		clearcoat: 0,
 		model: 'STANDARD'
 	};
 
-	const pane = new (Tweakpane['Pane'] as any)({title: 'DamagedHelmet.glb'}) as Tweakpane;
-	mat = doc.getRoot().listMaterials().pop();
+	mat = doc.getRoot().listMaterials().pop()!;
+
+	// window['matDef'] = mat;
+	// window['mat'] = model.children[0].children[0].children[0].material;
+
 	pane.addInput(params, 'baseColor', {view: 'color'})
 		.on('change', () => mat.setBaseColorHex(params.baseColor));
+	pane.addInput(params, 'baseColorTexture', {view: 'thumbnail-list', options: textureOptions})
+		.on('change', (event) => mat.setBaseColorTexture(textureFromEvent(event)));
 	pane.addInput(params, 'alpha', {min: 0, max: 1})
 		.on('change', () => mat.setAlpha(params.alpha));
 	pane.addInput(params, 'alphaMode', {options: {opaque: 'OPAQUE', blend: 'BLEND', mask: 'MASK'}})
-		.on('change', () => mat.setAlphaMode(params.alphaMode));
+		.on('change', () => mat.setAlphaMode(params.alphaMode as any));
 	pane.addInput(params, 'emissive', {view: 'color'})
 		.on('change', () => mat.setEmissiveHex(params.emissive));
+	pane.addInput(params, 'emissiveTexture', {view: 'thumbnail-list', options: textureOptions})
+		.on('change', (event) => mat.setEmissiveTexture(textureFromEvent(event)));
 	pane.addInput(params, 'roughness', {min: 0, max: 1})
 		.on('change', () => mat.setRoughnessFactor(params.roughness));
 	pane.addInput(params, 'metalness', {min: 0, max: 1})
 		.on('change', () => mat.setMetallicFactor(params.metalness));
+	pane.addInput(params, 'metallicRoughnessTexture', {view: 'thumbnail-list', options: textureOptions})
+		.on('change', (event) => mat.setMetallicRoughnessTexture(textureFromEvent(event)));
 	pane.addInput(params, 'clearcoat', {min: 0, max: 1})
 		.on('change', () => {
-			let clearcoat = mat.getExtension('KHR_materials_clearcoat');
+			let clearcoat = mat.getExtension<Clearcoat>('KHR_materials_clearcoat');
 			if (params.clearcoat > 0) {
 				if (!clearcoat) {
 					clearcoat = doc.createExtension(MaterialsClearcoat).createClearcoat();
@@ -139,6 +179,7 @@ function animate() {
 	}
 
 	render();
+	updateStats();
 }
 
 function render() {
