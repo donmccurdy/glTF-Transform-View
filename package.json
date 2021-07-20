@@ -31,14 +31,6 @@
     "watch": "microbundle watch --no-compress --format modern,cjs",
     "dev": "concurrently \"yarn watch\" \"snowpack dev\""
   },
-  "staticFiles": {
-    "staticPath": [
-      {
-        "staticPath": "assets",
-        "staticOutDir": "assets"
-      }
-    ]
-  },
   "browserslist": [
     "last 2 and_chr versions",
     "last 2 chrome versions",
