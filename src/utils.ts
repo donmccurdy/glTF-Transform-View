@@ -15,8 +15,8 @@ export function assignFinalMaterial(primDef: PrimitiveDef, material: MeshStandar
 		material.flatShading = useFlatShading;
 	}
 
-	// TODO: morph targets.
-	// TODO: POINTS, LINES, etc.
+	// TODO(bug): morph targets.
+	// TODO(bug): POINTS, LINES, etc.
 
 	return material;
 }
