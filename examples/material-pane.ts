@@ -1,5 +1,5 @@
 import { Document, Material, Texture } from '@gltf-transform/core';
-import { MaterialsClearcoat, MaterialsIOR, MaterialsSheen, MaterialsSpecular, MaterialsTransmission, MaterialsVolume } from '@gltf-transform/extensions';
+import { MaterialsClearcoat, MaterialsIOR, MaterialsSheen, MaterialsSpecular, MaterialsTransmission, MaterialsUnlit, MaterialsVolume } from '@gltf-transform/extensions';
 import { FolderApi, Pane } from 'tweakpane';
 import * as TweakpanePluginThumbnailList from 'tweakpane-plugin-thumbnail-list';
 
@@ -32,6 +32,8 @@ export function createMaterialPane(_pane: Pane, document: Document, material: Ma
 	const transmission = transmissionExtension.createTransmission();
 	const volumeExtension = document.createExtension(MaterialsVolume);
 	const volume = volumeExtension.createVolume();
+	const unlitExtension = document.createExtension(MaterialsUnlit);
+	const unlit = unlitExtension.createUnlit();
 
 	const textureOptions = document.getRoot().listTextures().map((texture, index) => {
 		return {
@@ -90,6 +92,9 @@ export function createMaterialPane(_pane: Pane, document: Document, material: Ma
 		thicknessFactor: volume.getThicknessFactor(),
 		attenuationColorFactor: volume.getAttenuationColorHex(),
 		attenuationDistance: volume.getAttenuationDistance(),
+
+		// Unlit.
+		unlitEnabled: !!material.getExtension('KHR_materials_unlit'),
 	};
 
 	const coreFolder = pane.addFolder({title: 'Basic'});
@@ -181,6 +186,12 @@ export function createMaterialPane(_pane: Pane, document: Document, material: Ma
 	// 		.setAttenuationColorHex(params.attenuationColorFactor)
 	// 		.setAttenuationDistance(params.attenuationDistance);
 	// });
+
+	const unlitFolder = pane.addFolder({title: 'KHR_materials_unlit', expanded: false});
+	unlitFolder.addInput(params, 'unlitEnabled');
+	unlitFolder.on('change', () => {
+		material.setExtension('KHR_materials_unlit', params.unlitEnabled ? unlit : null);
+	});
 
 	return pane;
 }

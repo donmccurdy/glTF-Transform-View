@@ -22,6 +22,10 @@ export class Observer<T> {
 		this.value = value;
 	}
 
+	public notify() {
+		this.next(this.value);
+	}
+
 	public dispose() {
 		this._listeners.length = 0;
 	}

@@ -93,7 +93,7 @@ function animate () {
 - [ ] KHR_lights_punctual
 - [x] KHR_mesh_quantization
 - [x] KHR_materials_clearcoat
-- [ ] KHR_materials_ior
+- [x] KHR_materials_ior
 - [ ] KHR_materials_pbrSpecularGlossiness
 - [ ] KHR_materials_sheen
 - [ ] KHR_materials_specular

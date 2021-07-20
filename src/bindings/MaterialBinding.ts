@@ -1,27 +1,12 @@
-import { ClampToEdgeWrapping, DoubleSide, FrontSide, LinearEncoding, LinearFilter, LinearMipmapLinearFilter, LinearMipmapNearestFilter, Material, MeshBasicMaterial, MeshPhysicalMaterial, MeshStandardMaterial, MirroredRepeatWrapping, NearestFilter, NearestMipmapLinearFilter, NearestMipmapNearestFilter, RepeatWrapping, Texture, TextureEncoding, TextureFilter, Wrapping, sRGBEncoding } from 'three';
+import { DoubleSide, FrontSide, LinearEncoding, Material, MeshBasicMaterial, MeshPhysicalMaterial, MeshStandardMaterial, Texture, TextureEncoding, sRGBEncoding } from 'three';
 import { Material as MaterialDef, Texture as TextureDef, TextureInfo as TextureInfoDef, vec3 } from '@gltf-transform/core';
 import { Clearcoat, IOR, Transmission } from '@gltf-transform/extensions';
 import type { UpdateContext } from '../UpdateContext';
 import { PropertyObserver, Subscription } from '../observers';
-import { eq } from '../utils';
+import { createTextureParams, eq, TextureParams, VariantCache } from '../utils';
 import { Binding } from './Binding';
 
 const _vec3: vec3 = [0, 0, 0];
-
-const WEBGL_FILTERS: Record<number, TextureFilter> = {
-	9728: NearestFilter,
-	9729: LinearFilter,
-	9984: NearestMipmapNearestFilter,
-	9985: LinearMipmapNearestFilter,
-	9986: NearestMipmapLinearFilter,
-	9987: LinearMipmapLinearFilter
-};
-
-const WEBGL_WRAPPINGS: Record<number, Wrapping> = {
-	33071: ClampToEdgeWrapping,
-	33648: MirroredRepeatWrapping,
-	10497: RepeatWrapping
-};
 
 enum ShadingModel {
 	UNLIT = 0,
@@ -30,17 +15,44 @@ enum ShadingModel {
 }
 
 export class MaterialBinding extends Binding<MaterialDef, Material> {
-	protected baseColorTexture = new PropertyObserver<TextureDef, Texture>(this._context);
-	protected emissiveTexture = new PropertyObserver<TextureDef, Texture>(this._context);
-	protected normalTexture = new PropertyObserver<TextureDef, Texture>(this._context);
-	protected occlusionTexture = new PropertyObserver<TextureDef, Texture>(this._context);
-	protected metallicRoughnessTexture = new PropertyObserver<TextureDef, Texture>(this._context);
 
-	protected clearcoatTexture = new PropertyObserver<TextureDef, Texture>(this._context);
-	protected clearcoatRoughnessTexture = new PropertyObserver<TextureDef, Texture>(this._context);
-	protected clearcoatNormalTexture = new PropertyObserver<TextureDef, Texture>(this._context);
+	private readonly _textureObservers: PropertyObserver<TextureDef, Texture>[] = [];
+	private readonly _textureCache: VariantCache<Texture, TextureParams> = new VariantCache(
+		(texture: Texture, params: TextureParams): string => {
+			return texture.uuid + ':' + Object.values(params).join(':');
+		},
+		(texture: Texture, params: TextureParams): Texture => {
+			texture = texture.clone();
+			texture.minFilter = params.minFilter;
+			texture.magFilter = params.magFilter;
+			texture.wrapS = params.wrapS;
+			texture.wrapT = params.wrapT;
+			texture.encoding = params.encoding;
 
-	protected transmissionTexture = new PropertyObserver<TextureDef, Texture>(this._context);
+			if (texture.image.complete) {
+				texture.needsUpdate = true;
+			} else {
+				texture.image.onload = () => (texture.needsUpdate = true);
+			}
+
+			return texture;
+		},
+		(t: Texture): void => {
+			t.dispose();
+		}
+	);
+
+	protected readonly baseColorTexture = new PropertyObserver<TextureDef, Texture>(this._context);
+	protected readonly emissiveTexture = new PropertyObserver<TextureDef, Texture>(this._context);
+	protected readonly normalTexture = new PropertyObserver<TextureDef, Texture>(this._context);
+	protected readonly occlusionTexture = new PropertyObserver<TextureDef, Texture>(this._context);
+	protected readonly metallicRoughnessTexture = new PropertyObserver<TextureDef, Texture>(this._context);
+
+	protected readonly clearcoatTexture = new PropertyObserver<TextureDef, Texture>(this._context);
+	protected readonly clearcoatRoughnessTexture = new PropertyObserver<TextureDef, Texture>(this._context);
+	protected readonly clearcoatNormalTexture = new PropertyObserver<TextureDef, Texture>(this._context);
+
+	protected readonly transmissionTexture = new PropertyObserver<TextureDef, Texture>(this._context);
 
 	public constructor(context: UpdateContext, source: MaterialDef) {
 		super(context, source, MaterialBinding.createTarget(source));
@@ -67,16 +79,38 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 			observer: PropertyObserver<TextureDef, Texture>,
 			textureInfoFn: () => TextureInfoDef | undefined | null,
 			encoding: TextureEncoding): Subscription {
+		this._textureObservers.push(observer);
 		return observer.subscribe((texture) => {
+			// Configure Texture from TextureInfo.
+			if (texture) {
+				const textureParams = createTextureParams(textureInfoFn()!, encoding);
+				texture = this._textureCache.request(texture, textureParams);
+			}
+
+			// Assign new Texture.
 			const material = this.value as any;
-			texture = texture ? this.configureTexture(texture, textureInfoFn()!, encoding) : null;
 			for (const map of maps) {
-				// TODO(perf): Don't make so many copies. ID::TEXTURE_CLONE
-				if (material[map] && material[map] !== texture) material[map].dispose();
+				// Unlit ⊂ Standard ⊂ Physical
+				if (!(map in material)) continue;
+
+				// Recompile materials if texture added/removed.
 				if (!!material[map] !== !!texture) material.needsUpdate = true;
+
+				// Return old textures to pool.
+				// TODO(bug): Should this be === or !==, or both?
+				if (material[map] && material[map] !== texture) {
+					this._textureCache.release(material[map]);
+				}
+
 				material[map] = texture;
 			}
 		});
+	}
+
+	private applyBoundTextures() {
+		for (const observer of this._textureObservers) {
+			observer.notify();
+		}
 	}
 
 	private static createTarget(source: MaterialDef): Material {
@@ -94,37 +128,15 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 		}
 	}
 
-	/**
-	 * Manually re-attach all textures. Required when re-constructing the
-	 * Material class for a shading model change.
-	 * TODO(cleanup): Try to handle this a simpler way.
-	 */
-	private updateTargetTextures(target: MeshBasicMaterial | MeshStandardMaterial | MeshPhysicalMaterial) {
-		if (this.baseColorTexture) target.map = this.baseColorTexture.value;
-
-		if (!(target instanceof MeshStandardMaterial)) return;
-
-		if (this.emissiveTexture) target.emissiveMap = this.emissiveTexture.value;
-		if (this.normalTexture) target.normalMap = this.normalTexture.value;
-		if (this.occlusionTexture) target.aoMap = this.occlusionTexture.value;
-		if (this.metallicRoughnessTexture) {
-			target.metalnessMap = target.roughnessMap = this.metallicRoughnessTexture.value;
-		}
-
-		if (!(target instanceof MeshPhysicalMaterial)) return;
-
-		if (this.clearcoatTexture) target.clearcoatMap = this.clearcoatTexture.value;
-		if (this.clearcoatRoughnessTexture) target.clearcoatRoughnessMap = this.clearcoatRoughnessTexture.value;
-		if (this.clearcoatNormalTexture) target.clearcoatNormalMap = this.clearcoatNormalTexture.value;
-		if (this.transmissionTexture) target.transmissionMap = this.transmissionTexture.value;
-	}
-
 	private static getShadingModel(source: MaterialDef): ShadingModel {
+		// TODO(bug): This is called 2-3 times during loadout, is that OK?
+		console.log('MaterialBinding::getShadingModel → ' + source.listExtensions().map((e) => e.extensionName).join());
 		for (const extension of source.listExtensions()) {
 			switch (extension.extensionName) {
 				case 'KHR_materials_unlit':
 					return ShadingModel.UNLIT;
 				case 'KHR_materials_clearcoat':
+				case 'KHR_materials_ior':
 				case 'KHR_materials_transmission':
 					return ShadingModel.PHYSICAL;
 			}
@@ -137,14 +149,15 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 		let target = this.value;
 
 		const shadingModel = MaterialBinding.getShadingModel(source);
-		if (shadingModel === ShadingModel.UNLIT && !(target instanceof MeshBasicMaterial)
-			|| shadingModel === ShadingModel.STANDARD && !(target instanceof MeshStandardMaterial)
-			|| shadingModel === ShadingModel.PHYSICAL && !(target instanceof MeshPhysicalMaterial)) {
-			const nextTarget = MaterialBinding.createTarget(source);
-			this.updateTargetTextures(nextTarget as unknown as MeshStandardMaterial);
-			this.next(nextTarget);
+		if (shadingModel === ShadingModel.UNLIT && target.type !== 'MeshBasicMaterial'
+			|| shadingModel === ShadingModel.STANDARD && target.type !== 'MeshStandardMaterial'
+			|| shadingModel === ShadingModel.PHYSICAL && target.type !== 'MeshPhysicalMaterial') {
+			this.next(MaterialBinding.createTarget(source));
+			this.applyBoundTextures();
 			this.disposeTarget(target);
 			target = this.value;
+
+			console.debug(`MaterialBinding::shadingModel → ${target.type}`);
 		}
 
 		// TODO(bug): Test some of the edge cases here. When switching from
@@ -289,24 +302,6 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 		} else {
 			target.transmission = 0;
 		}
-	}
-
-	public configureTexture(texture: Texture, textureInfo: TextureInfoDef, encoding: TextureEncoding): Texture {
-		// TODO(perf): Make a copy only if needed. ID::TEXTURE_CLONE
-		texture = texture.clone();
-		texture.minFilter = WEBGL_FILTERS[textureInfo.getMinFilter() as number] || LinearMipmapLinearFilter;
-		texture.magFilter = WEBGL_FILTERS[textureInfo.getMagFilter() as number] || LinearFilter;
-		texture.wrapS = WEBGL_WRAPPINGS[textureInfo.getWrapS()] || RepeatWrapping;
-		texture.wrapT = WEBGL_WRAPPINGS[textureInfo.getWrapT()] || RepeatWrapping;
-		texture.encoding = encoding;
-
-		if (texture.image.complete) {
-			texture.needsUpdate = true;
-		} else {
-			texture.image.onload = () => (texture.needsUpdate = true);
-		}
-
-		return texture;
 	}
 
 	public disposeTarget(target: Material): void {
