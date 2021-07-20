@@ -35,8 +35,8 @@ export function createMaterialPane(_pane: Pane, document: Document, material: Ma
 
 	const textureOptions = document.getRoot().listTextures().map((texture, index) => {
 		return {
-			// TODO(bug): This must be unique. Consider separate label vs. value in the plugin...
-			value: texture.getName() || texture.getURI() || index.toString(),
+			text: texture.getName() || texture.getURI() || index.toString(),
+			value: index.toString(),
 			src: URL.createObjectURL(new Blob([texture.getImage()], {type: texture.getMimeType()})),
 			data: texture,
 		}
