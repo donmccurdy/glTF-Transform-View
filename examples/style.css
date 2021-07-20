@@ -1,3 +1,9 @@
+:root {
+	--tp-plugin-thumbnail-list-thumb-size: 64px;
+	--tp-plugin-thumbnail-list-width: 325px;
+	--tp-plugin-thumbnail-list-height: 300px;
+}
+
 html, body {
 	padding: 0;
 	margin: 0;
