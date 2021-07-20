@@ -3,8 +3,9 @@ import { Material as MaterialDef, Texture as TextureDef, TextureInfo as TextureI
 import { Clearcoat, IOR, Transmission } from '@gltf-transform/extensions';
 import type { UpdateContext } from '../UpdateContext';
 import { PropertyObserver, Subscription } from '../observers';
-import { createTextureParams, eq, TextureParams, VariantCache } from '../utils';
+import { eq } from '../utils';
 import { Binding } from './Binding';
+import { createTextureCache, createTextureParams } from 'VariantCache';
 
 const _vec3: vec3 = [0, 0, 0];
 
@@ -15,33 +16,6 @@ enum ShadingModel {
 }
 
 export class MaterialBinding extends Binding<MaterialDef, Material> {
-
-	private readonly _textureObservers: PropertyObserver<TextureDef, Texture>[] = [];
-	private readonly _textureCache: VariantCache<Texture, TextureParams> = new VariantCache(
-		(texture: Texture, params: TextureParams): string => {
-			return texture.uuid + ':' + Object.values(params).join(':');
-		},
-		(texture: Texture, params: TextureParams): Texture => {
-			texture = texture.clone();
-			texture.minFilter = params.minFilter;
-			texture.magFilter = params.magFilter;
-			texture.wrapS = params.wrapS;
-			texture.wrapT = params.wrapT;
-			texture.encoding = params.encoding;
-
-			if (texture.image.complete) {
-				texture.needsUpdate = true;
-			} else {
-				texture.image.onload = () => (texture.needsUpdate = true);
-			}
-
-			return texture;
-		},
-		(t: Texture): void => {
-			t.dispose();
-		}
-	);
-
 	protected readonly baseColorTexture = new PropertyObserver<TextureDef, Texture>(this._context);
 	protected readonly emissiveTexture = new PropertyObserver<TextureDef, Texture>(this._context);
 	protected readonly normalTexture = new PropertyObserver<TextureDef, Texture>(this._context);
@@ -53,6 +27,8 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 	protected readonly clearcoatNormalTexture = new PropertyObserver<TextureDef, Texture>(this._context);
 
 	protected readonly transmissionTexture = new PropertyObserver<TextureDef, Texture>(this._context);
+
+	private readonly _textureObservers: PropertyObserver<TextureDef, Texture>[] = [];
 
 	public constructor(context: UpdateContext, source: MaterialDef) {
 		super(context, source, MaterialBinding.createTarget(source));
@@ -84,7 +60,7 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 			// Configure Texture from TextureInfo.
 			if (texture) {
 				const textureParams = createTextureParams(textureInfoFn()!, encoding);
-				texture = this._textureCache.request(texture, textureParams);
+				texture = this._context.textureCache.request(texture, textureParams);
 			}
 
 			// Assign new Texture.
@@ -96,10 +72,10 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 				// Recompile materials if texture added/removed.
 				if (!!material[map] !== !!texture) material.needsUpdate = true;
 
-				// Return old textures to pool.
+				// Return old textures to cache.
 				// TODO(bug): Should this be === or !==, or both?
 				if (material[map] && material[map] !== texture) {
-					this._textureCache.release(material[map]);
+					this._context.textureCache.release(material[map]);
 				}
 
 				material[map] = texture;
@@ -132,12 +108,19 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 		// TODO(bug): This is called 2-3 times during loadout, is that OK?
 		console.log('MaterialBinding::getShadingModel → ' + source.listExtensions().map((e) => e.extensionName).join());
 		for (const extension of source.listExtensions()) {
+			if (extension.extensionName === 'KHR_materials_unlit') {
+				return ShadingModel.UNLIT;
+			}
+		}
+		for (const extension of source.listExtensions()) {
 			switch (extension.extensionName) {
 				case 'KHR_materials_unlit':
-					return ShadingModel.UNLIT;
 				case 'KHR_materials_clearcoat':
 				case 'KHR_materials_ior':
+				case 'KHR_materials_sheen':
+				case 'KHR_materials_specular':
 				case 'KHR_materials_transmission':
+				case 'KHR_materials_volume':
 					return ShadingModel.PHYSICAL;
 			}
 		}
@@ -309,12 +292,9 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 	}
 
 	public dispose() {
-		this.baseColorTexture.dispose();
-		this.emissiveTexture.dispose();
-		this.normalTexture.dispose();
-		this.occlusionTexture.dispose();
-		this.metallicRoughnessTexture.dispose();
-
+		for (const observer of this._textureObservers) {
+			observer.dispose();
+		}
 		super.dispose();
 	}
 }

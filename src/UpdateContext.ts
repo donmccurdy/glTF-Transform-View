@@ -1,4 +1,5 @@
 import { Accessor as AccessorDef, Material as MaterialDef, Mesh as MeshDef, Node as NodeDef, Primitive as PrimitiveDef, Property as PropertyDef, PropertyType, Scene as SceneDef, Texture as TextureDef } from '@gltf-transform/core';
+import { createTextureCache } from 'VariantCache';
 import { AccessorBinding, Binding, MaterialBinding, MeshBinding, NodeBinding, PrimitiveBinding, SceneBinding, TextureBinding } from './bindings';
 
 // export enum UpdateMask {
@@ -12,6 +13,8 @@ import { AccessorBinding, Binding, MaterialBinding, MeshBinding, NodeBinding, Pr
 export class UpdateContext {
 	public updateID = 1;
 	public deep = true;
+
+	public textureCache = createTextureCache();
 
 	private _bindings = new Set<Binding<PropertyDef, any>>();
 	private _sourceMap = new WeakMap<PropertyDef, Binding<PropertyDef, any>>();
