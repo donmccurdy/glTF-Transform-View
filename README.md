@@ -83,10 +83,11 @@ function animate () {
 **P0:**
 
 - [ ] Support 1:many bindings
-  - [ ] Material
-  - [ ] Texture
+  - [x] Material
+  - [x] Texture
   - [ ] ...Accessor?
 - [ ] Dispose of resources removed from PropertyGraph
+- [ ] Unit tests
 
 **P2:**
 
