@@ -47,7 +47,7 @@ yarn
 # Build source, watch for changes.
 yarn watch
 
-# Run examples.
+# Build source, watch for changes, and run examples.
 yarn dev
 ```
 
@@ -80,26 +80,45 @@ function animate () {
 
 ## Bugs / Limitations / To Do
 
-- [ ] Support more control of the update process (e.g. vertex data flag)
-- [ ] Better handling of 1:many bindings (e.g. glTF Material → three.js Material)
+**P0:**
+
+- [ ] Support 1:many bindings
+  - [ ] Material
+  - [ ] Texture
+  - [ ] ...Accessor?
 - [ ] Dispose of resources removed from PropertyGraph
+
+**P2:**
+
+- [ ] Granular update process (e.g. vertex data flag)
 - [ ] Animation
 - [ ] Cameras
 - [ ] Extras / Custom Properties
 
 ### Extensions Supported
 
+**Complete:**
+
 - [x] KHR_draco_mesh_compression
-- [ ] KHR_lights_punctual
 - [x] KHR_mesh_quantization
 - [x] KHR_materials_clearcoat
 - [x] KHR_materials_ior
-- [ ] KHR_materials_pbrSpecularGlossiness
-- [ ] KHR_materials_sheen
-- [ ] KHR_materials_specular
 - [x] KHR_materials_transmission
 - [x] KHR_materials_unlit
-- [ ] KHR_materials_variants
+- [x] EXT_texture_webp
+
+**P0:**
+
+- [ ] KHR_materials_specular
 - [ ] KHR_materials_volume
-- [ ] KHR_texture_basisu
 - [ ] KHR_texture_transform
+- [ ] KHR_texture_basisu
+
+**P2:**
+
+- [ ] KHR_lights_punctual
+- [ ] KHR_materials_pbrSpecularGlossiness
+- [ ] KHR_materials_sheen
+- [ ] KHR_materials_variants
+- [ ] EXT_mesh_gpu_instancing
+- [ ] EXT_meshopt_compression

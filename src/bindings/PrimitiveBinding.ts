@@ -1,8 +1,10 @@
-import { BufferAttribute, BufferGeometry, Material, Mesh, MeshStandardMaterial } from 'three';
-import { Accessor as AccessorDef, Material as MaterialDef, Primitive as PrimitiveDef } from '@gltf-transform/core';
+import { BufferAttribute, BufferGeometry, Line, LineLoop, LineSegments, Material, Mesh, MeshStandardMaterial, Points, SkinnedMesh } from 'three';
+import { Accessor as AccessorDef, GLTF, Material as MaterialDef, Primitive as PrimitiveDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
 import { PropertyMapObserver, PropertyObserver } from '../observers';
 import { Binding } from './Binding';
+import { createMaterialParams, createMaterialVariant, MaterialParams } from '../variants/material';
+import { PropertyVariantObserver } from '../observers/PropertyVariantObserver';
 
 // https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#default-material
 const DEFAULT_MATERIAL = new MeshStandardMaterial({color: 0xFFFFFF, roughness: 1.0, metalness: 1.0});
@@ -21,19 +23,24 @@ function semanticToAttributeName(semantic: string): string {
 	}
 }
 
-export class PrimitiveBinding extends Binding<PrimitiveDef, Mesh> {
-	protected material = new PropertyObserver<MaterialDef, Material>(this._context);
+type MeshLike = Mesh | SkinnedMesh | Points | Line | LineSegments | LineLoop;
+
+export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
+	protected material = new PropertyVariantObserver<MaterialDef, Material, MaterialParams>(this._context, createMaterialVariant);
 	protected indices = new PropertyObserver<AccessorDef, BufferAttribute>(this._context);
 	protected attributes = new PropertyMapObserver<AccessorDef, BufferAttribute>(this._context);
 
 	public constructor(context: UpdateContext, source: PrimitiveDef) {
-		super(context, source, new Mesh(new BufferGeometry(), DEFAULT_MATERIAL));
+		super(context, source, PrimitiveBinding.createTarget(source, new BufferGeometry(), DEFAULT_MATERIAL));
 
-		this.material.subscribe((material) => (this.value.material = material || DEFAULT_MATERIAL));
+		this.material.subscribe((material) => (this.value.material = material as Material));
 		this.indices.subscribe((indices) => this.value.geometry.setIndex(indices));
 		this.attributes.subscribe(({key, value}) => {
 			if (value) this.value.geometry.setAttribute(semanticToAttributeName(key), value);
 			if (!value) this.value.geometry.deleteAttribute(semanticToAttributeName(key));
+			// TODO(bug): Creates clones... let VariantObserver handle it.
+			// TODO(test): Is this necessary?
+			this.material.notify();
 		});
 	}
 
@@ -45,20 +52,75 @@ export class PrimitiveBinding extends Binding<PrimitiveDef, Mesh> {
 			target.name = source.getName();
 		}
 
-		this.material.update(source.getMaterial());
+		// Order is important here:
+		//  (1) Attributes must update before material params.
+		//  (2) Material params must update before material.
+		//  (3) Mode can safely come last, but that's non-obvious.
+
 		this.indices.update(source.getIndices());
 		this.attributes.update(source.listSemantics(), source.listAttributes());
+		this.material.setParams(createMaterialParams(source));
+		this.material.update(source.getMaterial());
+
+		if (source.getMode() !== getObject3DMode(target)) {
+			this.next(PrimitiveBinding.createTarget(source, target.geometry, target.material as Material));
+			this.disposeTarget(target);
+		}
 
 		return this;
 	}
 
-	public disposeTarget(target: Mesh): void {
-		target.geometry.dispose();
+	private static createTarget(source: PrimitiveDef, geometry: BufferGeometry, material: Material): MeshLike {
+		switch (source.getMode()) {
+			case PrimitiveDef.Mode.TRIANGLES:
+			case PrimitiveDef.Mode.TRIANGLE_FAN:
+			case PrimitiveDef.Mode.TRIANGLE_STRIP:
+				// TODO(bug): Support triangle fan and triangle strip.
+				return source.getAttribute('JOINTS_0')
+					? new SkinnedMesh(geometry, material)
+					: new Mesh(geometry, material);
+			case PrimitiveDef.Mode.LINES:
+				return new LineSegments(geometry, material);
+			case PrimitiveDef.Mode.LINE_LOOP:
+				return new LineLoop(geometry, material);
+			case PrimitiveDef.Mode.LINE_STRIP:
+				return new Line(geometry, material);
+			case PrimitiveDef.Mode.POINTS:
+				return new Points(geometry, material);
+			default:
+				throw new Error(`Unexpected primitive mode: ${source.getMode()}`);
+		}
+	}
+
+	public disposeTarget(_target: MeshLike): void {
+		// geometry and material are reused.
 	}
 
 	public dispose() {
+		// TODO(bug): Dispose this.value.{geometry,material}?
+		this.material.dispose();
 		this.indices.dispose();
 		this.attributes.dispose();
 		super.dispose();
+	}
+}
+
+/** Returns equivalent GL mode enum for the given THREE.Object3D type. */
+function getObject3DMode(mesh: MeshLike): GLTF.MeshPrimitiveMode {
+	switch (mesh.type) {
+		case 'Mesh':
+		case 'SkinnedMesh':
+			// TODO(bug): Support triangle fan and triangle strip.
+			return PrimitiveDef.Mode.TRIANGLES;
+		case 'LineSegments':
+			return PrimitiveDef.Mode.LINES;
+		case 'LineLoop':
+			return PrimitiveDef.Mode.LINE_LOOP;
+		case 'Line':
+			return PrimitiveDef.Mode.LINE_STRIP;
+		case 'Points':
+			return PrimitiveDef.Mode.POINTS;
+		default:
+			throw new Error(`Unexpected type: ${mesh.type}`);
 	}
 }

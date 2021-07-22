@@ -1,11 +1,12 @@
-import { DoubleSide, FrontSide, LinearEncoding, Material, MeshBasicMaterial, MeshPhysicalMaterial, MeshStandardMaterial, Texture, TextureEncoding, sRGBEncoding } from 'three';
+import { DoubleSide, FrontSide, LinearEncoding, Material, MeshBasicMaterial, MeshPhysicalMaterial, MeshStandardMaterial, Texture, TextureEncoding, sRGBEncoding, LineBasicMaterial, PointsMaterial } from 'three';
 import { Material as MaterialDef, Texture as TextureDef, TextureInfo as TextureInfoDef, vec3 } from '@gltf-transform/core';
 import { Clearcoat, IOR, Transmission } from '@gltf-transform/extensions';
 import type { UpdateContext } from '../UpdateContext';
-import { PropertyObserver, Subscription } from '../observers';
+import { Subscription } from '../observers';
 import { eq } from '../utils';
 import { Binding } from './Binding';
-import { createTextureCache, createTextureParams } from 'VariantCache';
+import { createTextureParams, createTextureVariant, TextureParams } from '../variants/texture';
+import { PropertyVariantObserver } from '../observers/PropertyVariantObserver';
 
 const _vec3: vec3 = [0, 0, 0];
 
@@ -16,81 +17,76 @@ enum ShadingModel {
 }
 
 export class MaterialBinding extends Binding<MaterialDef, Material> {
-	protected readonly baseColorTexture = new PropertyObserver<TextureDef, Texture>(this._context);
-	protected readonly emissiveTexture = new PropertyObserver<TextureDef, Texture>(this._context);
-	protected readonly normalTexture = new PropertyObserver<TextureDef, Texture>(this._context);
-	protected readonly occlusionTexture = new PropertyObserver<TextureDef, Texture>(this._context);
-	protected readonly metallicRoughnessTexture = new PropertyObserver<TextureDef, Texture>(this._context);
+	protected readonly baseColorTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, createTextureVariant);
+	protected readonly emissiveTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, createTextureVariant);
+	protected readonly normalTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, createTextureVariant);
+	protected readonly occlusionTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, createTextureVariant);
+	protected readonly metallicRoughnessTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, createTextureVariant);
 
-	protected readonly clearcoatTexture = new PropertyObserver<TextureDef, Texture>(this._context);
-	protected readonly clearcoatRoughnessTexture = new PropertyObserver<TextureDef, Texture>(this._context);
-	protected readonly clearcoatNormalTexture = new PropertyObserver<TextureDef, Texture>(this._context);
+	protected readonly clearcoatTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, createTextureVariant);
+	protected readonly clearcoatRoughnessTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, createTextureVariant);
+	protected readonly clearcoatNormalTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, createTextureVariant);
 
-	protected readonly transmissionTexture = new PropertyObserver<TextureDef, Texture>(this._context);
+	protected readonly transmissionTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, createTextureVariant);
 
-	private readonly _textureObservers: PropertyObserver<TextureDef, Texture>[] = [];
+	private readonly _textureObservers: PropertyVariantObserver<TextureDef, Texture, TextureParams>[] = [];
+	private readonly _textureUpdateFns: (() => void)[] = [];
 
 	public constructor(context: UpdateContext, source: MaterialDef) {
 		super(context, source, MaterialBinding.createTarget(source));
 
-		this.bindTexture(['map'], this.baseColorTexture, () => source.getBaseColorTextureInfo(), sRGBEncoding);
-		this.bindTexture(['emissiveMap'], this.emissiveTexture, () => source.getEmissiveTextureInfo(), sRGBEncoding);
-		this.bindTexture(['normalMap'], this.normalTexture, () => source.getNormalTextureInfo(), LinearEncoding);
-		this.bindTexture(['aoMap'], this.occlusionTexture, () => source.getOcclusionTextureInfo(), LinearEncoding);
-		this.bindTexture(['roughnessMap', 'metalnessMap'], this.metallicRoughnessTexture, () => source.getMetallicRoughnessTextureInfo(), LinearEncoding);
+		this.bindTexture(['map'], this.baseColorTexture, () => source.getBaseColorTexture(), () => source.getBaseColorTextureInfo(), sRGBEncoding);
+		this.bindTexture(['emissiveMap'], this.emissiveTexture, () => source.getEmissiveTexture(), () => source.getEmissiveTextureInfo(), sRGBEncoding);
+		this.bindTexture(['normalMap'], this.normalTexture, () => source.getNormalTexture(), () => source.getNormalTextureInfo(), LinearEncoding);
+		this.bindTexture(['aoMap'], this.occlusionTexture, () => source.getOcclusionTexture(), () => source.getOcclusionTextureInfo(), LinearEncoding);
+		this.bindTexture(['roughnessMap', 'metalnessMap'], this.metallicRoughnessTexture, () => source.getMetallicRoughnessTexture(), () => source.getMetallicRoughnessTextureInfo(), LinearEncoding);
 
 		// KHR_materials_clearcoat
 		const clearcoatExt = (): Clearcoat | null => source.getExtension<Clearcoat>('KHR_materials_clearcoat');
-		this.bindTexture(['clearcoatMap'], this.clearcoatTexture, () => clearcoatExt()?.getClearcoatTextureInfo(), LinearEncoding);
-		this.bindTexture(['clearcoatRoughnessMap'], this.clearcoatRoughnessTexture, () => clearcoatExt()?.getClearcoatRoughnessTextureInfo(), LinearEncoding);
-		this.bindTexture(['clearcoatNormalMap'], this.clearcoatNormalTexture, () => clearcoatExt()?.getClearcoatNormalTextureInfo(), LinearEncoding);
+		this.bindTexture(['clearcoatMap'], this.clearcoatTexture, () => clearcoatExt()?.getClearcoatTexture() || null, () => clearcoatExt()?.getClearcoatTextureInfo() || null, LinearEncoding);
+		this.bindTexture(['clearcoatRoughnessMap'], this.clearcoatRoughnessTexture, () => clearcoatExt()?.getClearcoatRoughnessTexture() || null, () => clearcoatExt()?.getClearcoatRoughnessTextureInfo() || null, LinearEncoding);
+		this.bindTexture(['clearcoatNormalMap'], this.clearcoatNormalTexture, () => clearcoatExt()?.getClearcoatNormalTexture() || null, () => clearcoatExt()?.getClearcoatNormalTextureInfo() || null, LinearEncoding);
 
 		// KHR_materials_transmission
 		const transmissionExt = (): Transmission | null => source.getExtension<Transmission>('KHR_materials_transmission');
-		this.bindTexture(['transmissionMap'], this.transmissionTexture, () => transmissionExt()?.getTransmissionTextureInfo(), LinearEncoding);
+		this.bindTexture(['transmissionMap'], this.transmissionTexture, () => transmissionExt()?.getTransmissionTexture() || null, () => transmissionExt()?.getTransmissionTextureInfo() || null, LinearEncoding);
 	}
 
 	private bindTexture(
 			maps: string[],
-			observer: PropertyObserver<TextureDef, Texture>,
-			textureInfoFn: () => TextureInfoDef | undefined | null,
+			observer: PropertyVariantObserver<TextureDef, Texture, TextureParams>,
+			textureFn: () => TextureDef | null,
+			textureInfoFn: () => TextureInfoDef | null,
 			encoding: TextureEncoding): Subscription {
-		this._textureObservers.push(observer);
-		return observer.subscribe((texture) => {
-			// Configure Texture from TextureInfo.
-			if (texture) {
-				const textureParams = createTextureParams(textureInfoFn()!, encoding);
-				texture = this._context.textureCache.request(texture, textureParams);
-			}
 
-			// Assign new Texture.
+		this._textureObservers.push(observer);
+
+		// TODO(bug): Changes in TextureInfo are not bound.
+		this._textureUpdateFns.push(() => {
+			const textureInfo = textureInfoFn();
+			if (textureInfo) observer.setParams(createTextureParams(textureInfo, encoding));
+			observer.update(textureFn());
+		})
+
+		return observer.subscribe((texture) => {
 			const material = this.value as any;
 			for (const map of maps) {
-				// Unlit ⊂ Standard ⊂ Physical
-				if (!(map in material)) continue;
-
-				// Recompile materials if texture added/removed.
-				if (!!material[map] !== !!texture) material.needsUpdate = true;
-
-				// Return old textures to cache.
-				// TODO(bug): Should this be === or !==, or both?
-				if (material[map] && material[map] !== texture) {
-					this._context.textureCache.release(material[map]);
-				}
-
+				if (!(map in material)) continue; // Unlit ⊂ Standard ⊂ Physical (& Points, Lines)
+				if (!!material[map] !== !!texture) material.needsUpdate = true; // Recompile on add/remove.
 				material[map] = texture;
 			}
 		});
 	}
 
 	private applyBoundTextures() {
+		// TODO(bug): Creates clones... let VariantObserver handle it.
 		for (const observer of this._textureObservers) {
 			observer.notify();
 		}
 	}
 
 	private static createTarget(source: MaterialDef): Material {
-		const shadingModel = this.getShadingModel(source);
+		const shadingModel = getShadingModel(source);
 		switch (shadingModel) {
 			case ShadingModel.UNLIT:
 				return new MeshBasicMaterial();
@@ -104,34 +100,11 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 		}
 	}
 
-	private static getShadingModel(source: MaterialDef): ShadingModel {
-		// TODO(bug): This is called 2-3 times during loadout, is that OK?
-		console.log('MaterialBinding::getShadingModel → ' + source.listExtensions().map((e) => e.extensionName).join());
-		for (const extension of source.listExtensions()) {
-			if (extension.extensionName === 'KHR_materials_unlit') {
-				return ShadingModel.UNLIT;
-			}
-		}
-		for (const extension of source.listExtensions()) {
-			switch (extension.extensionName) {
-				case 'KHR_materials_unlit':
-				case 'KHR_materials_clearcoat':
-				case 'KHR_materials_ior':
-				case 'KHR_materials_sheen':
-				case 'KHR_materials_specular':
-				case 'KHR_materials_transmission':
-				case 'KHR_materials_volume':
-					return ShadingModel.PHYSICAL;
-			}
-		}
-		return ShadingModel.STANDARD;
-	}
-
 	public update(): this {
 		const source = this.source;
 		let target = this.value;
 
-		const shadingModel = MaterialBinding.getShadingModel(source);
+		const shadingModel = getShadingModel(source);
 		if (shadingModel === ShadingModel.UNLIT && target.type !== 'MeshBasicMaterial'
 			|| shadingModel === ShadingModel.STANDARD && target.type !== 'MeshStandardMaterial'
 			|| shadingModel === ShadingModel.PHYSICAL && target.type !== 'MeshPhysicalMaterial') {
@@ -143,25 +116,28 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 			console.debug(`MaterialBinding::shadingModel → ${target.type}`);
 		}
 
-		// TODO(bug): Test some of the edge cases here. When switching from
-		// 'standard' to 'unlit' model, do unwanted properties like AO get
-		// set on the MeshBasicMaterial?
+		// TODO(test): Write tests for the edge cases here, ensure that we
+		// don't get properties on a material from the wrong shading model.
 		switch (shadingModel) {
-			case ShadingModel.STANDARD:
 			case ShadingModel.PHYSICAL:
-				this.updatePhysical();
-				this.updateStandard();
-				// ⬇ falls through.
+				this._updatePhysical(target as MeshPhysicalMaterial); // falls through ⬇
+			case ShadingModel.STANDARD:
+				this._updateStandard(target as MeshStandardMaterial); // falls through ⬇
 			default:
-				this.updateCommon();
+				this._updateBasic(target as MeshBasicMaterial);
 		}
+
+		for (const fn of this._textureUpdateFns) fn();
+
+		// TODO(impl): How difficult would it be to put this behind a needsUpdate test?
+		// TODO(bug): Creates clones... let VariantObserver handle it.
+		this.notify(); // Notify PropertyVariantObserver.
 
 		return this;
 	}
 
-	public updateCommon() {
+	private _updateBasic(target: MeshBasicMaterial) {
 		const source = this.source;
-		const target = this.value as MeshBasicMaterial;
 
 		if (source.getName() !== target.name) {
 			target.name = source.getName();
@@ -189,20 +165,19 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 				break;
 		}
 
-		const sourceBaseColor = source.getBaseColorFactor().slice(0, 3);
-		if (!eq(sourceBaseColor, target.color.toArray(_vec3))) {
-			target.color.fromArray(sourceBaseColor);
-		}
-
 		const sourceAlpha = source.getAlpha();
 		if (sourceAlpha !== target.opacity) {
 			target.opacity = sourceAlpha;
 		}
+
+		const sourceBaseColor = source.getBaseColorFactor().slice(0, 3);
+		if (!eq(sourceBaseColor, target.color.toArray(_vec3))) {
+			target.color.fromArray(sourceBaseColor);
+		}
 	}
 
-	public updateStandard() {
+	private _updateStandard(target: MeshStandardMaterial) {
 		const source = this.source;
-		const target = this.value as MeshStandardMaterial;
 
 		const sourceEmissive = source.getEmissiveFactor();
 		if (!eq(sourceEmissive, target.emissive.toArray(_vec3))) {
@@ -226,22 +201,16 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 
 		const sourceNormalScale = source.getNormalScale();
 		if (sourceNormalScale !== target.normalScale.x) {
-			// TODO(bug): Different fix required with vertex tangents...
-			// https://github.com/mrdoob/three.js/issues/11438#issuecomment-507003995
-			target.normalScale.x = sourceNormalScale;
-			target.normalScale.y = - sourceNormalScale;
+			target.normalScale.setScalar(sourceNormalScale);
 		}
-
-		this.baseColorTexture.update(source.getBaseColorTexture());
-		this.emissiveTexture.update(source.getEmissiveTexture());
-		this.normalTexture.update(source.getNormalTexture());
-		this.occlusionTexture.update(source.getOcclusionTexture());
-		this.metallicRoughnessTexture.update(source.getMetallicRoughnessTexture());
 	}
 
-	public updatePhysical() {
+	private _updatePhysical(target: MeshPhysicalMaterial) {
 		const source = this.source;
-		const target = this.value as MeshPhysicalMaterial;
+
+		if (!(target instanceof MeshPhysicalMaterial)) {
+			return;
+		}
 
 		// KHR_materials_clearcoat
 		const clearcoat = source.getExtension<Clearcoat>('KHR_materials_clearcoat');
@@ -257,9 +226,6 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 				target.clearcoatNormalScale.x = clearcoat.getClearcoatNormalScale();
 				target.clearcoatNormalScale.y = - clearcoat.getClearcoatNormalScale();
 			}
-			this.clearcoatTexture.update(clearcoat.getClearcoatTexture());
-			this.clearcoatRoughnessTexture.update(clearcoat.getClearcoatRoughnessTexture());
-			this.clearcoatNormalTexture.update(clearcoat.getClearcoatNormalTexture());
 		} else {
 			target.clearcoat = 0;
 		}
@@ -281,7 +247,6 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 				if (target.transmission === 0) target.needsUpdate = true;
 				target.transmission = transmission.getTransmissionFactor();
 			}
-			this.transmissionTexture.update(transmission.getTransmissionTexture());
 		} else {
 			target.transmission = 0;
 		}
@@ -297,4 +262,28 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 		}
 		super.dispose();
 	}
+}
+
+function getShadingModel(source: MaterialDef): ShadingModel {
+	// TODO(bug): This is called 2-3 times during loadout, is that OK?
+	console.log('MaterialBinding::getShadingModel()');
+
+	for (const extension of source.listExtensions()) {
+		if (extension.extensionName === 'KHR_materials_unlit') {
+			return ShadingModel.UNLIT;
+		}
+	}
+	for (const extension of source.listExtensions()) {
+		switch (extension.extensionName) {
+			case 'KHR_materials_unlit':
+			case 'KHR_materials_clearcoat':
+			case 'KHR_materials_ior':
+			case 'KHR_materials_sheen':
+			case 'KHR_materials_specular':
+			case 'KHR_materials_transmission':
+			case 'KHR_materials_volume':
+				return ShadingModel.PHYSICAL;
+		}
+	}
+	return ShadingModel.STANDARD;
 }

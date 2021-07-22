@@ -1,7 +1,7 @@
 import { ACESFilmicToneMapping, AmbientLight, DirectionalLight, PMREMGenerator, PerspectiveCamera, Scene, UnsignedByteType, WebGLRenderer, sRGBEncoding } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
-import { Material, WebIO } from '@gltf-transform/core';
+import { GLTF, Material, WebIO } from '@gltf-transform/core';
 import { DocumentRenderer } from '../dist/render.modern.js';
 import {Pane} from 'tweakpane';
 import * as TweakpanePluginThumbnailList from 'tweakpane-plugin-thumbnail-list';
@@ -65,6 +65,8 @@ const pane = new Pane({title: 'DamagedHelmet.glb'});
 pane.registerPlugin(TweakpanePluginThumbnailList);
 const updateStats = createStatsPane(renderer, pane);
 
+
+
 const io = new WebIO();
 io.read('../assets/DamagedHelmet.glb').then(async (doc) => {
 	console.time('DocumentRenderer::init');
@@ -82,6 +84,19 @@ io.read('../assets/DamagedHelmet.glb').then(async (doc) => {
 	material = doc.getRoot().listMaterials().pop();
 	const materialFolder = createMaterialPane(pane, doc, material);
 	materialFolder.on('change', () => (needsUpdate = true));
+
+	const prim = doc.getRoot().listMeshes().pop().listPrimitives().pop();
+	const primFolder = pane.addFolder({title: 'Primitive'});
+	primFolder.addInput({mode: 4}, 'mode', {
+		options: {
+			POINTS: 0,
+			LINES: 1,
+			TRIANGLES: 4,
+		}
+	}).on('change', (ev) => {
+		prim.setMode(ev.value as GLTF.MeshPrimitiveMode);
+		documentRenderer.update(prim);
+	});
 });
 
 //
