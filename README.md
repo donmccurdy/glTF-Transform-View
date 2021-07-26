@@ -84,7 +84,6 @@ function animate () {
 
 - [ ] Dispose of resources removed from PropertyGraph
 - [ ] Cache variants (Materials, Textures)
-- [ ] TextureInfo
 - [ ] Correct tangent space normal maps
 - [ ] Unit tests
 

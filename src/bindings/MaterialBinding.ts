@@ -61,7 +61,6 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 
 		this._textureObservers.push(observer);
 
-		// TODO(bug): Changes in TextureInfo are not bound.
 		this._textureUpdateFns.push(() => {
 			const textureInfo = textureInfoFn();
 			if (textureInfo) observer.setParams(createTextureParams(textureInfo, encoding));
