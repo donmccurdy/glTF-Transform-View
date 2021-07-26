@@ -8,7 +8,7 @@ test('SceneBinding', t => {
 	const sceneDef = document.createScene('MyScene')
 		.addChild(document.createNode('Node1'))
 		.addChild(nodeDef = document.createNode('Node2'))
-		.addChild(document.createNode('Node3'))
+		.addChild(document.createNode('Node3'));
 
 	const renderer = new DocumentRenderer(document);
 	const scene = renderer.toObject3D();
