@@ -893,19 +893,19 @@
     lodash "^4.17.19"
     to-fast-properties "^2.0.0"
 
-"@gltf-transform/core@^0.12.4":
-  version "0.12.4"
-  resolved "https://registry.yarnpkg.com/@gltf-transform/core/-/core-0.12.4.tgz#314bd36e05946660c2b549b48f211d1f86937491"
-  integrity sha512-IYVxAy8ph11PrrPfopqZOIxa6Z1elOVFE7NrjAJ1xFVnGbDgSBb656aY9w7ewi2DtSVJUIgXSImZjcX0+vRibQ==
+"@gltf-transform/core@^0.12.7":
+  version "0.12.7"
+  resolved "https://registry.yarnpkg.com/@gltf-transform/core/-/core-0.12.7.tgz#3ad417f302bb49fe0b4a9828488ba84e22990122"
+  integrity sha512-cr39prmTgHscf8bLO6iRle02pwuXsDjGq8DFk1AG3+emubEw8DJRiPak/SgBODH5NiyNRJhQKDyuoB4ijZhrPQ==
   dependencies:
     gl-matrix "^3.3.0"
 
-"@gltf-transform/extensions@^0.12.4":
-  version "0.12.4"
-  resolved "https://registry.yarnpkg.com/@gltf-transform/extensions/-/extensions-0.12.4.tgz#79f9b8c9db0aa660ecc8c4796e5a82a9486ed471"
-  integrity sha512-FXIi+hKtIUWj+nutf7mIzgXYNV0VSoWopTJTQR75AQsQepvX5SnWYotQ9zut+f8b5MfoDd4lTEPeaSHl3JB3zw==
+"@gltf-transform/extensions@^0.12.7":
+  version "0.12.7"
+  resolved "https://registry.yarnpkg.com/@gltf-transform/extensions/-/extensions-0.12.7.tgz#89b3ab5d7bfb83e2b381e04350f2b37b3f48b5d0"
+  integrity sha512-MJ0MXZeigPvB+ZQDzD1RQi4x4VXsfXLUYhWdkpJkQYFJ26F7QZofaKfv8xvCnYebSISiWdwlC3aAz1Wuez86rA==
   dependencies:
-    "@gltf-transform/core" "^0.12.4"
+    "@gltf-transform/core" "^0.12.7"
     ktx-parse "^0.2.1"
 
 "@nodelib/fs.scandir@2.1.4":
@@ -1166,10 +1166,10 @@
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-1.1.2.tgz#ccb91445360179a04e7fe6aff78c00ffc1eeaf82"
   integrity sha512-RbzJvlNzmRq5c3O09UipeuXno4tA1FE6ikOjxZK0tuxVv3412l64l5t1W5pj4+rJq9vpkm/kwiR07aZXnsKPxw==
 
-"@tweakpane/core@^1.0.4":
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/@tweakpane/core/-/core-1.0.4.tgz#68a2749d78bd2a903f391a92ea95eb5d4e1f49a9"
-  integrity sha512-T0Skf8bOXVGmy2YzYirjB1leWunSG9CTeVlQcsk4FLATZP0iMYWdU213bA/04i9wyDkfoIkxQcOQ/ZVCqlt2Qw==
+"@tweakpane/core@^1.0.5":
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/@tweakpane/core/-/core-1.0.5.tgz#ec7076e52f06500dfc8f1a5b8aa88f41356e9ea8"
+  integrity sha512-dswwGHcnw6kgMVxv46PhLQDz45DhFvvLcbC3O8j3/O9sJuYNYgXBaLLKxoRWscQJkH+/Q6F/IiLWqarPUNTfig==
 
 "@types/cacheable-request@^6.0.1":
   version "6.0.2"
@@ -1242,10 +1242,10 @@
   dependencies:
     "@types/node" "*"
 
-"@types/three@^0.130.0":
-  version "0.130.0"
-  resolved "https://registry.yarnpkg.com/@types/three/-/three-0.130.0.tgz#f048f1fb73e789a2c0dfcc66a45ffcbf259a75f6"
-  integrity sha512-7MKKxlEjHoAGTBRxEcDOjO4OvOrvUM6xtyjPiubNcU6bRPNmjNaV/PI9tiaXkk8cauZ9FuRbdCV4g0rQod+FkQ==
+"@types/three@^0.130.1":
+  version "0.130.1"
+  resolved "https://registry.yarnpkg.com/@types/three/-/three-0.130.1.tgz#e5c9aadca684ca3da8daf64e8284bd1a9df2fcc8"
+  integrity sha512-FlCR3CxQHxCmjI0ZCG59O/E15bV+bx7XRO+nJ7RY8KBg2pEF/52frmV/uh9SrLd+ORx+7Zc7NxnJm5Kj4xS9Sg==
 
 "@typescript-eslint/eslint-plugin@^4.28.4":
   version "4.28.4"
@@ -5478,10 +5478,10 @@ smart-buffer@^4.1.0:
   resolved "https://registry.yarnpkg.com/smart-buffer/-/smart-buffer-4.1.0.tgz#91605c25d91652f4661ea69ccf45f1b331ca21ba"
   integrity sha512-iVICrxOzCynf/SNaBQCw34eM9jROU/s5rzIhpOvzhzuYHfJR/DhZfDkXiZSgKXfgv26HT3Yni3AV/DGw0cGnnw==
 
-snowpack@^3.8.2:
-  version "3.8.2"
-  resolved "https://registry.yarnpkg.com/snowpack/-/snowpack-3.8.2.tgz#fd1d995508f13725ede981d49b7583bdd0399f2f"
-  integrity sha512-aTPnHGHFmoAeZb4NxHzLbZyl/KeUveA78Xz40h+OX6ynFUO74Kta5Q3xw0CwWS87oBxoFL5jjNuFV8Bq1iaJBg==
+snowpack@^3.8.3:
+  version "3.8.3"
+  resolved "https://registry.yarnpkg.com/snowpack/-/snowpack-3.8.3.tgz#5f136dcbe051189ce20092acd36759d03e6cbf87"
+  integrity sha512-nD699xWIDk9nGH4V9xKjgIVPA8jXWp/crUG46mu3/11rrdEv94v4xV/j373w3EvegGVQ3JdA5mlNpxDU8wk5uw==
   dependencies:
     "@npmcli/arborist" "^2.6.4"
     bufferutil "^4.0.2"
@@ -6052,10 +6052,10 @@ tweakpane-plugin-thumbnail-list@^0.3.0:
   resolved "https://registry.yarnpkg.com/tweakpane-plugin-thumbnail-list/-/tweakpane-plugin-thumbnail-list-0.3.0.tgz#e77740e60fa068a3340b4eabd74ae2859182d7d4"
   integrity sha512-2/DOmCoWbzEnP1yhRZGaMN6Z5BrqX9Zc0/4jMeuHzvrNkpnx3k/d9y1u6rs1J96qFl9zNhsSAnmt/D6Tt9H22Q==
 
-tweakpane@^3.0.3:
-  version "3.0.3"
-  resolved "https://registry.yarnpkg.com/tweakpane/-/tweakpane-3.0.3.tgz#a0406bd1cd90f9bb35b3023a73305d5848ea10fe"
-  integrity sha512-o+S1jWBQFlTSxj1gxIGBx3FuHy+8h7SCTPndSPnZ+fu4VlSFfEXk/jnrLlkPci9Uw5EW48Ig6uYHqcgmpoqmTg==
+tweakpane@^3.0.4:
+  version "3.0.4"
+  resolved "https://registry.yarnpkg.com/tweakpane/-/tweakpane-3.0.4.tgz#9f40ae9b38a049c7d2782f73d4261f7363cedc8b"
+  integrity sha512-rnx+vzTw1tAjUXkIFubYUIwJEmOASFAlIP0De6tqWa2+IptmxdyvXWQG5/Vsph1T5YkFcMJ3VnV56wZirjPyFA==
 
 tweetnacl@^0.14.3, tweetnacl@~0.14.0:
   version "0.14.5"
