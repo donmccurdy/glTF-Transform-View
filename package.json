@@ -3,9 +3,9 @@
   "version": "0.0.1",
   "description": "Renders a glTF-Transform Document with WebGL",
   "main": "dist/render.js",
-  "module": "dist/render.modern.js",
   "source": "src/index.ts",
   "types": "dist/render.d.ts",
+  "type": "module",
   "author": "Don McCurdy <dm@donmccurdy.com>",
   "license": "MIT",
   "private": false,
@@ -19,21 +19,26 @@
   },
   "devDependencies": {
     "@tweakpane/core": "^1.0.4",
+    "@types/three": "^0.130.0",
     "@typescript-eslint/eslint-plugin": "^4.28.4",
     "@typescript-eslint/parser": "^4.28.4",
     "concurrently": "^6.2.0",
     "microbundle": "^0.13.3",
     "snowpack": "^3.8.2",
-    "@types/three": "^0.130.0",
+    "tap-spec": "^5.0.0",
+    "tape": "^5.2.2",
+    "tape-es": "^1.2.15",
     "three": "^0.130.1",
     "tweakpane": "^3.0.3",
     "tweakpane-plugin-thumbnail-list": "^0.3.0",
     "typescript": "^4.3.5"
   },
   "scripts": {
-    "dist": "microbundle --format modern,cjs",
-    "watch": "microbundle watch --no-compress --format modern,cjs",
-    "dev": "concurrently \"yarn watch\" \"snowpack dev\""
+    "dist": "microbundle --format modern",
+    "watch": "microbundle watch --no-compress --format modern",
+    "dev": "concurrently \"yarn watch\" \"snowpack dev\"",
+    "test": "tape-es test/**/*.test.js --threads 1 | tap-spec",
+    "test:watch:broken": "tape-watch-es test/**/*.test.js"
   },
   "browserslist": [
     "last 2 and_chr versions",
