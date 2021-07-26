@@ -2,9 +2,6 @@ import { Property as PropertyDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
 import { Observer, Subscription } from '../observers';
 
-// TODO(bug): Mapping may not be 1:1. Model as derived Observable? Examples:
-//   - Materials (temporary)
-//   - Textures (temporary)
 export abstract class Binding <Source extends PropertyDef, Target> extends Observer<Target> {
 	public source: Source;
 
