@@ -38,8 +38,7 @@ export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
 		this.attributes.subscribe(({key, value}) => {
 			if (value) this.value.geometry.setAttribute(semanticToAttributeName(key), value);
 			if (!value) this.value.geometry.deleteAttribute(semanticToAttributeName(key));
-			// TODO(bug): Creates clones... let VariantObserver handle it.
-			// TODO(test): Is this necessary?
+			// TODO(test): This is probably unnecessary?
 			this.material.notify();
 		});
 	}

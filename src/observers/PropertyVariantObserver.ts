@@ -2,8 +2,7 @@ import type { UpdateContext } from 'UpdateContext';
 import type { Property as PropertyDef } from '@gltf-transform/core';
 import { PropertyObserver } from './PropertyObserver';
 
-// TODO(bug): When disposed, what happens to variants?
-// TODO(bug): Add caching strategy.
+// TODO(bug): Add caching strategy, and dispose of unused variants.
 export class PropertyVariantObserver<S extends PropertyDef, T, P> extends PropertyObserver<S, T> {
 	private _configure: (target: T, params: P) => T;
 	private _params: P | null = null;

@@ -34,7 +34,6 @@ export class TextureBinding extends Binding<TextureDef, Texture> {
 		}
 
 		if (needsUpdate) {
-			// TODO(bug): Creates clones... let VariantObserver handle it.
 			this.notify(); // Notify PropertyVariantObserver.
 		}
 

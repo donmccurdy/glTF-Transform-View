@@ -79,7 +79,6 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 	}
 
 	private applyBoundTextures() {
-		// TODO(bug): Creates clones... let VariantObserver handle it.
 		for (const observer of this._textureObservers) {
 			observer.notify();
 		}
@@ -130,7 +129,6 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 		for (const fn of this._textureUpdateFns) fn();
 
 		// TODO(impl): How difficult would it be to put this behind a needsUpdate test?
-		// TODO(bug): Creates clones... let VariantObserver handle it.
 		this.notify(); // Notify PropertyVariantObserver.
 
 		return this;

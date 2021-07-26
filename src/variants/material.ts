@@ -50,7 +50,7 @@ export function createMaterialVariant(material: Material, params: MaterialParams
     if (params.useMorphTargets) outputMaterial.morphTargets = true;
     if (!(outputMaterial instanceof LineBasicMaterial)
             && !(outputMaterial instanceof PointsMaterial)) {
-        // TODO(bug): Different fix required with vertex tangents...
+        // TODO(bug): Correct tangent space normal maps.
         // https://github.com/mrdoob/three.js/issues/11438#issuecomment-507003995
         if (params.useVertexTangents) outputMaterial.vertexTangents = true;
         if (params.useFlatShading) outputMaterial.flatShading = true;
