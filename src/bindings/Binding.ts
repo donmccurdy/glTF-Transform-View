@@ -17,8 +17,6 @@ export abstract class Binding <Source extends PropertyDef, Target> extends Obser
 		this._targetUnsubscribe = this.subscribe((next, prev) => {
 			if (prev && prev !== next) this.disposeTarget(prev);
 		});
-
-		this._context.add(this);
 	}
 
 	public abstract update(): this;

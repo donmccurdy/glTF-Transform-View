@@ -3,10 +3,10 @@ import type { Property as PropertyDef } from '@gltf-transform/core';
 import { Observer, Subscription } from './Observer';
 
 export class PropertyObserver<S extends PropertyDef, T> extends Observer<T | null> {
-	private _source: S | null = null;
-	private _unsubscribe: Subscription | null = null;
+	protected _source: S | null = null;
+	protected _unsubscribe: Subscription | null = null;
 
-	constructor(private _context: UpdateContext) {
+	constructor(protected _context: UpdateContext) {
 		super(null);
 	}
 

@@ -14,11 +14,11 @@ export class UpdateContext {
 	public deep = true;
 
 	private _bindings = new Set<Binding<PropertyDef, any>>();
-	private _sourceMap = new WeakMap<PropertyDef, Binding<PropertyDef, any>>();
+	private _sourceBindings = new WeakMap<PropertyDef, Binding<PropertyDef, any>>();
 
-	public add(renderer: Binding<PropertyDef, any>): void {
+	private _addBinding(renderer: Binding<PropertyDef, any>): void {
 		this._bindings.add(renderer);
-		this._sourceMap.set(renderer.source, renderer);
+		this._sourceBindings.set(renderer.source, renderer);
 	}
 
 	public bind(source: null): null;
@@ -31,26 +31,40 @@ export class UpdateContext {
 	public bind(source: PropertyDef): Binding<PropertyDef, any>;
 	public bind(source: PropertyDef | null): Binding<PropertyDef, any> | null {
 		if (!source) return null;
-		if (this._sourceMap.has(source)) return this._sourceMap.get(source)!;
+		if (this._sourceBindings.has(source)) {
+			return this._sourceBindings.get(source)!;
+		}
 
+		let binding: Binding<PropertyDef, any>;
 		switch (source.propertyType) {
 			case PropertyType.ACCESSOR:
-				return new AccessorBinding(this, source as AccessorDef).update();
+				binding = new AccessorBinding(this, source as AccessorDef);
+				break;
 			case PropertyType.MATERIAL:
-				return new MaterialBinding(this, source as MaterialDef).update();
+				binding = new MaterialBinding(this, source as MaterialDef);
+				break;
 			case PropertyType.MESH:
-				return new MeshBinding(this, source as MeshDef).update();
+				binding = new MeshBinding(this, source as MeshDef);
+				break;
 			case PropertyType.NODE:
-				return new NodeBinding(this, source as NodeDef).update();
+				binding = new NodeBinding(this, source as NodeDef);
+				break;
 			case PropertyType.PRIMITIVE:
-				return new PrimitiveBinding(this, source as PrimitiveDef).update();
+				binding = new PrimitiveBinding(this, source as PrimitiveDef);
+				break;
 			case PropertyType.SCENE:
-				return new SceneBinding(this, source as SceneDef).update();
+				binding = new SceneBinding(this, source as SceneDef);
+				break;
 			case PropertyType.TEXTURE:
-				return new TextureBinding(this, source as TextureDef).update();
+				binding = new TextureBinding(this, source as TextureDef);
+				break;
 			default:
 				throw new Error(`Unimplemented type: ${source.propertyType}`);
 		}
+
+		binding.update();
+		this._addBinding(binding);
+		return binding;
 	}
 
 	public startUpdate(deep = false) {
