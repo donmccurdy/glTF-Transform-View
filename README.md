@@ -14,13 +14,12 @@ tools.
 While three.js can render glTF 2.0 files out of the box with
 [THREE.GLTFLoader](https://threejs.org/docs/index.html#examples/en/loaders/GLTFLoader),
 and export them with [THREE.GLTFLoader](https://threejs.org/docs/index.html#examples/en/loaders/GLTFLoader),
-this approach has an important limitation:
+this approach has an important limitation: the GLTFExporter &harr; GLTFLoader
+round-trip processing is lossy, and doesn't support all features of glTF. For a
+small set of closely-controlled assets, this might be a good workflow. But in
+general, it is error-prone.
 
-The THREE.GLTFExporter↔THREE.GLTFLoader round-trip processing is lossy, and
-doesn't support all features of glTF. For a small set of closely-controlled
-assets, this might be a good workflow. But in general, it is error-prone.
-
-An alternative might be to apply changes in glTF-Transform, export with
+Another alternative might be to apply changes in glTF-Transform, export with
 [WebIO](https://gltf-transform.donmccurdy.com/classes/core.webio.html),
 and reload with THREE.GLTFLoader. This workflow is accurate, but slow to
 repeat — even a simple change to a material parameter requires reloading the
