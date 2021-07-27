@@ -99,9 +99,9 @@ function animate () {
 
 **Legend:**
 
-- ✅  Renders and updates.
-- 🚧  Static render, no updates.
-- ❌  Not rendered.
+- ✅&nbsp;&nbsp;Renders and updates
+- 🚧&nbsp;&nbsp;Static render, no updates
+- ❌&nbsp;&nbsp;Not rendered
 
 ## Bugs / Limitations / To Do
 
