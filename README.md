@@ -43,17 +43,12 @@ The cost of this fast edit/refresh loop is a somewhat slower first-time load
 and additional memory overhead, so the project is not meant to replace
 THREE.GLTFLoader for most users.
 
- ## Quickstart
+## Quickstart
 
-```shell
-# Install dependencies.
-yarn
+Install:
 
-# Build source, watch for changes.
-yarn watch
-
-# Build source, watch for changes, and run examples.
-yarn dev
+```
+npm install --save @gltf-transform/render
 ```
 
 ## API
@@ -83,7 +78,7 @@ function animate () {
 }
 ```
 
-## Bindings
+### Bindings
 
 | binding   | status | comments     |
 |-----------|--------|--------------|
@@ -140,3 +135,19 @@ function animate () {
 - [ ] KHR_materials_variants
 - [ ] EXT_mesh_gpu_instancing
 - [ ] EXT_meshopt_compression
+
+## Contributing
+
+```shell
+# Install dependencies.
+yarn
+
+# Build source, watch for changes.
+yarn watch
+
+# Build source, watch for changes, and run examples.
+yarn dev
+
+# Run tests.
+yarn test
+```
