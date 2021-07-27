@@ -117,6 +117,7 @@ function animate () {
 
 - [ ] Correct tangent space normal maps
 - [ ] Dispose of resources removed from PropertyGraph
+- [ ] Dispose of resources when renderer disposed
 - [ ] Granular update process (e.g. vertex data flag)
 - [ ] Fails to render reused meshes
 - [ ] Rename DocumentRenderer → GLTFRenderer (?)
