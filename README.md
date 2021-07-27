@@ -78,13 +78,31 @@ function animate () {
 }
 ```
 
+## Bindings
+
+| binding   | status | comments     |
+|-----------|--------|--------------|
+| Scene     | ✅     | Complete     |
+| Material  | ✅     | Complete     |
+| Texture   | 🚧     | Static       |
+| Mesh      | 🚧     | Static       |
+| Primitive | 🚧     | Static       |
+| Animation | ❌     | No bindings  |
+| Camera    | ❌     | No bindings  |
+| Light     | ❌     | No bindings  |
+
+**Legend:**
+
+- ✅ Supports initial render and updates.
+- 🚧 Supports initial render, but no updates.
+- ❌ No support.
+
 ## Bugs / Limitations / To Do
 
 **P0:**
 
 - [ ] Dispose of resources removed from PropertyGraph
 - [ ] Correct tangent space normal maps
-- [ ] Document supported and unsupported workflows
 - [ ] Unit tests
 
 **P2:**
