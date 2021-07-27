@@ -49,5 +49,11 @@
     "last 2 ios_saf versions",
     "last 2 safari versions",
     "last 2 firefox versions"
+  ],
+  "files": [
+    "dist/",
+    "src/",
+    "README.md",
+    "LICENSE"
   ]
 }
