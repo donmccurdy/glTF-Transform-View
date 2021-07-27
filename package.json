@@ -2,9 +2,9 @@
   "name": "@gltf-transform/render",
   "version": "0.0.1",
   "description": "Renders a glTF-Transform Document with WebGL",
-  "main": "dist/render.js",
+  "module": "dist/render.modern.js",
   "source": "src/index.ts",
-  "types": "dist/render.d.ts",
+  "types": "dist/index.d.ts",
   "type": "module",
   "author": "Don McCurdy <dm@donmccurdy.com>",
   "license": "MIT",
@@ -26,8 +26,7 @@
     "microbundle": "^0.13.3",
     "snowpack": "^3.8.3",
     "tap-spec": "^5.0.0",
-    "tape": "^5.2.2",
-    "tape-es": "^1.2.15",
+    "tape": "^5.3.0",
     "three": "^0.130.1",
     "tweakpane": "^3.0.4",
     "tweakpane-plugin-thumbnail-list": "^0.3.0",
@@ -37,8 +36,7 @@
     "dist": "microbundle --format modern",
     "watch": "microbundle watch --no-compress --format modern",
     "dev": "concurrently \"yarn watch\" \"snowpack dev --config snowpack.config.cjs\"",
-    "test": "tape-es test/**/*.test.js --threads 1 | tap-spec",
-    "test:watch:broken": "tape-watch-es test/**/*.test.js"
+    "test": "tape test/**/*.test.js | tap-spec"
   },
   "browserslist": [
     "last 2 and_chr versions",
