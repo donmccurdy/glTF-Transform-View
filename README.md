@@ -1,35 +1,37 @@
 # @gltf-transform/render
 
-> _**IN DEVELOPMENT:** This project is currently in development, and missing key functionality._
+> _**IN DEVELOPMENT:** This project is currently in development, and missing some functionality._
 
 Syncs a glTF-Transform [Document](https://gltf-transform.donmccurdy.com/classes/document.html)
-with a [three.js](https://threejs.org/) scene graph, keeping three.js in sync
-over time as changes are made to the Document. When changes are complete,
-export the exact glTF model — losslessly — with the
-[glTF-Transform I/O](https://gltf-transform.donmccurdy.com/classes/core.platformio.html) tools.
+with a [three.js](https://threejs.org/) scene graph, keeping three.js updated
+over time as changes are made to the Document. After changes are complete,
+export the exact glTF document — losslessly — with the
+[glTF-Transform NodeIO / WebIO](https://gltf-transform.donmccurdy.com/classes/core.platformio.html)
+tools.
 
-three.js can render glTF 2.0 files without this package. However, for
-web applications that need to preview repeated changes to a glTF 2.0 file,
-existing options have major limitations:
+## Motivation
 
-- **A.** Load with [THREE.GLTFLoader](https://threejs.org/docs/index.html#examples/en/loaders/GLTFLoader),
-  apply changes in three.js, export with [THREE.GLTFExporter](https://threejs.org/docs/#examples/en/exporters/GLTFExporter).
-  For a small set of closely-controlled assets, this might
-  be a good workflow. However, THREE.GLTFExporter↔THREE.GLTFLoader round-trip
-  loading is lossy, and doesn't support all features of glTF.
-- **B.** Apply changes in glTF-Transform, export with [WebIO](https://gltf-transform.donmccurdy.com/classes/core.webio.html)
-  after each change, and load with THREE.GLTFLoader. This workflow is accurate,
-  but slow to repeat — even a simple change to a material parameter requires
-  reloading the entire file.
+While three.js can render glTF 2.0 files out of the box with
+[THREE.GLTFLoader](https://threejs.org/docs/index.html#examples/en/loaders/GLTFLoader),
+and export them with [THREE.GLTFLoader](https://threejs.org/docs/index.html#examples/en/loaders/GLTFLoader),
+this approach has an important limitation:
 
-The goal of `@gltf-transform/render` is to provide a tighter integration
-between a glTF Document and a three.js scene graph, so that changes to the Document
-are reflected quickly in the rendered result. For example, changes to a
-[Material](https://gltf-transform.donmccurdy.com/classes/material.html)
-can be applied instantly. In addition, any features that three.js doesn't
-support won't be lost — they just aren't rendered in the preview. The cost of
-this integration is a somewhat slower first-time load, so the project is not
-meant to replace THREE.GLTFLoader for most users.
+The THREE.GLTFExporter↔THREE.GLTFLoader round-trip processing is lossy, and
+doesn't support all features of glTF. For a small set of closely-controlled
+assets, this might be a good workflow. But in general, it is error-prone.
+
+An alternative might be to apply changes in glTF-Transform, export with
+[WebIO](https://gltf-transform.donmccurdy.com/classes/core.webio.html),
+and reload with THREE.GLTFLoader. This workflow is accurate, but slow to
+repeat — even a simple change to a material parameter requires reloading the
+entire file.
+
+**The goal of `@gltf-transform/render` is to provide a tighter integration
+between a glTF Document and a three.js scene graph**, so that changes to the
+Document (e.g. [Material](https://gltf-transform.donmccurdy.com/classes/material.html)
+settings) are shown _instantly_ in the rendered result. In addition, any
+features that three.js doesn't support won't be lost — they just aren't
+rendered in the preview.
 
 Basic workflow:
 
@@ -37,6 +39,10 @@ Basic workflow:
 2. Construct initial three.js scene state.
 3. Apply changes to glTF Document with glTF-Tranform API.
 4. Sync, render, and repeat at 60+ FPS.
+
+The cost of this fast edit/refresh loop is a somewhat slower first-time load
+and additional memory overhead, so the project is not meant to replace
+THREE.GLTFLoader for most users.
 
  ## Quickstart
 
