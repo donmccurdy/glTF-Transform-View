@@ -72,10 +72,9 @@ export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
 			case PrimitiveDef.Mode.TRIANGLES:
 			case PrimitiveDef.Mode.TRIANGLE_FAN:
 			case PrimitiveDef.Mode.TRIANGLE_STRIP:
+				// TODO(feat): Support SkinnedMesh.
 				// TODO(bug): Support triangle fan and triangle strip.
-				return source.getAttribute('JOINTS_0')
-					? new SkinnedMesh(geometry, material)
-					: new Mesh(geometry, material);
+				return new Mesh(geometry, material);
 			case PrimitiveDef.Mode.LINES:
 				return new LineSegments(geometry, material);
 			case PrimitiveDef.Mode.LINE_LOOP:
