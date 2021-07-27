@@ -126,7 +126,6 @@ function animate () {
 
 **P0:**
 
-- [ ] KHR_materials_specular
 - [ ] KHR_materials_volume
 - [ ] KHR_texture_transform
 - [ ] KHR_texture_basisu
@@ -136,6 +135,7 @@ function animate () {
 - [ ] KHR_lights_punctual
 - [ ] KHR_materials_pbrSpecularGlossiness
 - [ ] KHR_materials_sheen
+- [ ] KHR_materials_specular
 - [ ] KHR_materials_variants
 - [ ] EXT_mesh_gpu_instancing
 - [ ] EXT_meshopt_compression
