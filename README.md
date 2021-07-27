@@ -14,9 +14,9 @@ tools.
 While three.js can render glTF 2.0 files out of the box with
 [THREE.GLTFLoader](https://threejs.org/docs/index.html#examples/en/loaders/GLTFLoader),
 and export them with [THREE.GLTFLoader](https://threejs.org/docs/index.html#examples/en/loaders/GLTFLoader),
-this approach has an important limitation: the GLTFExporter &harr; GLTFLoader
-round-trip processing is lossy, and doesn't support all features of glTF. For a
-small set of closely-controlled assets, this might be a good workflow. But in
+this approach has an important limitation: the GLTFExporter → GLTFLoader
+trip is lossy, and doesn't support all features of glTF. For a small set
+of closely-controlled assets, this might be a good workflow. But in
 general, it is error-prone.
 
 Another alternative might be to apply changes in glTF-Transform, export with
@@ -34,10 +34,10 @@ rendered in the preview.
 
 Basic workflow:
 
-1. Load a glTF Document with glTF-Transform API.
-2. Construct initial three.js scene state.
-3. Apply changes to glTF Document with glTF-Tranform API.
-4. Sync, render, and repeat at 60+ FPS.
+1. Load a glTF [Document](https://gltf-transform.donmccurdy.com/classes/core.document.html) with glTF-Transform's [WebIO](https://gltf-transform.donmccurdy.com/classes/core.webio.html)
+2. Construct three.js scene with `DocumentRenderer`
+3. Begin ~60 FPS render loop
+4. Apply changes to [Document](https://gltf-transform.donmccurdy.com/classes/core.document.html); update `DocumentRenderer` state
 
 The cost of this fast edit/refresh loop is a somewhat slower first-time load
 and additional memory overhead, so the project is not meant to replace
@@ -107,16 +107,10 @@ function animate () {
 
 **P0:**
 
-- [ ] Dispose of resources removed from PropertyGraph
 - [ ] Correct tangent space normal maps
-- [ ] Unit tests
-
-**P2:**
-
+- [ ] Dispose of resources removed from PropertyGraph
 - [ ] Granular update process (e.g. vertex data flag)
-- [ ] Animation
-- [ ] Cameras
-- [ ] Extras / Custom Properties
+- [ ] Unit tests
 
 ### Extensions Supported
 
