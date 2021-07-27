@@ -1,6 +1,6 @@
 {
   "name": "@gltf-transform/render",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Renders a glTF-Transform Document with WebGL",
   "module": "dist/render.modern.js",
   "source": "src/index.ts",
