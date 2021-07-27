@@ -110,6 +110,7 @@ function animate () {
 - [ ] Correct tangent space normal maps
 - [ ] Dispose of resources removed from PropertyGraph
 - [ ] Granular update process (e.g. vertex data flag)
+- [ ] Fails to render reused meshes
 - [ ] Unit tests
 
 ### Extensions Supported

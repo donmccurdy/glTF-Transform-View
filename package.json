@@ -38,7 +38,9 @@
     "dist": "microbundle --format modern",
     "watch": "microbundle watch --no-compress --format modern",
     "dev": "concurrently \"yarn watch\" \"snowpack dev --config snowpack.config.cjs\"",
-    "test": "tape test/**/*.test.js | tap-spec"
+    "test": "tape test/**/*.test.js | tap-spec",
+    "version": "yarn dist && yarn test",
+    "postversion": "git push && git push --tags && npm publish"
   },
   "browserslist": [
     "last 2 and_chr versions",
