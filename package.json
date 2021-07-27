@@ -36,7 +36,7 @@
   "scripts": {
     "dist": "microbundle --format modern",
     "watch": "microbundle watch --no-compress --format modern",
-    "dev": "concurrently \"yarn watch\" \"snowpack dev\"",
+    "dev": "concurrently \"yarn watch\" \"snowpack dev --config snowpack.config.cjs\"",
     "test": "tape-es test/**/*.test.js --threads 1 | tap-spec",
     "test:watch:broken": "tape-watch-es test/**/*.test.js"
   },
