@@ -1,24 +1,25 @@
 {
   "name": "@gltf-transform/render",
   "version": "0.1.1",
+  "repository": "github:donmccurdy/glTF-Transform-Render",
   "description": "Renders a glTF-Transform Document with WebGL",
+  "author": "Don McCurdy <dm@donmccurdy.com>",
+  "license": "MIT",
   "module": "dist/render.modern.js",
   "source": "src/index.ts",
   "types": "dist/index.d.ts",
   "type": "module",
-  "author": "Don McCurdy <dm@donmccurdy.com>",
-  "license": "MIT",
-  "private": false,
+  "sideEffects": false,
   "dependencies": {
-    "@gltf-transform/core": "^0.12.7",
-    "@gltf-transform/extensions": "^0.12.7",
-    "@gltf-transform/functions": "^0.12.7"
+    "@gltf-transform/core": "^0.12.7"
   },
   "peerDependencies": {
     "@types/three": ">=0.130.0",
     "three": ">=0.130.1"
   },
   "devDependencies": {
+    "@gltf-transform/extensions": "^0.12.7",
+    "@gltf-transform/functions": "^0.12.7",
     "@tweakpane/core": "^1.0.5",
     "@types/three": "^0.130.1",
     "@typescript-eslint/eslint-plugin": "^4.28.4",

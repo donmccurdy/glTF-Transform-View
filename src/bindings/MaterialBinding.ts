@@ -1,8 +1,8 @@
 import { DoubleSide, FrontSide, LinearEncoding, Material, MeshBasicMaterial, MeshPhysicalMaterial, MeshStandardMaterial, Texture, TextureEncoding, sRGBEncoding, LineBasicMaterial, PointsMaterial } from 'three';
 import { Material as MaterialDef, Texture as TextureDef, TextureInfo as TextureInfoDef, vec3 } from '@gltf-transform/core';
-import { Clearcoat, IOR, Transmission } from '@gltf-transform/extensions';
+import type { Clearcoat, IOR, Transmission } from '@gltf-transform/extensions';
 import type { UpdateContext } from '../UpdateContext';
-import { Subscription } from '../observers';
+import type { Subscription } from '../observers';
 import { eq } from '../utils';
 import { Binding } from './Binding';
 import { createTextureParams, TextureParams } from '../variants/texture';
