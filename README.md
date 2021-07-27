@@ -83,6 +83,7 @@ function animate () {
 | binding   | status | comments     |
 |-----------|--------|--------------|
 | Scene     | ✅     | Complete     |
+| Node      | ✅     | Complete     |
 | Material  | ✅     | Complete     |
 | Texture   | 🚧     | Static       |
 | Mesh      | 🚧     | Static       |
@@ -93,9 +94,9 @@ function animate () {
 
 **Legend:**
 
-- ✅ Supports initial render and updates.
-- 🚧 Supports initial render, but no updates.
-- ❌ No support.
+- ✅  Renders and updates.
+- 🚧  Static render, no updates.
+- ❌  Not rendered.
 
 ## Bugs / Limitations / To Do
 
