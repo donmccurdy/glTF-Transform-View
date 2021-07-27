@@ -1,5 +1,10 @@
 # @gltf-transform/render
 
+[![Latest NPM release](https://img.shields.io/npm/v/@gltf-transform/render.svg)](https://www.npmjs.com/package/@gltf-transform/render)
+[![Minzipped size](https://badgen.net/bundlephobia/minzip/@gltf-transform/render)](https://bundlephobia.com/result?p=@gltf-transform/render)
+[![License](https://img.shields.io/badge/license-MIT-007ec6.svg)](https://github.com/donmccurdy/glTF-Transform-Render/blob/main/LICENSE)
+[![Build Status](https://github.com/donmccurdy/glTF-Transform-Render/workflows/build/badge.svg?branch=main&event=push)](https://github.com/donmccurdy/glTF-Transform-Render/actions?query=workflow%3Abuild)
+
 > _**IN DEVELOPMENT:** This project is currently in development, and missing some functionality._
 
 Syncs a glTF-Transform [Document](https://gltf-transform.donmccurdy.com/classes/document.html)
