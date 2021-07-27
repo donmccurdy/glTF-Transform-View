@@ -25,9 +25,9 @@ and reload with THREE.GLTFLoader. This workflow is accurate, but slow to
 repeat — even a simple change to a material parameter requires reloading the
 entire file.
 
-**The goal of `@gltf-transform/render` is to provide a tighter integration
-between a glTF Document and a three.js scene graph**, so that changes to the
-Document (e.g. [Material](https://gltf-transform.donmccurdy.com/classes/material.html)
+**`@gltf-transform/render` provides a tighter integration between a glTF
+Document and a three.js scene graph**, so that changes to the Document
+(e.g. [Material](https://gltf-transform.donmccurdy.com/classes/material.html)
 settings) are shown _instantly_ in the rendered result. In addition, any
 features that three.js doesn't support won't be lost — they just aren't
 rendered in the preview.
@@ -54,9 +54,17 @@ npm install --save @gltf-transform/render
 ## API
 
 ```typescript
+import { Scene, WebGLRenderer, PerspectiveCamera } from 'three';
 import { DocumentRenderer } from '@gltf-transform/render';
 import { WebIO } from '@gltf-transform/core';
 import { KHRONOS_EXTENSIONS } from '@gltf-transform/extensions';
+
+// Set up three.js scene.
+
+const scene = new Scene();
+const camera = new PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 10);
+const renderer = new WebGLRenderer();
+// ...
 
 // Load glTF Document.
 const io = new WebIO().registerExtensions(KHRONOS_EXTENSIONS);
@@ -106,6 +114,7 @@ function animate () {
 - [ ] Dispose of resources removed from PropertyGraph
 - [ ] Granular update process (e.g. vertex data flag)
 - [ ] Fails to render reused meshes
+- [ ] Rename DocumentRenderer → GLTFRenderer (?)
 - [ ] Unit tests
 
 ### Extensions Supported
