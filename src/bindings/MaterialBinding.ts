@@ -5,8 +5,9 @@ import type { UpdateContext } from '../UpdateContext';
 import { Subscription } from '../observers';
 import { eq } from '../utils';
 import { Binding } from './Binding';
-import { createTextureParams, createTextureVariant, TextureParams } from '../variants/texture';
+import { createTextureParams, TextureParams } from '../variants/texture';
 import { PropertyVariantObserver } from '../observers/PropertyVariantObserver';
+import { SourceMaterial } from '../variants/material';
 
 const _vec3: vec3 = [0, 0, 0];
 
@@ -17,17 +18,17 @@ enum ShadingModel {
 }
 
 export class MaterialBinding extends Binding<MaterialDef, Material> {
-	protected readonly baseColorTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, createTextureVariant);
-	protected readonly emissiveTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, createTextureVariant);
-	protected readonly normalTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, createTextureVariant);
-	protected readonly occlusionTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, createTextureVariant);
-	protected readonly metallicRoughnessTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, createTextureVariant);
+	protected readonly baseColorTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, this._context.textureCache);
+	protected readonly emissiveTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, this._context.textureCache);
+	protected readonly normalTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, this._context.textureCache);
+	protected readonly occlusionTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, this._context.textureCache);
+	protected readonly metallicRoughnessTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, this._context.textureCache);
 
-	protected readonly clearcoatTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, createTextureVariant);
-	protected readonly clearcoatRoughnessTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, createTextureVariant);
-	protected readonly clearcoatNormalTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, createTextureVariant);
+	protected readonly clearcoatTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, this._context.textureCache);
+	protected readonly clearcoatRoughnessTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, this._context.textureCache);
+	protected readonly clearcoatNormalTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, this._context.textureCache);
 
-	protected readonly transmissionTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, createTextureVariant);
+	protected readonly transmissionTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, this._context.textureCache);
 
 	private readonly _textureObservers: PropertyVariantObserver<TextureDef, Texture, TextureParams>[] = [];
 	private readonly _textureUpdateFns: (() => void)[] = [];
@@ -78,6 +79,7 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 	}
 
 	private applyBoundTextures() {
+		// TODO(bug): When shading model changes, we re-allocate all textures. Why?
 		for (const observer of this._textureObservers) {
 			observer.notify();
 		}
@@ -127,8 +129,7 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 
 		for (const fn of this._textureUpdateFns) fn();
 
-		// TODO(impl): How difficult would it be to put this behind a needsUpdate test?
-		this.notify(); // Notify PropertyVariantObserver.
+		this._context.materialCache.updateSource(target as SourceMaterial);
 
 		return this;
 	}
@@ -262,9 +263,6 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 }
 
 function getShadingModel(source: MaterialDef): ShadingModel {
-	// TODO(bug): This is called 2-3 times during loadout, is that OK?
-	console.log('MaterialBinding::getShadingModel()');
-
 	for (const extension of source.listExtensions()) {
 		if (extension.extensionName === 'KHR_materials_unlit') {
 			return ShadingModel.UNLIT;

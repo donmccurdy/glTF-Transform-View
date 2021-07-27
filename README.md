@@ -83,8 +83,8 @@ function animate () {
 **P0:**
 
 - [ ] Dispose of resources removed from PropertyGraph
-- [ ] Cache variants (Materials, Textures)
 - [ ] Correct tangent space normal maps
+- [ ] Document supported and unsupported workflows
 - [ ] Unit tests
 
 **P2:**

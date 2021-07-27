@@ -1,15 +1,15 @@
-import type { UpdateContext } from 'UpdateContext';
+import type { UpdateContext } from '../UpdateContext';
 import type { Property as PropertyDef } from '@gltf-transform/core';
 import { PropertyObserver } from './PropertyObserver';
+import { THREEObject, VariantCache } from '../variants/VariantCache';
 
-// TODO(bug): Add caching strategy, and dispose of unused variants.
-export class PropertyVariantObserver<S extends PropertyDef, T, P> extends PropertyObserver<S, T> {
-	private _configure: (target: T, params: P) => T;
+export class PropertyVariantObserver<S extends PropertyDef, T extends THREEObject, P> extends PropertyObserver<S, T> {
+	private _cache: VariantCache<T, T, P>;
 	private _params: P | null = null;
 
-	constructor(_context: UpdateContext, _configure:(target: T, params: P) => T) {
+	constructor(_context: UpdateContext, _cache: VariantCache<T, T, P>) {
 		super(_context);
-		this._configure = _configure;
+		this._cache = _cache;
 	}
 
 	public setParams(params: P) {
@@ -17,6 +17,9 @@ export class PropertyVariantObserver<S extends PropertyDef, T, P> extends Proper
 	}
 
 	public next(value: T) {
+		if (this.value) {
+			this._cache.releaseVariant(this.value);
+		}
 		if (!value) {
 			super.next(null);
 			return;
@@ -24,7 +27,13 @@ export class PropertyVariantObserver<S extends PropertyDef, T, P> extends Proper
 		if (!this._params) {
 			throw new Error('No variant configuration given.');
 		}
-		const variant = this._configure(value, this._params);
-		super.next(variant);
+		super.next(this._cache.getVariant(value, this._params));
+	}
+
+	public dispose() {
+		if (this.value) {
+			this._cache.releaseVariant(this.value);
+		}
+		super.dispose();
 	}
 }

@@ -3,7 +3,7 @@ import { Accessor as AccessorDef, GLTF, Material as MaterialDef, Primitive as Pr
 import type { UpdateContext } from '../UpdateContext';
 import { PropertyMapObserver, PropertyObserver } from '../observers';
 import { Binding } from './Binding';
-import { createMaterialParams, createMaterialVariant, MaterialParams } from '../variants/material';
+import { createMaterialParams, MaterialParams, VariantMaterial } from '../variants/material';
 import { PropertyVariantObserver } from '../observers/PropertyVariantObserver';
 
 // https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#default-material
@@ -26,7 +26,7 @@ function semanticToAttributeName(semantic: string): string {
 type MeshLike = Mesh | SkinnedMesh | Points | Line | LineSegments | LineLoop;
 
 export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
-	protected material = new PropertyVariantObserver<MaterialDef, Material, MaterialParams>(this._context, createMaterialVariant);
+	protected material = new PropertyVariantObserver<MaterialDef, VariantMaterial, MaterialParams>(this._context, this._context.materialCache as any);
 	protected indices = new PropertyObserver<AccessorDef, BufferAttribute>(this._context);
 	protected attributes = new PropertyMapObserver<AccessorDef, BufferAttribute>(this._context);
 
@@ -38,8 +38,6 @@ export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
 		this.attributes.subscribe(({key, value}) => {
 			if (value) this.value.geometry.setAttribute(semanticToAttributeName(key), value);
 			if (!value) this.value.geometry.deleteAttribute(semanticToAttributeName(key));
-			// TODO(test): This is probably unnecessary?
-			this.material.notify();
 		});
 	}
 
@@ -96,7 +94,9 @@ export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
 	}
 
 	public dispose() {
-		// TODO(bug): Dispose this.value.{geometry,material}?
+		if (this.value) {
+			this.value.geometry.dispose();
+		}
 		this.material.dispose();
 		this.indices.dispose();
 		this.attributes.dispose();

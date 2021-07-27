@@ -34,19 +34,25 @@ export function createTextureParams(textureInfo: TextureInfo, encoding: TextureE
 	}
 }
 
-export function createTextureVariant(texture: Texture, params: TextureParams): Texture {
-	texture = texture.clone();
-	texture.minFilter = params.minFilter;
-	texture.magFilter = params.magFilter;
-	texture.wrapS = params.wrapS;
-	texture.wrapT = params.wrapT;
-	texture.encoding = params.encoding;
+export function createTextureVariant(srcTexture: Texture, params: TextureParams): Texture {
+	console.debug('alloc::createTextureVariant');
+	const dstTexture = updateTextureVariant(srcTexture, srcTexture.clone(), params);
 
-	if (texture.image.complete) {
-		texture.needsUpdate = true;
+	if (dstTexture.image.complete) {
+		dstTexture.needsUpdate = true;
 	} else {
-		texture.image.onload = () => (texture.needsUpdate = true);
+		dstTexture.image.onload = () => (dstTexture.needsUpdate = true);
 	}
 
-	return texture;
+	return dstTexture;
+}
+
+export function updateTextureVariant(srcTexture: Texture, dstTexture: Texture, params: TextureParams): Texture {
+	dstTexture.copy(srcTexture);
+	dstTexture.minFilter = params.minFilter;
+	dstTexture.magFilter = params.magFilter;
+	dstTexture.wrapS = params.wrapS;
+	dstTexture.wrapT = params.wrapT;
+	dstTexture.encoding = params.encoding;
+	return dstTexture;
 }

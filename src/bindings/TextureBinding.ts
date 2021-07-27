@@ -34,7 +34,7 @@ export class TextureBinding extends Binding<TextureDef, Texture> {
 		}
 
 		if (needsUpdate) {
-			this.notify(); // Notify PropertyVariantObserver.
+			this._context.textureCache.updateSource(target);
 		}
 
 		return this;
