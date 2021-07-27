@@ -23,6 +23,27 @@ html, body {
 	opacity: 1;
 }
 
+/* Dropzone */
+
+.dropzone-placeholder {
+	width: 400px;
+	height: 200px;
+	position: absolute;
+	top: calc(50% - 100px);
+	left: calc(50% - 200px);
+	background: rgba(255, 255, 255, 0.75);
+	border-radius: 8px;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	padding: 3em;
+	box-sizing: border-box;
+}
+
+.dropzone-placeholder p {
+	margin-top: 0;
+}
+
 /* Tweakpane */
 
 .tp-dfwv {
