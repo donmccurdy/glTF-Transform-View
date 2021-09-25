@@ -81,15 +81,19 @@ export function createMaterialPane(_pane: Pane, document: Document, material: Ma
 		// Specular.
 		specularEnabled: !!material.getExtension('KHR_materials_specular'),
 		specularFactor: specular.getSpecularFactor(),
+		specularTexture: textureValue(specular.getSpecularTexture(), textureOptions),
 		specularColorFactor: specular.getSpecularColorHex(),
+		specularColorTexture: textureValue(specular.getSpecularColorTexture(), textureOptions),
 
 		// Transmission.
 		transmissionEnabled: !!material.getExtension('KHR_materials_transmission'),
 		transmissionFactor: transmission.getTransmissionFactor(),
+		transmissionTexture: textureValue(transmission.getTransmissionTexture(), textureOptions),
 
 		// Volume.
 		volumeEnabled: !!material.getExtension('KHR_materials_volume'),
 		thicknessFactor: volume.getThicknessFactor(),
+		thicknessTexture: textureValue(volume.getThicknessTexture(), textureOptions),
 		attenuationColorFactor: volume.getAttenuationColorHex(),
 		attenuationDistance: volume.getAttenuationDistance(),
 
@@ -128,12 +132,20 @@ export function createMaterialPane(_pane: Pane, document: Document, material: Ma
 	const clearcoatFolder = pane.addFolder({title: 'KHR_materials_clearcoat', expanded: false});
 	clearcoatFolder.addInput(params, 'clearcoatEnabled');
 	clearcoatFolder.addInput(params, 'clearcoatFactor', {min: 0, max: 1});
+	clearcoatFolder.addInput(params, 'clearcoatTexture', {view: 'thumbnail-list', options: textureOptions})
+		.on('change', (ev) => clearcoat.setClearcoatTexture(textureFromEvent(ev)));
 	clearcoatFolder.addInput(params, 'clearcoatRoughnessFactor', {min: 0, max: 1});
+	clearcoatFolder.addInput(params, 'clearcoatRoughnessTexture', {view: 'thumbnail-list', options: textureOptions})
+		.on('change', (ev) => clearcoat.setClearcoatRoughnessTexture(textureFromEvent(ev)));
+	clearcoatFolder.addInput(params, 'clearcoatNormalScale');
+	clearcoatFolder.addInput(params, 'clearcoatNormalTexture', {view: 'thumbnail-list', options: textureOptions})
+		.on('change', (ev) => clearcoat.setClearcoatNormalTexture(textureFromEvent(ev)));
 	clearcoatFolder.on('change', () => {
 		material.setExtension('KHR_materials_clearcoat', params.clearcoatEnabled ? clearcoat : null);
 		clearcoat
 			.setClearcoatFactor(params.clearcoatFactor)
-			.setClearcoatRoughnessFactor(params.clearcoatRoughnessFactor);
+			.setClearcoatRoughnessFactor(params.clearcoatRoughnessFactor)
+			.setClearcoatNormalScale(params.clearcoatNormalScale);
 	});
 
 	const iorFolder = pane.addFolder({title: 'KHR_materials_ior', expanded: false});
@@ -155,37 +167,45 @@ export function createMaterialPane(_pane: Pane, document: Document, material: Ma
 	// 		.setSheenRoughnessFactor(params.sheenRoughnessFactor);
 	// });
 
-	// const specularFolder = pane.addFolder({title: 'KHR_materials_specular', expanded: false});
-	// specularFolder.addInput(params, 'specularEnabled');
-	// specularFolder.addInput(params, 'specularFactor', {min: 0, max: 1});
-	// specularFolder.addInput(params, 'specularColorFactor', {view: 'color'});
-	// specularFolder.on('change', () => {
-	// 	material.setExtension('KHR_materials_specular', params.specularEnabled ? specular : null);
-	// 	specular
-	// 		.setSpecularFactor(params.specularFactor)
-	// 		.setSpecularColorHex(params.specularColorFactor);
-	// });
+	const specularFolder = pane.addFolder({title: 'KHR_materials_specular', expanded: false});
+	specularFolder.addInput(params, 'specularEnabled');
+	specularFolder.addInput(params, 'specularFactor', {min: 0, max: 1});
+	specularFolder.addInput(params, 'specularTexture', {view: 'thumbnail-list', options: textureOptions})
+		.on('change', (ev) => specular.setSpecularTexture(textureFromEvent(ev)));
+	specularFolder.addInput(params, 'specularColorFactor', {view: 'color'});
+	specularFolder.addInput(params, 'specularColorTexture', {view: 'thumbnail-list', options: textureOptions})
+		.on('change', (ev) => specular.setSpecularColorTexture(textureFromEvent(ev)));
+	specularFolder.on('change', () => {
+		material.setExtension('KHR_materials_specular', params.specularEnabled ? specular : null);
+		specular
+			.setSpecularFactor(params.specularFactor)
+			.setSpecularColorHex(params.specularColorFactor);
+	});
 
 	const transmissionFolder = pane.addFolder({title: 'KHR_materials_transmission', expanded: false});
 	transmissionFolder.addInput(params, 'transmissionEnabled');
 	transmissionFolder.addInput(params, 'transmissionFactor', {min: 0, max: 1});
+	transmissionFolder.addInput(params, 'transmissionTexture', {view: 'thumbnail-list', options: textureOptions})
+		.on('change', (ev) => transmission.setTransmissionTexture(textureFromEvent(ev)));
 	transmissionFolder.on('change', () => {
 		material.setExtension('KHR_materials_transmission', params.transmissionEnabled ? transmission : null);
 		transmission.setTransmissionFactor(params.transmissionFactor);
 	});
 
-	// const volumeFolder = pane.addFolder({title: 'KHR_materials_volume', expanded: false});
-	// volumeFolder.addInput(params, 'volumeEnabled');
-	// volumeFolder.addInput(params, 'thicknessFactor', {min: 0, max: 1});
-	// volumeFolder.addInput(params, 'attenuationColorFactor', {view: 'color'});
-	// volumeFolder.addInput(params, 'attenuationDistance', {min: 0, max: 1000});
-	// volumeFolder.on('change', () => {
-	// 	material.setExtension('KHR_materials_volume', params.volumeEnabled ? volume : null);
-	// 	volume
-	// 		.setThicknessFactor(params.thicknessFactor)
-	// 		.setAttenuationColorHex(params.attenuationColorFactor)
-	// 		.setAttenuationDistance(params.attenuationDistance);
-	// });
+	const volumeFolder = pane.addFolder({title: 'KHR_materials_volume', expanded: false});
+	volumeFolder.addInput(params, 'volumeEnabled');
+	volumeFolder.addInput(params, 'thicknessFactor', {min: 0, max: 1});
+	volumeFolder.addInput(params, 'thicknessTexture', {view: 'thumbnail-list', options: textureOptions})
+		.on('change', (ev) => volume.setThicknessTexture(textureFromEvent(ev)));
+	volumeFolder.addInput(params, 'attenuationColorFactor', {view: 'color'});
+	volumeFolder.addInput(params, 'attenuationDistance', {min: 0, max: 5, step: 0.01});
+	volumeFolder.on('change', () => {
+		material.setExtension('KHR_materials_volume', params.volumeEnabled ? volume : null);
+		volume
+			.setThicknessFactor(params.thicknessFactor)
+			.setAttenuationColorHex(params.attenuationColorFactor)
+			.setAttenuationDistance(params.attenuationDistance);
+	});
 
 	const unlitFolder = pane.addFolder({title: 'KHR_materials_unlit', expanded: false});
 	unlitFolder.addInput(params, 'unlitEnabled');

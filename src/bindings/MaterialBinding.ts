@@ -1,6 +1,6 @@
-import { DoubleSide, FrontSide, LinearEncoding, Material, MeshBasicMaterial, MeshPhysicalMaterial, MeshStandardMaterial, Texture, TextureEncoding, sRGBEncoding, LineBasicMaterial, PointsMaterial } from 'three';
+import { DoubleSide, FrontSide, LinearEncoding, Material, MeshBasicMaterial, MeshPhysicalMaterial, MeshStandardMaterial, Texture, TextureEncoding, sRGBEncoding, MathUtils } from 'three';
 import { Material as MaterialDef, Texture as TextureDef, TextureInfo as TextureInfoDef, vec3 } from '@gltf-transform/core';
-import type { Clearcoat, IOR, Transmission } from '@gltf-transform/extensions';
+import type { Clearcoat, IOR, Specular, Transmission, Volume } from '@gltf-transform/extensions';
 import type { UpdateContext } from '../UpdateContext';
 import type { Subscription } from '../observers';
 import { eq } from '../utils';
@@ -24,11 +24,16 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 	protected readonly occlusionTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, this._context.textureCache);
 	protected readonly metallicRoughnessTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, this._context.textureCache);
 
+	// KHR_materials_clearcoat
 	protected readonly clearcoatTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, this._context.textureCache);
 	protected readonly clearcoatRoughnessTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, this._context.textureCache);
 	protected readonly clearcoatNormalTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, this._context.textureCache);
 
+	// KHR_materials_transmission
 	protected readonly transmissionTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, this._context.textureCache);
+
+	// KHR_materials_volume
+	protected readonly thicknessTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, this._context.textureCache);
 
 	private readonly _textureObservers: PropertyVariantObserver<TextureDef, Texture, TextureParams>[] = [];
 	private readonly _textureUpdateFns: (() => void)[] = [];
@@ -51,6 +56,10 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 		// KHR_materials_transmission
 		const transmissionExt = (): Transmission | null => source.getExtension<Transmission>('KHR_materials_transmission');
 		this.bindTexture(['transmissionMap'], this.transmissionTexture, () => transmissionExt()?.getTransmissionTexture() || null, () => transmissionExt()?.getTransmissionTextureInfo() || null, LinearEncoding);
+
+		// KHR_materials_volume
+		const volumeExt = (): Volume | null => source.getExtension<Volume>('KHR_materials_volume');
+		this.bindTexture(['thicknessMap'], this.thicknessTexture, () => volumeExt()?.getThicknessTexture() || null, () => volumeExt()?.getThicknessTextureInfo() || null, LinearEncoding);
 	}
 
 	private bindTexture(
@@ -235,8 +244,19 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 				target.ior = ior.getIOR();
 			}
 		} else {
-			target.transmission = 0;
+			target.ior = 1.5;
 		}
+
+		// KHR_materials_specular
+		// const specular = source.getExtension<Specular>('KHR_materials_specular');
+		// if (specular) {
+		// 	if (specular.getSpecularFactor() !== target.specular) {
+		// 		if (target.transmission === 0) target.needsUpdate = true;
+		// 		target.transmission = transmission.getTransmissionFactor();
+		// 	}
+		// } else {
+		// 	target.transmission = 0;
+		// }
 
 		// KHR_materials_transmission
 		const transmission = source.getExtension<Transmission>('KHR_materials_transmission');
@@ -247,6 +267,24 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 			}
 		} else {
 			target.transmission = 0;
+		}
+
+		// KHR_materials_volume
+		const volume = source.getExtension<Volume>('KHR_materials_volume');
+		if (volume) {
+			if (volume.getThicknessFactor() !== target.thickness) {
+				if (target.thickness === 0) target.needsUpdate = true;
+				target.thickness = volume.getThicknessFactor();
+			}
+			if (volume.getAttenuationDistance() !== target.attenuationDistance) {
+				target.attenuationDistance = volume.getAttenuationDistance();
+			}
+			const sourceAttenuationColor = volume.getAttenuationColor();
+			if (!eq(sourceAttenuationColor, target.attenuationColor.toArray(_vec3))) {
+				target.attenuationColor.fromArray(sourceAttenuationColor);
+			}
+		} else {
+			target.thickness = 0;
 		}
 	}
 

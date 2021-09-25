@@ -132,12 +132,13 @@ function animate () {
 - [x] KHR_materials_clearcoat
 - [x] KHR_materials_ior
 - [x] KHR_materials_transmission
+- [x] KHR_materials_volume
 - [x] KHR_materials_unlit
+- [x] EXT_meshopt_compression
 - [x] EXT_texture_webp
 
 **P0:**
 
-- [ ] KHR_materials_volume
 - [ ] KHR_texture_transform
 - [ ] KHR_texture_basisu
 
@@ -149,7 +150,6 @@ function animate () {
 - [ ] KHR_materials_specular
 - [ ] KHR_materials_variants
 - [ ] EXT_mesh_gpu_instancing
-- [ ] EXT_meshopt_compression
 
 ## Contributing
 
