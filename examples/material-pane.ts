@@ -76,7 +76,9 @@ export function createMaterialPane(_pane: Pane, document: Document, material: Ma
 		// Sheen.
 		sheenEnabled: !!material.getExtension('KHR_materials_sheen'),
 		sheenColorFactor: sheen.getSheenColorHex(),
+		sheenColorTexture: textureValue(sheen.getSheenColorTexture(), textureOptions),
 		sheenRoughnessFactor: sheen.getSheenRoughnessFactor(),
+		sheenRoughnessTexture: textureValue(sheen.getSheenRoughnessTexture(), textureOptions),
 
 		// Specular.
 		specularEnabled: !!material.getExtension('KHR_materials_specular'),
@@ -156,16 +158,20 @@ export function createMaterialPane(_pane: Pane, document: Document, material: Ma
 		ior.setIOR(params.ior);
 	});
 
-	// const sheenFolder = pane.addFolder({title: 'KHR_materials_sheen', expanded: false});
-	// sheenFolder.addInput(params, 'sheenEnabled');
-	// sheenFolder.addInput(params, 'sheenColorFactor', {view: 'color'});
-	// sheenFolder.addInput(params, 'sheenRoughnessFactor', {min: 0, max: 1});
-	// sheenFolder.on('change', () => {
-	// 	material.setExtension('KHR_materials_sheen', params.sheenEnabled ? sheen : null);
-	// 	sheen
-	// 		.setSheenColorHex(params.sheenColorFactor)
-	// 		.setSheenRoughnessFactor(params.sheenRoughnessFactor);
-	// });
+	const sheenFolder = pane.addFolder({title: 'KHR_materials_sheen', expanded: false});
+	sheenFolder.addInput(params, 'sheenEnabled');
+	sheenFolder.addInput(params, 'sheenColorFactor', {view: 'color'});
+	sheenFolder.addInput(params, 'sheenColorTexture', {view: 'thumbnail-list', options: textureOptions})
+		.on('change', (ev) => sheen.setSheenColorTexture(textureFromEvent(ev)));
+	sheenFolder.addInput(params, 'sheenRoughnessFactor', {min: 0, max: 1});
+	sheenFolder.addInput(params, 'sheenRoughnessTexture', {view: 'thumbnail-list', options: textureOptions})
+		.on('change', (ev) => sheen.setSheenRoughnessTexture(textureFromEvent(ev)));
+	sheenFolder.on('change', () => {
+		material.setExtension('KHR_materials_sheen', params.sheenEnabled ? sheen : null);
+		sheen
+			.setSheenColorHex(params.sheenColorFactor)
+			.setSheenRoughnessFactor(params.sheenRoughnessFactor);
+	});
 
 	const specularFolder = pane.addFolder({title: 'KHR_materials_specular', expanded: false});
 	specularFolder.addInput(params, 'specularEnabled');

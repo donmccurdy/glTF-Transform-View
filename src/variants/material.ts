@@ -61,11 +61,9 @@ export function updateMaterialVariant(srcMaterial: SourceMaterial, dstMaterial: 
 	}
 
 	if (params.useVertexColors) dstMaterial.vertexColors = true;
-	if (params.useMorphTargets) dstMaterial.morphTargets = true;
 	if (dstMaterial instanceof MeshStandardMaterial) {
 		// TODO(bug): Correct tangent space normal maps.
 		// https://github.com/mrdoob/three.js/issues/11438#issuecomment-507003995
-		if (params.useVertexTangents) dstMaterial.vertexTangents = true;
 		if (params.useFlatShading) dstMaterial.flatShading = true;
 	}
 

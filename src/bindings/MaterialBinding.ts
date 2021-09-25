@@ -1,6 +1,6 @@
 import { DoubleSide, FrontSide, LinearEncoding, Material, MeshBasicMaterial, MeshPhysicalMaterial, MeshStandardMaterial, Texture, TextureEncoding, sRGBEncoding, MathUtils } from 'three';
 import { Material as MaterialDef, Texture as TextureDef, TextureInfo as TextureInfoDef, vec3 } from '@gltf-transform/core';
-import type { Clearcoat, IOR, Specular, Transmission, Volume } from '@gltf-transform/extensions';
+import type { Clearcoat, IOR, Sheen, Specular, Transmission, Volume } from '@gltf-transform/extensions';
 import type { UpdateContext } from '../UpdateContext';
 import type { Subscription } from '../observers';
 import { eq } from '../utils';
@@ -29,6 +29,14 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 	protected readonly clearcoatRoughnessTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, this._context.textureCache);
 	protected readonly clearcoatNormalTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, this._context.textureCache);
 
+	// KHR_materials_sheen
+	protected readonly sheenColorTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, this._context.textureCache);
+	protected readonly sheenRoughnessTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, this._context.textureCache);
+
+	// KHR_materials_specular
+	protected readonly specularTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, this._context.textureCache);
+	protected readonly specularColorTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, this._context.textureCache);
+
 	// KHR_materials_transmission
 	protected readonly transmissionTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, this._context.textureCache);
 
@@ -52,6 +60,16 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 		this.bindTexture(['clearcoatMap'], this.clearcoatTexture, () => clearcoatExt()?.getClearcoatTexture() || null, () => clearcoatExt()?.getClearcoatTextureInfo() || null, LinearEncoding);
 		this.bindTexture(['clearcoatRoughnessMap'], this.clearcoatRoughnessTexture, () => clearcoatExt()?.getClearcoatRoughnessTexture() || null, () => clearcoatExt()?.getClearcoatRoughnessTextureInfo() || null, LinearEncoding);
 		this.bindTexture(['clearcoatNormalMap'], this.clearcoatNormalTexture, () => clearcoatExt()?.getClearcoatNormalTexture() || null, () => clearcoatExt()?.getClearcoatNormalTextureInfo() || null, LinearEncoding);
+
+		// KHR_materials_sheen
+		// const sheenExt = (): Sheen | null => source.getExtension<Sheen>('KHR_materials_sheen');
+		// this.bindTexture(['specularIntensityMap'], this.sheenColorTexture, () => sheenExt()?.getSheenColorTexture() || null, () => sheenExt()?.getSheenColorTextureInfo() || null, sRGBEncoding);
+		// this.bindTexture(['specularTintMap'], this.sheenRoughnessTexture, () => sheenExt()?.getSheenRoughnessTexture() || null, () => sheenExt()?.getSheenRoughnessTextureInfo() || null, LinearEncoding);
+
+		// KHR_materials_specular
+		const specularExt = (): Specular | null => source.getExtension<Specular>('KHR_materials_specular');
+		this.bindTexture(['specularIntensityMap'], this.specularTexture, () => specularExt()?.getSpecularTexture() || null, () => specularExt()?.getSpecularTextureInfo() || null, LinearEncoding);
+		this.bindTexture(['specularTintMap'], this.specularColorTexture, () => specularExt()?.getSpecularColorTexture() || null, () => specularExt()?.getSpecularColorTextureInfo() || null, sRGBEncoding);
 
 		// KHR_materials_transmission
 		const transmissionExt = (): Transmission | null => source.getExtension<Transmission>('KHR_materials_transmission');
@@ -247,16 +265,34 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 			target.ior = 1.5;
 		}
 
+		// KHR_materials_sheen
+		const sheen = source.getExtension<Sheen>('KHR_materials_sheen');
+		if (sheen) {
+			const sourceSheenColor = sheen.getSheenColorFactor();
+			if (!eq(sourceSheenColor, target.sheenTint!.toArray(_vec3))) {
+				target.sheenTint!.fromArray(sourceSheenColor);
+			}
+			// if (sheen.getSheenRoughnessFactor() !== target.sheenRoughness) {
+			// 	target.sheenRoughness = sheen.getSheenRoughnessFactor();
+			// }
+		} else {
+			target.sheenTint!.setRGB(0, 0, 0);
+		}
+
 		// KHR_materials_specular
-		// const specular = source.getExtension<Specular>('KHR_materials_specular');
-		// if (specular) {
-		// 	if (specular.getSpecularFactor() !== target.specular) {
-		// 		if (target.transmission === 0) target.needsUpdate = true;
-		// 		target.transmission = transmission.getTransmissionFactor();
-		// 	}
-		// } else {
-		// 	target.transmission = 0;
-		// }
+		const specular = source.getExtension<Specular>('KHR_materials_specular');
+		if (specular) {
+			if (specular.getSpecularFactor() !== target.specularIntensity) {
+				target.specularIntensity = specular.getSpecularFactor();
+			}
+			const sourceSpecularColor = specular.getSpecularColorFactor();
+			if (!eq(sourceSpecularColor, target.specularTint.toArray(_vec3))) {
+				target.specularTint.fromArray(sourceSpecularColor);
+			}
+		} else {
+			target.specularIntensity = 1.0;
+			target.specularTint.setRGB(1, 1, 1);
+		}
 
 		// KHR_materials_transmission
 		const transmission = source.getExtension<Transmission>('KHR_materials_transmission');
@@ -280,8 +316,8 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 				target.attenuationDistance = volume.getAttenuationDistance();
 			}
 			const sourceAttenuationColor = volume.getAttenuationColor();
-			if (!eq(sourceAttenuationColor, target.attenuationColor.toArray(_vec3))) {
-				target.attenuationColor.fromArray(sourceAttenuationColor);
+			if (!eq(sourceAttenuationColor, (target as any).attenuationTint.toArray(_vec3))) {
+				(target as any).attenuationTint.fromArray(sourceAttenuationColor);
 			}
 		} else {
 			target.thickness = 0;

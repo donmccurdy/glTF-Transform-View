@@ -95,9 +95,9 @@ function animate () {
 
 | binding   | status | comments     |
 |-----------|--------|--------------|
-| Scene     | ✅     | Complete     |
-| Node      | ✅     | Complete     |
-| Material  | ✅     | Complete     |
+| Scene     | ✅     | Dynamic      |
+| Node      | ✅     | Dynamic      |
+| Material  | ✅     | Dynamic      |
 | Texture   | 🚧     | Static       |
 | Mesh      | 🚧     | Static       |
 | Primitive | 🚧     | Static       |
@@ -131,6 +131,8 @@ function animate () {
 - [x] KHR_mesh_quantization
 - [x] KHR_materials_clearcoat
 - [x] KHR_materials_ior
+- [x] KHR_materials_sheen
+- [x] KHR_materials_specular
 - [x] KHR_materials_transmission
 - [x] KHR_materials_volume
 - [x] KHR_materials_unlit
@@ -146,8 +148,6 @@ function animate () {
 
 - [ ] KHR_lights_punctual
 - [ ] KHR_materials_pbrSpecularGlossiness
-- [ ] KHR_materials_sheen
-- [ ] KHR_materials_specular
 - [ ] KHR_materials_variants
 - [ ] EXT_mesh_gpu_instancing
 
