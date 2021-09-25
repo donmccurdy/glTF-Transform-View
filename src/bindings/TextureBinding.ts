@@ -2,6 +2,7 @@ import { Texture } from 'three';
 import { Texture as TextureDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
 import { Binding } from './Binding';
+import { pool } from '../ObjectPool';
 
 export class TextureBinding extends Binding<TextureDef, Texture> {
 	private _image: ArrayBuffer | null = null;
@@ -9,7 +10,7 @@ export class TextureBinding extends Binding<TextureDef, Texture> {
 	private _imageURL = '';
 
 	public constructor(context: UpdateContext, source: TextureDef) {
-		super(context, source, new Texture());
+		super(context, source, pool.request(new Texture()));
 		this.value.flipY = false;
 	}
 
@@ -41,7 +42,7 @@ export class TextureBinding extends Binding<TextureDef, Texture> {
 	}
 
 	public disposeTarget(target: Texture): void {
-		target.dispose();
+		pool.release(target).dispose();
 	}
 
 	public dispose() {

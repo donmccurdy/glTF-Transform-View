@@ -4,6 +4,7 @@ import { AccessorBinding, Binding, MaterialBinding, MeshBinding, NodeBinding, Pr
 import { createMaterialVariant, MaterialParams, SourceMaterial, VariantMaterial, updateMaterialVariant } from './variants/material';
 import { Texture } from 'three';
 import { createTextureVariant, TextureParams, updateTextureVariant } from './variants/texture';
+import { pool } from './ObjectPool';
 
 // export enum UpdateMask {
 // 	SHALLOW = 0x0000,
@@ -24,13 +25,13 @@ export class UpdateContext {
 		'TextureCache',
 		createTextureVariant,
 		updateTextureVariant,
-		(texture) => texture.dispose(),
+		(texture) => pool.release(texture).dispose(),
 	);
 	public materialCache = new VariantCache<SourceMaterial, VariantMaterial, MaterialParams>(
 		'MaterialCache',
 		createMaterialVariant,
 		updateMaterialVariant,
-		(material) => material.dispose()
+		(material) => pool.release(material).dispose()
 	);
 
 	private _addBinding(renderer: Binding<PropertyDef, any>): void {

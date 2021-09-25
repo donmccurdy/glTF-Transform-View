@@ -1,4 +1,5 @@
 import { GLTF, Primitive as PrimitiveDef } from '@gltf-transform/core';
+import { pool } from '../ObjectPool';
 import { LineBasicMaterial, Material, MeshBasicMaterial, MeshPhysicalMaterial, MeshStandardMaterial, PointsMaterial } from 'three';
 
 export type SourceMaterial = MeshBasicMaterial | MeshStandardMaterial | MeshPhysicalMaterial;
@@ -29,13 +30,13 @@ export function createMaterialVariant(srcMaterial: SourceMaterial, params: Mater
 		case PrimitiveDef.Mode.TRIANGLES:
 		case PrimitiveDef.Mode.TRIANGLE_FAN:
 		case PrimitiveDef.Mode.TRIANGLE_STRIP:
-			return updateMaterialVariant(srcMaterial, srcMaterial.clone(), params);
+			return updateMaterialVariant(srcMaterial, pool.request(srcMaterial.clone()), params);
 		case PrimitiveDef.Mode.LINES:
 		case PrimitiveDef.Mode.LINE_LOOP:
 		case PrimitiveDef.Mode.LINE_STRIP:
-			return updateMaterialVariant(srcMaterial, new LineBasicMaterial(), params);
+			return updateMaterialVariant(srcMaterial, pool.request(new LineBasicMaterial()), params);
 		case PrimitiveDef.Mode.POINTS:
-			return updateMaterialVariant(srcMaterial, new PointsMaterial(), params);
+			return updateMaterialVariant(srcMaterial, pool.request(new PointsMaterial()), params);
 		default:
 			throw new Error(`Unexpected primitive mode: ${params.mode}`);
 	}

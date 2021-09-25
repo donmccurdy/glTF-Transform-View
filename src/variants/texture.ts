@@ -1,4 +1,5 @@
 import { TextureInfo } from '@gltf-transform/core';
+import { pool } from '../ObjectPool';
 import { ClampToEdgeWrapping, LinearFilter, LinearMipmapLinearFilter, LinearMipmapNearestFilter, MirroredRepeatWrapping, NearestFilter, NearestMipmapLinearFilter, NearestMipmapNearestFilter, RepeatWrapping, Texture, TextureEncoding, TextureFilter, Wrapping } from 'three';
 
 const WEBGL_FILTERS: Record<number, TextureFilter> = {
@@ -36,7 +37,7 @@ export function createTextureParams(textureInfo: TextureInfo, encoding: TextureE
 
 export function createTextureVariant(srcTexture: Texture, params: TextureParams): Texture {
 	console.debug('alloc::createTextureVariant');
-	const dstTexture = updateTextureVariant(srcTexture, srcTexture.clone(), params);
+	const dstTexture = updateTextureVariant(srcTexture, pool.request(srcTexture.clone()), params);
 
 	if (dstTexture.image.complete) {
 		dstTexture.needsUpdate = true;

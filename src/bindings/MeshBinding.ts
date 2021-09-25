@@ -3,12 +3,13 @@ import { Mesh as MeshDef, Primitive as PrimitiveDef } from '@gltf-transform/core
 import type { UpdateContext } from '../UpdateContext';
 import { PropertyListObserver } from '../observers';
 import { Binding } from './Binding';
+import { pool } from '../ObjectPool';
 
 export class MeshBinding extends Binding<MeshDef, Group> {
 	protected primitives = new PropertyListObserver<PrimitiveDef, Mesh>(this._context);
 
 	public constructor(context: UpdateContext, source: MeshDef) {
-		super(context, source, new Group());
+		super(context, source, pool.request(new Group()));
 
 		this.primitives.subscribe((primitives) => {
 			if (primitives.remove) this.value.remove(primitives.remove);
@@ -26,6 +27,10 @@ export class MeshBinding extends Binding<MeshDef, Group> {
 		this.primitives.update(source.listPrimitives());
 
 		return this;
+	}
+
+	public disposeTarget(target: Group) {
+		pool.release(target);
 	}
 
 	public dispose() {

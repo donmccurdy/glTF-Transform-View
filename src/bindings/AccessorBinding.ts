@@ -2,6 +2,7 @@ import { BufferAttribute } from 'three';
 import { Accessor as AccessorDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
 import { Binding } from './Binding';
+import { pool } from '../ObjectPool';
 
 export class AccessorBinding extends Binding<AccessorDef, BufferAttribute> {
 	public constructor(context: UpdateContext, source: AccessorDef) {
@@ -9,11 +10,11 @@ export class AccessorBinding extends Binding<AccessorDef, BufferAttribute> {
 	}
 
 	private static createTarget(source: AccessorDef): BufferAttribute {
-		return new BufferAttribute(
+		return pool.request(new BufferAttribute(
 			source.getArray()!,
 			source.getElementSize(),
 			source.getNormalized()
-		);
+		));
 	}
 
 	public update(): this {
@@ -30,5 +31,9 @@ export class AccessorBinding extends Binding<AccessorDef, BufferAttribute> {
 		}
 
 		return this;
+	}
+
+	public disposeTarget(target: BufferAttribute): void {
+		pool.release(target);
 	}
 }

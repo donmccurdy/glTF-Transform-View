@@ -8,6 +8,7 @@ import { Binding } from './Binding';
 import { createTextureParams, TextureParams } from '../variants/texture';
 import { PropertyVariantObserver } from '../observers/PropertyVariantObserver';
 import { SourceMaterial } from '../variants/material';
+import { pool } from '../ObjectPool';
 
 const _vec3: vec3 = [0, 0, 0];
 
@@ -116,11 +117,11 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 		const shadingModel = getShadingModel(source);
 		switch (shadingModel) {
 			case ShadingModel.UNLIT:
-				return new MeshBasicMaterial();
+				return pool.request(new MeshBasicMaterial());
 			case ShadingModel.STANDARD:
-				return new MeshStandardMaterial();
+				return pool.request(new MeshStandardMaterial());
 			case ShadingModel.PHYSICAL:
-				return new MeshPhysicalMaterial();
+				return pool.request(new MeshPhysicalMaterial());
 			default:
 				throw new Error('Unsupported shading model.');
 		}
@@ -324,7 +325,7 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 	}
 
 	public disposeTarget(target: Material): void {
-		target.dispose();
+		pool.release(target).dispose();
 	}
 
 	public dispose() {

@@ -4,6 +4,7 @@ import type { UpdateContext } from '../UpdateContext';
 import { PropertyListObserver, PropertyObserver } from '../observers';
 import { eq } from '../utils';
 import { Binding } from './Binding';
+import { pool } from '../ObjectPool';
 
 const _vec3: vec3 = [0, 0, 0];
 const _vec4: vec4 = [0, 0, 0, 0];
@@ -15,7 +16,7 @@ export class NodeBinding extends Binding<NodeDef, Object3D> {
 	private _mesh: Object3D | null = null;
 
 	constructor(context: UpdateContext, source: NodeDef) {
-		super(context, source, new Object3D());
+		super(context, source, pool.request(new Object3D()));
 
 		this.children.subscribe((children) => {
 			if (children.remove) this.value.remove(children.remove);
@@ -27,7 +28,7 @@ export class NodeBinding extends Binding<NodeDef, Object3D> {
 				this._mesh = null;
 			}
 			if (add) {
-				this._mesh = add.clone();
+				this._mesh = pool.request(add.clone());
 				this.value.add(this._mesh);
 			}
 		});
@@ -57,6 +58,10 @@ export class NodeBinding extends Binding<NodeDef, Object3D> {
 		this.mesh.update(source.getMesh());
 
 		return this;
+	}
+
+	public disposeTarget(target: Object3D): void {
+		pool.release(target);
 	}
 
 	public dispose() {

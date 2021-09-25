@@ -1,6 +1,7 @@
 import { Property as PropertyDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
 import { Observer, Subscription } from '../observers';
+import { pool } from 'ObjectPool';
 
 export abstract class Binding <Source extends PropertyDef, Target> extends Observer<Target> {
 	public source: Source;
@@ -9,7 +10,7 @@ export abstract class Binding <Source extends PropertyDef, Target> extends Obser
 	protected _lastUpdateID: number = -1;
 	protected _targetUnsubscribe: Subscription;
 
-	protected constructor (context: UpdateContext, source: Source, target: Target) {
+	protected constructor(context: UpdateContext, source: Source, target: Target) {
 		super(target);
 		this._context = context;
 		this.source = source;
@@ -35,5 +36,5 @@ export abstract class Binding <Source extends PropertyDef, Target> extends Obser
 		super.dispose();
 	}
 
-	public disposeTarget(target: Target) {}
+	public abstract disposeTarget(target: Target): void;
 }

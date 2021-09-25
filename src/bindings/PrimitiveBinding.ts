@@ -5,6 +5,7 @@ import { PropertyMapObserver, PropertyObserver } from '../observers';
 import { Binding } from './Binding';
 import { createMaterialParams, MaterialParams, VariantMaterial } from '../variants/material';
 import { PropertyVariantObserver } from '../observers/PropertyVariantObserver';
+import { pool } from '../ObjectPool';
 
 // https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#default-material
 const DEFAULT_MATERIAL = new MeshStandardMaterial({color: 0xFFFFFF, roughness: 1.0, metalness: 1.0});
@@ -31,7 +32,11 @@ export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
 	protected attributes = new PropertyMapObserver<AccessorDef, BufferAttribute>(this._context);
 
 	public constructor(context: UpdateContext, source: PrimitiveDef) {
-		super(context, source, PrimitiveBinding.createTarget(source, new BufferGeometry(), DEFAULT_MATERIAL));
+		super(
+			context,
+			source,
+			PrimitiveBinding.createTarget(source, pool.request(new BufferGeometry()), DEFAULT_MATERIAL),
+		);
 
 		this.material.subscribe((material) => (this.value.material = material as Material));
 		this.indices.subscribe((indices) => this.value.geometry.setIndex(indices));
@@ -74,27 +79,28 @@ export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
 			case PrimitiveDef.Mode.TRIANGLE_STRIP:
 				// TODO(feat): Support SkinnedMesh.
 				// TODO(bug): Support triangle fan and triangle strip.
-				return new Mesh(geometry, material);
+				return pool.request(new Mesh(geometry, material));
 			case PrimitiveDef.Mode.LINES:
-				return new LineSegments(geometry, material);
+				return pool.request(new LineSegments(geometry, material));
 			case PrimitiveDef.Mode.LINE_LOOP:
-				return new LineLoop(geometry, material);
+				return pool.request(new LineLoop(geometry, material));
 			case PrimitiveDef.Mode.LINE_STRIP:
-				return new Line(geometry, material);
+				return pool.request(new Line(geometry, material));
 			case PrimitiveDef.Mode.POINTS:
-				return new Points(geometry, material);
+				return pool.request(new Points(geometry, material));
 			default:
 				throw new Error(`Unexpected primitive mode: ${source.getMode()}`);
 		}
 	}
 
 	public disposeTarget(_target: MeshLike): void {
+		pool.release(_target);
 		// geometry and material are reused.
 	}
 
 	public dispose() {
 		if (this.value) {
-			this.value.geometry.dispose();
+			pool.release(this.value.geometry).dispose();
 		}
 		this.material.dispose();
 		this.indices.dispose();
