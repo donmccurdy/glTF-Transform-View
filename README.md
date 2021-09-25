@@ -115,13 +115,15 @@ function animate () {
 
 **P0:**
 
-- [ ] Correct tangent space normal maps
 - [ ] Dispose of resources removed from PropertyGraph
 - [ ] Dispose of resources when renderer disposed
-- [ ] Granular update process (e.g. vertex data flag)
-- [ ] Fails to render reused meshes
-- [ ] Rename DocumentRenderer → GLTFRenderer (?)
 - [ ] Unit tests
+
+**P1:**
+
+- [ ] Correct tangent space normal maps
+- [ ] Granular update process (e.g. vertex data flag)
+- [ ] Rename DocumentRenderer → GLTFRenderer (?)
 
 ### Extensions Supported
 

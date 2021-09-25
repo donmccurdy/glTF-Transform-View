@@ -120,8 +120,7 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 			case ShadingModel.STANDARD:
 				return new MeshStandardMaterial();
 			case ShadingModel.PHYSICAL:
-				// TODO(cleanup): https://github.com/three-types/three-ts-types/pull/106
-				return new MeshPhysicalMaterial({});
+				return new MeshPhysicalMaterial();
 			default:
 				throw new Error('Unsupported shading model.');
 		}

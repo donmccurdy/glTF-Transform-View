@@ -12,6 +12,8 @@ export class NodeBinding extends Binding<NodeDef, Object3D> {
 	protected children = new PropertyListObserver<NodeDef, Object3D>(this._context);
 	protected mesh = new PropertyObserver<MeshDef, Group>(this._context);
 
+	private _mesh: Object3D | null = null;
+
 	constructor(context: UpdateContext, source: NodeDef) {
 		super(context, source, new Object3D());
 
@@ -20,8 +22,14 @@ export class NodeBinding extends Binding<NodeDef, Object3D> {
 			if (children.add) this.value.add(children.add);
 		});
 		this.mesh.subscribe((add, remove) => {
-			if (remove) this.value.remove(remove);
-			if (add) this.value.add(add);
+			if (remove && this._mesh) {
+				this.value.remove(this._mesh);
+				this._mesh = null;
+			}
+			if (add) {
+				this._mesh = add.clone();
+				this.value.add(this._mesh);
+			}
 		});
 	}
 

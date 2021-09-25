@@ -109,8 +109,13 @@ function dispose(model: Object3D) {
 	model.traverse((o) => {
 		if ((o as Mesh).isMesh) {
 			(o as Mesh).geometry.dispose();
-			((o as Mesh).material as Material).dispose();
-			// TODO(bug): Should dispose textures too, if this were production.
+			const material = (o as Mesh).material as Material;
+			for (const key in material) {
+				if (material[key] && material[key].isTexture) {
+					material[key].dispose();
+				}
+			}
+			material.dispose();
 		}
 	});
 }
