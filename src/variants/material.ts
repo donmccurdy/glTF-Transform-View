@@ -60,11 +60,20 @@ export function updateMaterialVariant(srcMaterial: SourceMaterial, dstMaterial: 
 		dstMaterial.sizeAttenuation = false;
 	}
 
-	if (params.useVertexColors) dstMaterial.vertexColors = true;
-	if (dstMaterial instanceof MeshStandardMaterial) {
-		// TODO(bug): Correct tangent space normal maps.
+	if (params.useVertexColors) {
+		dstMaterial.vertexColors = true;
+	}
+	if (params.useFlatShading && dstMaterial instanceof MeshStandardMaterial) {
+		dstMaterial.flatShading = true;
+	}
+	if (!params.useVertexTangents) {
 		// https://github.com/mrdoob/three.js/issues/11438#issuecomment-507003995
-		if (params.useFlatShading) dstMaterial.flatShading = true;
+		if (dstMaterial instanceof MeshStandardMaterial) {
+			dstMaterial.normalScale.y *= -1;
+		}
+		if (dstMaterial instanceof MeshPhysicalMaterial) {
+			dstMaterial.clearcoatNormalScale.y *= -1;
+		}
 	}
 
 	if (dstMaterial.version < srcMaterial.version) {

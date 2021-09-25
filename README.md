@@ -121,7 +121,6 @@ function animate () {
 
 **P1:**
 
-- [ ] Correct tangent space normal maps
 - [ ] Granular update process (e.g. vertex data flag)
 - [ ] Rename DocumentRenderer → GLTFRenderer (?)
 
