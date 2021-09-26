@@ -83,3 +83,7 @@ export function updateMaterialVariant(srcMaterial: SourceMaterial, dstMaterial: 
 
 	return dstMaterial;
 }
+
+export function disposeMaterialVariant(material: Material): void {
+	pool.release(material).dispose();
+}

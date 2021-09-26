@@ -57,3 +57,7 @@ export function updateTextureVariant(srcTexture: Texture, dstTexture: Texture, p
 	dstTexture.encoding = params.encoding;
 	return dstTexture;
 }
+
+export function disposeTextureVariant(texture: Texture): void {
+	pool.release(texture).dispose();
+}

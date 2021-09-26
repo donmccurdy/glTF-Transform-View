@@ -1,10 +1,9 @@
 import { Accessor as AccessorDef, Material as MaterialDef, Mesh as MeshDef, Node as NodeDef, Primitive as PrimitiveDef, Property as PropertyDef, PropertyType, Scene as SceneDef, Texture as TextureDef } from '@gltf-transform/core';
-import { VariantCache } from './variants/VariantCache';
 import { AccessorBinding, Binding, MaterialBinding, MeshBinding, NodeBinding, PrimitiveBinding, SceneBinding, TextureBinding } from './bindings';
-import { createMaterialVariant, MaterialParams, SourceMaterial, VariantMaterial, updateMaterialVariant } from './variants/material';
+import { createMaterialVariant, disposeMaterialVariant, MaterialParams, SourceMaterial, updateMaterialVariant, VariantMaterial } from './variants/material';
+import { createTextureVariant, disposeTextureVariant, TextureParams, updateTextureVariant } from './variants/texture';
 import { Texture } from 'three';
-import { createTextureVariant, TextureParams, updateTextureVariant } from './variants/texture';
-import { pool } from './ObjectPool';
+import { VariantCache } from './variants/VariantCache';
 
 // export enum UpdateMask {
 // 	SHALLOW = 0x0000,
@@ -25,13 +24,13 @@ export class UpdateContext {
 		'TextureCache',
 		createTextureVariant,
 		updateTextureVariant,
-		(texture) => pool.release(texture).dispose(),
+		disposeTextureVariant,
 	);
 	public materialCache = new VariantCache<SourceMaterial, VariantMaterial, MaterialParams>(
 		'MaterialCache',
 		createMaterialVariant,
 		updateMaterialVariant,
-		(material) => pool.release(material).dispose()
+		disposeMaterialVariant,
 	);
 
 	private _addBinding(renderer: Binding<PropertyDef, any>): void {
@@ -101,5 +100,7 @@ export class UpdateContext {
 		for (const renderer of this._bindings) {
 			renderer.dispose();
 		}
+		this.textureCache.dispose();
+		this.materialCache.dispose();
 	}
 }

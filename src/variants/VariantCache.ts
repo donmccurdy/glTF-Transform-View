@@ -59,7 +59,7 @@ export class VariantCache<S extends THREEObject, V extends THREEObject, P> {
 
 	/** Return a variant to the pool, destroying it if no users remain. */
 	public releaseVariant(variant: V) {
-		for (const [base, cache] of this._cache) {
+		for (const [_, cache] of this._cache) {
 			for (const key in cache) {
 				const entry = cache[key];
 				if (entry.variant !== variant) continue;
@@ -79,6 +79,20 @@ export class VariantCache<S extends THREEObject, V extends THREEObject, P> {
 				this._disposeVariant(entry.variant);
 				delete cache[key];
 				if (Object.keys(cache).length > 0) continue;
+
+				this._cache.delete(base);
+			}
+		}
+	}
+
+	/** Disposes of all variants associated with this cache. */
+	public dispose() {
+		for (const [base, cache] of this._cache) {
+			for (const key in cache) {
+				const entry = cache[key];
+
+				this._disposeVariant(entry.variant);
+				delete cache[key];
 
 				this._cache.delete(base);
 			}

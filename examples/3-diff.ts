@@ -4,8 +4,11 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import { Document, WebIO } from '@gltf-transform/core';
 import { metalRough } from '@gltf-transform/functions';
-import { DocumentRenderer } from '../dist/render.modern.js';
+import { DocumentRenderer, DebugPool, setObjectPool } from '../dist/render.modern.js';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
+
+const debugPool = new DebugPool();
+setObjectPool(debugPool);
 
 const renderer = new WebGLRenderer({antialias: true});
 renderer.setPixelRatio( window.devicePixelRatio );
@@ -63,9 +66,11 @@ new RGBELoader()
 document.body.addEventListener('gltf-document', async (event) => {
 	const doc = (event as CustomEvent).detail as Document;
 
-	if (documentRenderer) documentRenderer.dispose();
+	if (documentRenderer) {
+		documentRenderer.dispose();
+		console.debug('debugPool::afterDispose', [...debugPool.list()]);
+	}
 	if (modelBefore) dispose(modelBefore);
-	if (modelAfter) dispose(modelAfter);
 
 	await checkExtensions(doc);
 
@@ -89,6 +94,8 @@ document.body.addEventListener('gltf-document', async (event) => {
 
 	controls.update();
 	render();
+
+	console.debug('debugPool::afterLoad', [...debugPool.list()]);
 });
 
 //
