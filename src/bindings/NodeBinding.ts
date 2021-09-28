@@ -23,14 +23,8 @@ export class NodeBinding extends Binding<NodeDef, Object3D> {
 			if (children.add) this.value.add(children.add);
 		});
 		this.mesh.subscribe((add, remove) => {
-			if (remove && this._mesh) {
-				this.value.remove(this._mesh);
-				this._mesh = null;
-			}
-			if (add) {
-				this._mesh = pool.request(add.clone());
-				this.value.add(this._mesh);
-			}
+			if (remove) this._setMesh(null);
+			if (add) this._setMesh(add);
 		});
 	}
 
@@ -60,11 +54,28 @@ export class NodeBinding extends Binding<NodeDef, Object3D> {
 		return this;
 	}
 
+	private _setMesh(mesh: Object3D |  null) {
+		const target = this.value;
+		const prevMesh = this._mesh;
+
+		if (prevMesh) {
+			target.remove(pool.release(prevMesh));
+		}
+
+		if (mesh) {
+			// Clone. glTF mesh can be reused, three.js mesh cannot.
+			target.add((this._mesh = pool.request(mesh.clone())));
+		} else {
+			this._mesh = null;
+		}
+	}
+
 	public disposeTarget(target: Object3D): void {
 		pool.release(target);
 	}
 
 	public dispose() {
+		this._setMesh(null);
 		this.children.dispose();
 		this.mesh.dispose();
 		super.dispose();

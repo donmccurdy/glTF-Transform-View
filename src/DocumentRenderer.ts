@@ -49,7 +49,14 @@ export class DocumentRenderer {
 		this._context.endUpdate();
 	}
 
-	/** Destroys the renderer and cleans up its resources. */
+	/**
+	 * Destroys the renderer and cleans up its resources.
+	 *
+	 * Lifecycle: For resources associated with...
+	 * - ...used Properties, dispose with renderer.
+	 * - ...unused Properties, dispose with renderer.
+	 * - ...disposed Properties, dispose immediately.
+	 */
 	public dispose(): void {
 		this._context.dispose();
 	}

@@ -68,7 +68,12 @@ document.body.addEventListener('gltf-document', async (event) => {
 
 	if (documentRenderer) {
 		documentRenderer.dispose();
-		console.debug('debugPool::afterDispose', [...debugPool.list()]);
+		const leaks = debugPool.list();
+		if (leaks.length > 0) {
+			console.warn('debugPool::LEAK', [...leaks]);
+		} else {
+			console.debug('debugPool::OK');
+		}
 	}
 	if (modelBefore) dispose(modelBefore);
 

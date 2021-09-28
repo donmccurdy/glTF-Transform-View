@@ -115,8 +115,9 @@ function animate () {
 
 **P0:**
 
-- [ ] Dispose of resources removed from PropertyGraph
-- [ ] Dispose of resources when renderer disposed
+- [x] Dispose of resources associated with active Properties when renderer disposed
+- [ ] Dispose of resources associated with unused Properties when renderer disposed
+- [ ] Dispose of resources associated with disposed Properties immediately
 - [ ] Unit tests
 
 **P1:**
