@@ -49,8 +49,10 @@ export class PropertyMapObserver<S extends PropertyDef, T> extends Observer<MapU
 		}
 
 		// Update.
-		for (const key in this._sources) {
-			context.bind(this._sources[key]).updateOnce();
+		if (context.deep) {
+			for (const key in this._sources) {
+				context.bind(this._sources[key]).updateOnce();
+			}
 		}
 	}
 

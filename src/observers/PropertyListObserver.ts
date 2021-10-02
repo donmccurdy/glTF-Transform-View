@@ -39,8 +39,10 @@ export class PropertyListObserver<S extends PropertyDef, T> extends Observer<Lis
 		}
 
 		// Update.
-		for (const source of this._sources) {
-			context.bind(source).updateOnce();
+		if (context.deep) {
+			for (const source of this._sources) {
+				context.bind(source).updateOnce();
+			}
 		}
 	}
 

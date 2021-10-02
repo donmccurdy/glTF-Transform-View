@@ -72,6 +72,10 @@ export class UpdateContext {
 		return binding;
 	}
 
+	public weakBind(source: PropertyDef): Binding<PropertyDef, any> | null {
+		return this._sourceBindings.get(source) || null;
+	}
+
 	public startUpdate(deep = false) {
 		this.updateID++;
 		this.deep = deep;
@@ -90,5 +94,6 @@ export class UpdateContext {
 		}
 		this.textureCache.dispose();
 		this.materialCache.dispose();
+		this._bindings.clear();
 	}
 }
