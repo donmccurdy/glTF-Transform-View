@@ -1,6 +1,7 @@
 import { TextureInfo } from '@gltf-transform/core';
 import { pool } from '../ObjectPool';
 import { ClampToEdgeWrapping, LinearFilter, LinearMipmapLinearFilter, LinearMipmapNearestFilter, MirroredRepeatWrapping, NearestFilter, NearestMipmapLinearFilter, NearestMipmapNearestFilter, RepeatWrapping, Texture, TextureEncoding, TextureFilter, Wrapping } from 'three';
+import { VariantCache } from './VariantCache';
 
 const WEBGL_FILTERS: Record<number, TextureFilter> = {
 	9728: NearestFilter,
@@ -35,29 +36,31 @@ export function createTextureParams(textureInfo: TextureInfo, encoding: TextureE
 	}
 }
 
-export function createTextureVariant(srcTexture: Texture, params: TextureParams): Texture {
-	console.debug('alloc::createTextureVariant');
-	const dstTexture = updateTextureVariant(srcTexture, pool.request(srcTexture.clone()), params);
+export class TextureVariantCache extends VariantCache<Texture, Texture, TextureParams> {
+	public createVariant(srcTexture: Texture, params: TextureParams): Texture {
+		console.debug('alloc::createTextureVariant');
+		const dstTexture = this.updateVariant(srcTexture, pool.request(srcTexture.clone()), params);
 
-	if (dstTexture.image.complete) {
-		dstTexture.needsUpdate = true;
-	} else {
-		dstTexture.image.onload = () => (dstTexture.needsUpdate = true);
+		if (dstTexture.image.complete) {
+			dstTexture.needsUpdate = true;
+		} else {
+			dstTexture.image.onload = () => (dstTexture.needsUpdate = true);
+		}
+
+		return dstTexture;
 	}
 
-	return dstTexture;
-}
+	public updateVariant(srcTexture: Texture, dstTexture: Texture, params: TextureParams): Texture {
+		dstTexture.copy(srcTexture);
+		dstTexture.minFilter = params.minFilter;
+		dstTexture.magFilter = params.magFilter;
+		dstTexture.wrapS = params.wrapS;
+		dstTexture.wrapT = params.wrapT;
+		dstTexture.encoding = params.encoding;
+		return dstTexture;
+	}
 
-export function updateTextureVariant(srcTexture: Texture, dstTexture: Texture, params: TextureParams): Texture {
-	dstTexture.copy(srcTexture);
-	dstTexture.minFilter = params.minFilter;
-	dstTexture.magFilter = params.magFilter;
-	dstTexture.wrapS = params.wrapS;
-	dstTexture.wrapT = params.wrapT;
-	dstTexture.encoding = params.encoding;
-	return dstTexture;
-}
-
-export function disposeTextureVariant(texture: Texture): void {
-	pool.release(texture).dispose();
+	public disposeVariant(texture: Texture): void {
+		pool.release(texture).dispose();
+	}
 }

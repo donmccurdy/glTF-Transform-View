@@ -17,15 +17,14 @@ interface CacheEntry<V, P> {
  *
  * See: {@link PropertyVariantObserver}
  */
-export class VariantCache<S extends THREEObject, V extends THREEObject, P> {
+export abstract class VariantCache<S extends THREEObject, V extends THREEObject, P> {
 	readonly _cache: Map<S, {[key: string]: CacheEntry<V,P>}> = new Map();
 
-	constructor(
-		private readonly _name: string,
-		private readonly _createVariant: (t: S, p: P) => V,
-		private readonly _updateVariant: (s: S, v: V, p: P) => V,
-		private readonly _disposeVariant: (v: V) => void
-	) {}
+	constructor(private readonly _name: string) {}
+
+	public abstract createVariant(t: S, p: P): V;
+	public abstract updateVariant(s: S, v: V, p: P): V;
+	public abstract disposeVariant(v: V): void;
 
 	private _key(value: S, params: P) {
 		return value.uuid + ':' + Object.values(params).join(':');
@@ -43,7 +42,7 @@ export class VariantCache<S extends THREEObject, V extends THREEObject, P> {
 			return cache[key].variant;
 		}
 
-		const variant = this._createVariant(value, params);
+		const variant = this.createVariant(value, params);
 		cache[key] = {users: 1, variant, params};
 
 		return variant;
@@ -53,7 +52,7 @@ export class VariantCache<S extends THREEObject, V extends THREEObject, P> {
 		const cacheMap = this._cache.get(srcValue)!;
 		for (const key in cacheMap) {
 			const cache = cacheMap[key];
-			this._updateVariant(srcValue, cache.variant, cache.params);
+			this.updateVariant(srcValue, cache.variant, cache.params);
 		}
 	}
 
@@ -76,7 +75,7 @@ export class VariantCache<S extends THREEObject, V extends THREEObject, P> {
 				const entry = cache[key];
 				if (entry.users > 0) continue;
 
-				this._disposeVariant(entry.variant);
+				this.disposeVariant(entry.variant);
 				delete cache[key];
 				if (Object.keys(cache).length > 0) continue;
 
@@ -91,7 +90,7 @@ export class VariantCache<S extends THREEObject, V extends THREEObject, P> {
 			for (const key in cache) {
 				const entry = cache[key];
 
-				this._disposeVariant(entry.variant);
+				this.disposeVariant(entry.variant);
 				delete cache[key];
 
 				this._cache.delete(base);

@@ -1,9 +1,7 @@
 import { Accessor as AccessorDef, Material as MaterialDef, Mesh as MeshDef, Node as NodeDef, Primitive as PrimitiveDef, Property as PropertyDef, PropertyType, Scene as SceneDef, Texture as TextureDef } from '@gltf-transform/core';
 import { AccessorBinding, Binding, MaterialBinding, MeshBinding, NodeBinding, PrimitiveBinding, SceneBinding, TextureBinding } from './bindings';
-import { createMaterialVariant, disposeMaterialVariant, MaterialParams, SourceMaterial, updateMaterialVariant, VariantMaterial } from './variants/material';
-import { createTextureVariant, disposeTextureVariant, TextureParams, updateTextureVariant } from './variants/texture';
-import { Texture } from 'three';
-import { VariantCache } from './variants/VariantCache';
+import { MaterialVariantCache } from './variants/MaterialVariantCache';
+import { TextureVariantCache } from './variants/TextureVariantCache';
 
 // export enum UpdateMask {
 // 	SHALLOW = 0x0000,
@@ -20,18 +18,8 @@ export class UpdateContext {
 	private _bindings = new Set<Binding<PropertyDef, any>>();
 	private _sourceBindings = new WeakMap<PropertyDef, Binding<PropertyDef, any>>();
 
-	public textureCache = new VariantCache<Texture, Texture, TextureParams>(
-		'TextureCache',
-		createTextureVariant,
-		updateTextureVariant,
-		disposeTextureVariant,
-	);
-	public materialCache = new VariantCache<SourceMaterial, VariantMaterial, MaterialParams>(
-		'MaterialCache',
-		createMaterialVariant,
-		updateMaterialVariant,
-		disposeMaterialVariant,
-	);
+	public textureCache = new TextureVariantCache('TextureCache');
+	public materialCache = new MaterialVariantCache('MaterialCache');
 
 	private _addBinding(renderer: Binding<PropertyDef, any>): void {
 		this._bindings.add(renderer);

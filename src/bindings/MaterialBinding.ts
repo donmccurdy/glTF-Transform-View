@@ -5,9 +5,9 @@ import type { UpdateContext } from '../UpdateContext';
 import type { Subscription } from '../observers';
 import { eq } from '../utils';
 import { Binding } from './Binding';
-import { createTextureParams, TextureParams } from '../variants/texture';
+import { createTextureParams, TextureParams } from '../variants/TextureVariantCache';
 import { PropertyVariantObserver } from '../observers/PropertyVariantObserver';
-import { SourceMaterial } from '../variants/material';
+import { SourceMaterial } from '../variants/MaterialVariantCache';
 import { pool } from '../ObjectPool';
 
 const _vec3: vec3 = [0, 0, 0];

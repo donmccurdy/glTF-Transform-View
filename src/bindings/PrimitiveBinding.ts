@@ -3,7 +3,7 @@ import { Accessor as AccessorDef, GLTF, Material as MaterialDef, Primitive as Pr
 import type { UpdateContext } from '../UpdateContext';
 import { PropertyMapObserver, PropertyObserver } from '../observers';
 import { Binding } from './Binding';
-import { createMaterialParams, MaterialParams, VariantMaterial } from '../variants/material';
+import { createMaterialParams, MaterialParams, VariantMaterial } from '../variants/MaterialVariantCache';
 import { PropertyVariantObserver } from '../observers/PropertyVariantObserver';
 import { pool } from '../ObjectPool';
 
