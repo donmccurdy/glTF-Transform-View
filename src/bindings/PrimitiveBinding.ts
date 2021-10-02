@@ -38,6 +38,9 @@ export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
 			PrimitiveBinding.createTarget(source, pool.request(new BufferGeometry()), DEFAULT_MATERIAL),
 		);
 
+		// TODO(bug): Material updates modify a value that has already been cloned. Similar issue
+		// in Node→Mesh and Mesh→Primitive references. Might be appropriately solved by a no-op
+		// VariantObserver that just returns single-use clones.
 		this.material.subscribe((material) => (this.value.material = material as Material));
 		this.indices.subscribe((indices) => this.value.geometry.setIndex(indices));
 		this.attributes.subscribe(({key, value}) => {
@@ -78,7 +81,7 @@ export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
 			case PrimitiveDef.Mode.TRIANGLE_FAN:
 			case PrimitiveDef.Mode.TRIANGLE_STRIP:
 				// TODO(feat): Support SkinnedMesh.
-				// TODO(bug): Support triangle fan and triangle strip.
+				// TODO(feat): Support triangle fan and triangle strip.
 				return pool.request(new Mesh(geometry, material));
 			case PrimitiveDef.Mode.LINES:
 				return pool.request(new LineSegments(geometry, material));

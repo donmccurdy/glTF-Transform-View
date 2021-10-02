@@ -16,6 +16,7 @@ export class MeshBinding extends Binding<MeshDef, Group> {
 			if (primitives.add) this.value.add(primitives.add);
 		});
 	}
+
 	public update(): this {
 		const source = this.source;
 		const target = this.value;
