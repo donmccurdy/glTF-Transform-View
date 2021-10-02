@@ -22,16 +22,16 @@ export abstract class VariantCache<S extends THREEObject, V extends THREEObject,
 
 	constructor(private readonly _name: string) {}
 
-	public abstract createVariant(t: S, p: P): V;
-	public abstract updateVariant(s: S, v: V, p: P): V;
-	public abstract disposeVariant(v: V): void;
+	protected abstract _createVariant(t: S, p: P): V;
+	protected abstract _updateVariant(s: S, v: V, p: P): V;
+	protected abstract _disposeVariant(v: V): void;
 
 	private _key(value: S, params: P) {
 		return value.uuid + ':' + Object.values(params).join(':');
 	}
 
 	/** Borrow an instance from the pool, creating it if necessary. */
-	public getVariant(value: S, params: P): V {
+	public requestVariant(value: S, params: P): V {
 		const key = this._key(value, params);
 
 		let cache = this._cache.get(value);
@@ -42,17 +42,24 @@ export abstract class VariantCache<S extends THREEObject, V extends THREEObject,
 			return cache[key].variant;
 		}
 
-		const variant = this.createVariant(value, params);
+		const variant = this._createVariant(value, params);
 		cache[key] = {users: 1, variant, params};
 
 		return variant;
+	}
+
+	/** Look for an existing variant in the pool, without adding a user. */
+	public findVariant(value: S, params: P): V | null {
+		const key = this._key(value, params);
+		const cache = this._cache.get(value);
+		return cache && cache[key] ? cache[key].variant : null;
 	}
 
 	public updateSource(srcValue: S): void {
 		const cacheMap = this._cache.get(srcValue)!;
 		for (const key in cacheMap) {
 			const cache = cacheMap[key];
-			this.updateVariant(srcValue, cache.variant, cache.params);
+			this._updateVariant(srcValue, cache.variant, cache.params);
 		}
 	}
 
@@ -75,7 +82,7 @@ export abstract class VariantCache<S extends THREEObject, V extends THREEObject,
 				const entry = cache[key];
 				if (entry.users > 0) continue;
 
-				this.disposeVariant(entry.variant);
+				this._disposeVariant(entry.variant);
 				delete cache[key];
 				if (Object.keys(cache).length > 0) continue;
 
@@ -90,7 +97,7 @@ export abstract class VariantCache<S extends THREEObject, V extends THREEObject,
 			for (const key in cache) {
 				const entry = cache[key];
 
-				this.disposeVariant(entry.variant);
+				this._disposeVariant(entry.variant);
 				delete cache[key];
 
 				this._cache.delete(base);

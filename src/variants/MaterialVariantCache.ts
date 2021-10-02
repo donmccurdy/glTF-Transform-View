@@ -26,19 +26,19 @@ export function createMaterialParams(primitive: PrimitiveDef): MaterialParams {
 
 export class MaterialVariantCache extends VariantCache<SourceMaterial, VariantMaterial, MaterialParams> {
 	/** Creates a variant material for given source material and MaterialParams. */
-	public createVariant(srcMaterial: SourceMaterial, params: MaterialParams): VariantMaterial {
+	protected _createVariant(srcMaterial: SourceMaterial, params: MaterialParams): VariantMaterial {
 		console.debug('alloc::createMaterialVariant');
 		switch (params.mode) {
 			case PrimitiveDef.Mode.TRIANGLES:
 			case PrimitiveDef.Mode.TRIANGLE_FAN:
 			case PrimitiveDef.Mode.TRIANGLE_STRIP:
-				return this.updateVariant(srcMaterial, pool.request(srcMaterial.clone()), params);
+				return this._updateVariant(srcMaterial, pool.request(srcMaterial.clone()), params);
 			case PrimitiveDef.Mode.LINES:
 			case PrimitiveDef.Mode.LINE_LOOP:
 			case PrimitiveDef.Mode.LINE_STRIP:
-				return this.updateVariant(srcMaterial, pool.request(new LineBasicMaterial()), params);
+				return this._updateVariant(srcMaterial, pool.request(new LineBasicMaterial()), params);
 			case PrimitiveDef.Mode.POINTS:
-				return this.updateVariant(srcMaterial, pool.request(new PointsMaterial()), params);
+				return this._updateVariant(srcMaterial, pool.request(new PointsMaterial()), params);
 			default:
 				throw new Error(`Unexpected primitive mode: ${params.mode}`);
 		}
@@ -50,7 +50,7 @@ export class MaterialVariantCache extends VariantCache<SourceMaterial, VariantMa
 	 * NOTICE: Changes to MaterialParams should _NOT_ be applied with this method.
 	 * Instead, create a new variant and dispose the old if unused.
 	 */
-	public updateVariant(srcMaterial: SourceMaterial, dstMaterial: VariantMaterial, params: MaterialParams): VariantMaterial {
+	protected _updateVariant(srcMaterial: SourceMaterial, dstMaterial: VariantMaterial, params: MaterialParams): VariantMaterial {
 		if (srcMaterial.type === dstMaterial.type) {
 			dstMaterial.copy(srcMaterial);
 		} else if (dstMaterial instanceof LineBasicMaterial) {
@@ -86,7 +86,7 @@ export class MaterialVariantCache extends VariantCache<SourceMaterial, VariantMa
 		return dstMaterial;
 	}
 
-	public disposeVariant(material: Material): void {
+	protected _disposeVariant(material: Material): void {
 		pool.release(material).dispose();
 	}
 }

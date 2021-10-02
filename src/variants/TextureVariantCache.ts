@@ -37,9 +37,9 @@ export function createTextureParams(textureInfo: TextureInfo, encoding: TextureE
 }
 
 export class TextureVariantCache extends VariantCache<Texture, Texture, TextureParams> {
-	public createVariant(srcTexture: Texture, params: TextureParams): Texture {
+	protected _createVariant(srcTexture: Texture, params: TextureParams): Texture {
 		console.debug('alloc::createTextureVariant');
-		const dstTexture = this.updateVariant(srcTexture, pool.request(srcTexture.clone()), params);
+		const dstTexture = this._updateVariant(srcTexture, pool.request(srcTexture.clone()), params);
 
 		if (dstTexture.image.complete) {
 			dstTexture.needsUpdate = true;
@@ -50,7 +50,7 @@ export class TextureVariantCache extends VariantCache<Texture, Texture, TextureP
 		return dstTexture;
 	}
 
-	public updateVariant(srcTexture: Texture, dstTexture: Texture, params: TextureParams): Texture {
+	protected _updateVariant(srcTexture: Texture, dstTexture: Texture, params: TextureParams): Texture {
 		dstTexture.copy(srcTexture);
 		dstTexture.minFilter = params.minFilter;
 		dstTexture.magFilter = params.magFilter;
@@ -60,7 +60,7 @@ export class TextureVariantCache extends VariantCache<Texture, Texture, TextureP
 		return dstTexture;
 	}
 
-	public disposeVariant(texture: Texture): void {
+	protected _disposeVariant(texture: Texture): void {
 		pool.release(texture).dispose();
 	}
 }

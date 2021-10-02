@@ -27,7 +27,7 @@ export class PropertyVariantObserver<S extends PropertyDef, T extends THREEObjec
 		if (!this._params) {
 			throw new Error('No variant configuration given.');
 		}
-		super.next(this._cache.getVariant(value, this._params));
+		super.next(this._cache.requestVariant(value, this._params));
 	}
 
 	public dispose() {
