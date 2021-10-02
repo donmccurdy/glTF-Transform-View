@@ -1,7 +1,6 @@
 import { Property as PropertyDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
 import { Observer, Subscription } from '../observers';
-import { pool } from 'ObjectPool';
 
 export abstract class Binding <Source extends PropertyDef, Target> extends Observer<Target> {
 	public source: Source;
