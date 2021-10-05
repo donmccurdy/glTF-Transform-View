@@ -2,7 +2,7 @@ import { DoubleSide, FrontSide, LinearEncoding, Material, MeshBasicMaterial, Mes
 import { Material as MaterialDef, Texture as TextureDef, TextureInfo as TextureInfoDef, vec3 } from '@gltf-transform/core';
 import type { Clearcoat, IOR, Sheen, Specular, Transmission, Volume } from '@gltf-transform/extensions';
 import type { UpdateContext } from '../UpdateContext';
-import { eq, SubjectSubscription } from '../utils';
+import { eq, Subscription } from '../utils';
 import { Binding } from './Binding';
 import { TextureMap } from '../maps';
 import { PropertyObserver } from '../observers';
@@ -84,7 +84,7 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 			observer: PropertyObserver<TextureDef, Texture>,
 			textureFn: () => TextureDef | null,
 			textureInfoFn: () => TextureInfoDef | null,
-			encoding: TextureEncoding): SubjectSubscription {
+			encoding: TextureEncoding): Subscription {
 
 		observer.map(this._context.textureMap, () => TextureMap.createParams(textureInfoFn()!, encoding));
 
