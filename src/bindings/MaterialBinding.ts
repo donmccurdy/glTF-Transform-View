@@ -98,6 +98,7 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 			const material = this.value as any;
 			for (const map of maps) {
 				if (!(map in material)) continue; // Unlit ⊂ Standard ⊂ Physical (& Points, Lines)
+				// TODO(bug): When shading model changes, we re-allocate all textures. Why?
 				if (!!material[map] !== !!texture) material.needsUpdate = true; // Recompile on add/remove.
 				material[map] = texture;
 			}
