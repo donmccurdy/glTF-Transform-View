@@ -10,7 +10,6 @@ export class Object3DMap extends ObserverMap<Object3D, Object3D, Object3DParams>
 	private static _parentIDs = new WeakMap<PropertyDef, string>();
 
 	protected _createVariant(srcMesh: Object3D): Object3D {
-		console.debug('alloc::createMeshVariant');
 		return pool.request(srcMesh.clone());
 	}
 

@@ -28,7 +28,6 @@ interface TextureParams {
 
 export class TextureMap extends ObserverMap<Texture, Texture, TextureParams> {
 	protected _createVariant(srcTexture: Texture, params: TextureParams): Texture {
-		console.debug('alloc::createTextureVariant');
 		const dstTexture = this._updateVariant(srcTexture, pool.request(srcTexture.clone()), params);
 
 		if (dstTexture.image.complete) {

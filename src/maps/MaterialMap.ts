@@ -17,7 +17,6 @@ interface MaterialParams {
 export class MaterialMap extends ObserverMap<SourceMaterial, VariantMaterial, MaterialParams> {
 	/** Creates a variant material for given source material and MaterialParams. */
 	protected _createVariant(srcMaterial: SourceMaterial, params: MaterialParams): VariantMaterial {
-		console.debug('alloc::createMaterialVariant');
 		switch (params.mode) {
 			case PrimitiveDef.Mode.TRIANGLES:
 			case PrimitiveDef.Mode.TRIANGLE_FAN:
