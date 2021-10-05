@@ -103,10 +103,8 @@ function animate() {
 	if (needsUpdate) {
 		console.time('DocumentRenderer::update');
 		documentRenderer.update(material);
-		// documentRenderer.updateAll();
 		console.timeEnd('DocumentRenderer::update');
 		needsUpdate = false;
-		// printGraph(scene.children[2]);
 	}
 
 	render();
@@ -125,12 +123,12 @@ function onWindowResize() {
 }
 
 function printGraph(node) {
-	console.group(' <' + node.type + '> ' + node.name + '#' + node.uuid + ' ~ ' + (node.userData.source || ''));
+	console.group(' <' + node.type + '> ' + node.name + '#' + node.uuid.substr(0, 6));
 	node.children.forEach((child) => printGraph(child));
 	if (node.isMesh) {
-		console.group(' <' + node.geometry.type + '> ' + node.geometry.name + '#' + node.geometry.uuid + ' ~ ' + node.geometry.userData.source);
+		console.group(' <' + node.geometry.type + '> ' + node.geometry.name + '#' + node.geometry.uuid.substr(0, 6));
 		console.groupEnd();
-		console.group(' <' + node.material.type + '> ' + node.material.name + '#' + node.material.uuid + ' ~ ' + node.material.userData.source);
+		console.group(' <' + node.material.type + '> ' + node.material.name + '#' + node.material.uuid.substr(0, 6));
 		console.groupEnd();
 	}
 	console.groupEnd();

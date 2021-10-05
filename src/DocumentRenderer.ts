@@ -55,8 +55,6 @@ export class DocumentRenderer {
 
 			const nextBinding = this._context.weakBind(next);
 			if (!nextBinding) continue;
-
-			// console.debug(`• update::${next.propertyType}::${next.getName()}`);
 			nextBinding.update();
 
 			// TODO(perf): Selective invalidation and early exit.
@@ -67,7 +65,7 @@ export class DocumentRenderer {
 				}
 			}
 
-			this._context.deep = false; // Only affects first update.
+			this._context.deep = false; // Only deep for first property.
 		}
 
 		this._context.endUpdate();

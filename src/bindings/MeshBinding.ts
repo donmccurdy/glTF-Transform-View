@@ -8,7 +8,7 @@ import { Object3DMap } from '../maps';
 
 export class MeshBinding extends Binding<MeshDef, Group> {
 	protected primitives = new PropertyListObserver<PrimitiveDef, Object3D>('primitives', this._context)
-		.map(this._context.meshMap, () => Object3DMap.createParams(this.source));
+		.map(this._context.object3DMap, () => Object3DMap.createParams(this.source));
 
 	public constructor(context: UpdateContext, source: MeshDef) {
 		super(context, source, pool.request(new Group()));

@@ -20,7 +20,7 @@ export class UpdateContext {
 
 	public textureMap = new TextureMap('TextureMap');
 	public materialMap = new MaterialMap('MaterialMap');
-	public meshMap = new Object3DMap('MeshMap');
+	public object3DMap = new Object3DMap('Object3DMap');
 
 	private _addBinding(renderer: Binding<PropertyDef, any>): void {
 		this._bindings.add(renderer);
@@ -87,7 +87,7 @@ export class UpdateContext {
 		// this.textureCache._debug();
 		this.materialMap.flush();
 		// this.materialCache._debug();
-		this.meshMap.flush();
+		this.object3DMap.flush();
 		// this.meshCache._debug();
 	}
 
@@ -97,7 +97,7 @@ export class UpdateContext {
 		}
 		this.textureMap.dispose();
 		this.materialMap.dispose();
-		this.meshMap.dispose();
+		this.object3DMap.dispose();
 		this._bindings.clear();
 	}
 }
