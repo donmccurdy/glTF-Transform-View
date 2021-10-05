@@ -135,6 +135,8 @@ yarn dev
 yarn test
 ```
 
+<!---
+
 ### Structure
 
 One of more interesting challenges of this project is that glTF properties do not necessarily map 1:1 to class instances in a particular 3D library like three.js. Examples:
@@ -145,3 +147,5 @@ One of more interesting challenges of this project is that glTF properties do no
 To support these cases, this library defines concepts of "bindings" (observing a glTF source property) and "variants" (observing contextually-derived versions of the property). Either type of observer may emit a replacement object when content changes.
 
 ![Bindings diagram](./assets/bindings_diagram.svg)
+
+--->
