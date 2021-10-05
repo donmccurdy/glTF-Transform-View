@@ -113,45 +113,11 @@ function animate () {
 
 ## Bugs / Limitations / To Do
 
-**P0:**
-
-- [x] Dispose of resources associated with active Properties when renderer disposed
-- [ ] Dispose of resources associated with unused Properties when renderer disposed
-- [ ] Dispose of resources associated with disposed Properties immediately
-- [ ] Unit tests
-
-**P1:**
-
-- [ ] Granular update process (e.g. vertex data flag)
-- [ ] Rename DocumentRenderer → GLTFRenderer (?)
+See https://github.com/donmccurdy/glTF-Transform-Render/issues/8.
 
 ### Extensions Supported
 
-**Complete:**
-
-- [x] KHR_draco_mesh_compression
-- [x] KHR_mesh_quantization
-- [x] KHR_materials_clearcoat
-- [x] KHR_materials_ior
-- [x] KHR_materials_sheen
-- [x] KHR_materials_specular
-- [x] KHR_materials_transmission
-- [x] KHR_materials_volume
-- [x] KHR_materials_unlit
-- [x] EXT_meshopt_compression
-- [x] EXT_texture_webp
-
-**P0:**
-
-- [ ] KHR_texture_transform
-- [ ] KHR_texture_basisu
-
-**P2:**
-
-- [ ] KHR_lights_punctual
-- [ ] KHR_materials_pbrSpecularGlossiness
-- [ ] KHR_materials_variants
-- [ ] EXT_mesh_gpu_instancing
+See https://github.com/donmccurdy/glTF-Transform-Render/issues/7.
 
 ## Contributing
 
