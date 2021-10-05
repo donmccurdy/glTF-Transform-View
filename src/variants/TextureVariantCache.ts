@@ -18,7 +18,7 @@ const WEBGL_WRAPPINGS: Record<number, Wrapping> = {
 	10497: RepeatWrapping
 };
 
-export interface TextureParams {
+interface TextureParams {
 	encoding: TextureEncoding,
 	minFilter: TextureFilter,
 	magFilter: TextureFilter,

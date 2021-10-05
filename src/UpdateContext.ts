@@ -1,7 +1,6 @@
 import { Accessor as AccessorDef, Material as MaterialDef, Mesh as MeshDef, Node as NodeDef, Primitive as PrimitiveDef, Property as PropertyDef, PropertyType, Scene as SceneDef, Texture as TextureDef } from '@gltf-transform/core';
 import { AccessorBinding, Binding, MaterialBinding, MeshBinding, NodeBinding, PrimitiveBinding, SceneBinding, TextureBinding } from './bindings';
-import { MaterialVariantCache } from './variants/MaterialVariantCache';
-import { TextureVariantCache } from './variants/TextureVariantCache';
+import { MaterialVariantCache, MeshVariantCache, TextureVariantCache } from './variants';
 
 // export enum UpdateMask {
 // 	SHALLOW = 0x0000,
@@ -20,6 +19,7 @@ export class UpdateContext {
 
 	public textureCache = new TextureVariantCache('TextureCache');
 	public materialCache = new MaterialVariantCache('MaterialCache');
+	public meshCache = new MeshVariantCache('MeshCache');
 
 	private _addBinding(renderer: Binding<PropertyDef, any>): void {
 		this._bindings.add(renderer);
@@ -86,6 +86,8 @@ export class UpdateContext {
 		// this.textureCache._debug();
 		this.materialCache.flush();
 		// this.materialCache._debug();
+		this.meshCache.flush();
+		// this.meshCache._debug();
 	}
 
 	public dispose(): void {
@@ -94,6 +96,7 @@ export class UpdateContext {
 		}
 		this.textureCache.dispose();
 		this.materialCache.dispose();
+		this.meshCache.dispose();
 		this._bindings.clear();
 	}
 }

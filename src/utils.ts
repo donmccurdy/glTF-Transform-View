@@ -5,3 +5,9 @@ export function eq(a: number[], b: number[]): boolean {
     }
     return true;
 }
+
+export interface THREEObject {
+	name: string;
+}
+
+export type Subscription = () => void;

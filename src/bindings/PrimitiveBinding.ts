@@ -3,8 +3,7 @@ import { Accessor as AccessorDef, GLTF, Material as MaterialDef, Primitive as Pr
 import type { UpdateContext } from '../UpdateContext';
 import { PropertyMapObserver, PropertyObserver } from '../observers';
 import { Binding } from './Binding';
-import { createMaterialParams, MaterialParams, VariantMaterial } from '../variants/MaterialVariantCache';
-import { PropertyVariantObserver } from '../observers/PropertyVariantObserver';
+import { createMaterialParams, VariantMaterial } from '../variants';
 import { pool } from '../ObjectPool';
 
 // https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#default-material
@@ -27,9 +26,10 @@ function semanticToAttributeName(semantic: string): string {
 type MeshLike = Mesh | SkinnedMesh | Points | Line | LineSegments | LineLoop;
 
 export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
-	protected material = new PropertyVariantObserver<MaterialDef, VariantMaterial, MaterialParams>(this._context, this._context.materialCache as any);
-	protected indices = new PropertyObserver<AccessorDef, BufferAttribute>(this._context);
-	protected attributes = new PropertyMapObserver<AccessorDef, BufferAttribute>(this._context);
+	protected material = new PropertyObserver<MaterialDef, VariantMaterial>('material', this._context)
+		.map(this, this._context.materialCache, () => createMaterialParams(this.source));
+	protected indices = new PropertyObserver<AccessorDef, BufferAttribute>('indices', this._context);
+	protected attributes = new PropertyMapObserver<AccessorDef, BufferAttribute>('attributes', this._context);
 
 	public constructor(context: UpdateContext, source: PrimitiveDef) {
 		super(
@@ -38,9 +38,6 @@ export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
 			PrimitiveBinding.createTarget(source, pool.request(new BufferGeometry()), DEFAULT_MATERIAL),
 		);
 
-		// TODO(bug): Material updates modify a value that has already been cloned. Similar issue
-		// in Node→Mesh and Mesh→Primitive references. Might be appropriately solved by a no-op
-		// VariantObserver that just returns single-use clones.
 		this.material.subscribe((material) => (this.value.material = material as Material));
 		this.indices.subscribe((indices) => this.value.geometry.setIndex(indices));
 		this.attributes.subscribe(({key, value}) => {
@@ -64,7 +61,6 @@ export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
 
 		this.indices.update(source.getIndices());
 		this.attributes.update(source.listSemantics(), source.listAttributes());
-		this.material.setParams(createMaterialParams(source));
 		this.material.update(source.getMaterial());
 
 		if (source.getMode() !== getObject3DMode(target)) {

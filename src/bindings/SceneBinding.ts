@@ -6,7 +6,7 @@ import { Binding } from './Binding';
 import { pool } from '../ObjectPool';
 
 export class SceneBinding extends Binding<SceneDef, Group> {
-	protected children = new PropertyListObserver<NodeDef, Object3D>(this._context);
+	protected children = new PropertyListObserver<NodeDef, Object3D>('children', this._context);
 
 	public constructor(context: UpdateContext, source: SceneDef) {
 		super(context, source, pool.request(new Group()));

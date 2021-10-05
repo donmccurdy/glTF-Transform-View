@@ -1,8 +1,4 @@
-export interface THREEObject {
-	uuid: string;
-	name: string;
-	type: string | number;
-}
+import { THREEObject } from '../utils';
 
 interface CacheEntry<V, P> {
 	variant: V,
@@ -26,17 +22,16 @@ export abstract class VariantCache<S extends THREEObject, V extends THREEObject,
 	protected abstract _updateVariant(s: S, v: V, p: P): V;
 	protected abstract _disposeVariant(v: V): void;
 
-	private _key(value: S, params: P) {
-		return value.uuid + ':' + Object.values(params).join(':');
+	private _key(params: P) {
+		return Object.values(params).join(':');
 	}
 
 	/** Borrow an instance from the pool, creating it if necessary. */
 	public requestVariant(value: S, params: P): V {
-		const key = this._key(value, params);
-
 		let cache = this._cache.get(value);
 		if (!cache) this._cache.set(value, cache = {});
 
+		const key = this._key(params);
 		if (cache[key]) {
 			cache[key].users++;
 			return cache[key].variant;
@@ -48,19 +43,8 @@ export abstract class VariantCache<S extends THREEObject, V extends THREEObject,
 		return variant;
 	}
 
-	/** Look for an existing variant in the pool, without adding a user. */
-	public findVariant(value: S, params: P): V | null {
-		const key = this._key(value, params);
-		const cache = this._cache.get(value);
-		return cache && cache[key] ? cache[key].variant : null;
-	}
-
-	public updateSource(srcValue: S): void {
-		const cacheMap = this._cache.get(srcValue)!;
-		for (const key in cacheMap) {
-			const cache = cacheMap[key];
-			this._updateVariant(srcValue, cache.variant, cache.params);
-		}
+	public updateVariant(s: S, v: V, p: P): V {
+		return this._updateVariant(s, v, p);
 	}
 
 	/** Return a variant to the pool, destroying it if no users remain. */
@@ -110,7 +94,10 @@ export abstract class VariantCache<S extends THREEObject, V extends THREEObject,
 		for (const [base, cache] of this._cache) {
 			let users = 0;
 			for (const key in cache) users += cache[key].users;
-			console.debug(`${this._name}::${base.type}::"${base.name}" → ${Object.keys(cache).length} variants, ${users} users`);
+			console.debug(`${this._name}::${(base as any).type || ''}::"${base.name}" → ${Object.keys(cache).length} variants, ${users} users`);
+		}
+		if (this._cache.size === 0) {
+			console.debug(`${this._name}::empty`);
 		}
 	}
 }

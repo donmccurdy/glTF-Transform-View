@@ -56,7 +56,7 @@ export class DocumentRenderer {
 			const nextBinding = this._context.weakBind(next);
 			if (!nextBinding) continue;
 
-			console.log(`update::${next.propertyType}::${next.getName()}`);
+			// console.debug(`• update::${next.propertyType}::${next.getName()}`);
 			nextBinding.update();
 
 			// TODO(perf): Not all child changes should invalidate the parent.

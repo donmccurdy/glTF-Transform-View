@@ -6,7 +6,7 @@ import { VariantCache } from './VariantCache';
 export type SourceMaterial = MeshBasicMaterial | MeshStandardMaterial | MeshPhysicalMaterial;
 export type VariantMaterial = MeshBasicMaterial | MeshStandardMaterial | MeshPhysicalMaterial | LineBasicMaterial | PointsMaterial;
 
-export interface MaterialParams {
+interface MaterialParams {
 	mode: GLTF.MeshPrimitiveMode,
 	useVertexTangents: boolean,
 	useVertexColors: boolean,
