@@ -45,7 +45,29 @@ export class DocumentRenderer {
 	 */
 	public update(property: Property, deep = false): void {
 		this._context.startUpdate(deep);
-		this._context.bind(property).update();
+
+		const dirtyList: Property[] = [property];
+		const dirtySet = new WeakSet(dirtyList);
+
+		while (dirtyList.length > 0) {
+			const next = dirtyList.pop()!;
+			dirtySet.delete(next);
+
+			const nextBinding = this._context.weakBind(next);
+			if (!nextBinding) continue;
+			nextBinding.update();
+
+			// TODO(perf): Selective invalidation and early exit.
+			for (const parent of next.listParents()) {
+				if (!dirtySet.has(parent)) {
+					dirtyList.push(parent);
+					dirtySet.add(parent);
+				}
+			}
+
+			this._context.deep = false; // Only deep for first property.
+		}
+
 		this._context.endUpdate();
 	}
 

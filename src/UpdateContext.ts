@@ -1,10 +1,9 @@
 import { Accessor as AccessorDef, Material as MaterialDef, Mesh as MeshDef, Node as NodeDef, Primitive as PrimitiveDef, Property as PropertyDef, PropertyType, Scene as SceneDef, Texture as TextureDef } from '@gltf-transform/core';
 import { AccessorBinding, Binding, MaterialBinding, MeshBinding, NodeBinding, PrimitiveBinding, SceneBinding, TextureBinding } from './bindings';
-import { createMaterialVariant, disposeMaterialVariant, MaterialParams, SourceMaterial, updateMaterialVariant, VariantMaterial } from './variants/material';
-import { createTextureVariant, disposeTextureVariant, TextureParams, updateTextureVariant } from './variants/texture';
-import { Texture } from 'three';
-import { VariantCache } from './variants/VariantCache';
+import { MaterialMap, Object3DMap, TextureMap } from './maps';
 
+// TODO(perf): Support update mask.
+//
 // export enum UpdateMask {
 // 	SHALLOW = 0x0000,
 // 	DEEP = 0x1000,
@@ -12,7 +11,6 @@ import { VariantCache } from './variants/VariantCache';
 // 	VERTEX_DATA = 0x00100,
 // }
 
-// TODO(bug): Deep syncs are pretty messy... how do we prevent updating the same (reused) Mesh many times? Front recursion?
 export class UpdateContext {
 	public updateID = 1;
 	public deep = true;
@@ -20,18 +18,9 @@ export class UpdateContext {
 	private _bindings = new Set<Binding<PropertyDef, any>>();
 	private _sourceBindings = new WeakMap<PropertyDef, Binding<PropertyDef, any>>();
 
-	public textureCache = new VariantCache<Texture, Texture, TextureParams>(
-		'TextureCache',
-		createTextureVariant,
-		updateTextureVariant,
-		disposeTextureVariant,
-	);
-	public materialCache = new VariantCache<SourceMaterial, VariantMaterial, MaterialParams>(
-		'MaterialCache',
-		createMaterialVariant,
-		updateMaterialVariant,
-		disposeMaterialVariant,
-	);
+	public textureMap = new TextureMap('TextureMap');
+	public materialMap = new MaterialMap('MaterialMap');
+	public object3DMap = new Object3DMap('Object3DMap');
 
 	private _addBinding(renderer: Binding<PropertyDef, any>): void {
 		this._bindings.add(renderer);
@@ -84,23 +73,31 @@ export class UpdateContext {
 		return binding;
 	}
 
+	public weakBind(source: PropertyDef): Binding<PropertyDef, any> | null {
+		return this._sourceBindings.get(source) || null;
+	}
+
 	public startUpdate(deep = false) {
 		this.updateID++;
 		this.deep = deep;
 	}
 
 	public endUpdate() {
-		this.textureCache.flush();
+		this.textureMap.flush();
 		// this.textureCache._debug();
-		this.materialCache.flush();
+		this.materialMap.flush();
 		// this.materialCache._debug();
+		this.object3DMap.flush();
+		// this.meshCache._debug();
 	}
 
 	public dispose(): void {
 		for (const renderer of this._bindings) {
 			renderer.dispose();
 		}
-		this.textureCache.dispose();
-		this.materialCache.dispose();
+		this.textureMap.dispose();
+		this.materialMap.dispose();
+		this.object3DMap.dispose();
+		this._bindings.clear();
 	}
 }

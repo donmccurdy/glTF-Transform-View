@@ -2,12 +2,10 @@ import { DoubleSide, FrontSide, LinearEncoding, Material, MeshBasicMaterial, Mes
 import { Material as MaterialDef, Texture as TextureDef, TextureInfo as TextureInfoDef, vec3 } from '@gltf-transform/core';
 import type { Clearcoat, IOR, Sheen, Specular, Transmission, Volume } from '@gltf-transform/extensions';
 import type { UpdateContext } from '../UpdateContext';
-import type { Subscription } from '../observers';
-import { eq } from '../utils';
+import { eq, Subscription } from '../utils';
 import { Binding } from './Binding';
-import { createTextureParams, TextureParams } from '../variants/texture';
-import { PropertyVariantObserver } from '../observers/PropertyVariantObserver';
-import { SourceMaterial } from '../variants/material';
+import { TextureMap } from '../maps';
+import { PropertyObserver } from '../observers';
 import { pool } from '../ObjectPool';
 
 const _vec3: vec3 = [0, 0, 0];
@@ -19,32 +17,32 @@ enum ShadingModel {
 }
 
 export class MaterialBinding extends Binding<MaterialDef, Material> {
-	protected readonly baseColorTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, this._context.textureCache);
-	protected readonly emissiveTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, this._context.textureCache);
-	protected readonly normalTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, this._context.textureCache);
-	protected readonly occlusionTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, this._context.textureCache);
-	protected readonly metallicRoughnessTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, this._context.textureCache);
+	protected readonly baseColorTexture = new PropertyObserver<TextureDef, Texture>('baseColorTexture', this._context);
+	protected readonly emissiveTexture = new PropertyObserver<TextureDef, Texture>('emissiveTexture', this._context);
+	protected readonly normalTexture = new PropertyObserver<TextureDef, Texture>('normalTexture', this._context);
+	protected readonly occlusionTexture = new PropertyObserver<TextureDef, Texture>('occlusionTexture', this._context);
+	protected readonly metallicRoughnessTexture = new PropertyObserver<TextureDef, Texture>('metallicRoughnessTexture', this._context);
 
 	// KHR_materials_clearcoat
-	protected readonly clearcoatTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, this._context.textureCache);
-	protected readonly clearcoatRoughnessTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, this._context.textureCache);
-	protected readonly clearcoatNormalTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, this._context.textureCache);
+	protected readonly clearcoatTexture = new PropertyObserver<TextureDef, Texture>('clearcoatTexture', this._context);
+	protected readonly clearcoatRoughnessTexture = new PropertyObserver<TextureDef, Texture>('clearcoatRoughnessTexture', this._context);
+	protected readonly clearcoatNormalTexture = new PropertyObserver<TextureDef, Texture>('clearcoatNormalTexture', this._context);
 
 	// KHR_materials_sheen
-	protected readonly sheenColorTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, this._context.textureCache);
-	protected readonly sheenRoughnessTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, this._context.textureCache);
+	protected readonly sheenColorTexture = new PropertyObserver<TextureDef, Texture>('sheenColorTexture', this._context);
+	protected readonly sheenRoughnessTexture = new PropertyObserver<TextureDef, Texture>('sheenRoughnessTexture', this._context);
 
 	// KHR_materials_specular
-	protected readonly specularTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, this._context.textureCache);
-	protected readonly specularColorTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, this._context.textureCache);
+	protected readonly specularTexture = new PropertyObserver<TextureDef, Texture>('specularTexture', this._context);
+	protected readonly specularColorTexture = new PropertyObserver<TextureDef, Texture>('specularColorTexture', this._context);
 
 	// KHR_materials_transmission
-	protected readonly transmissionTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, this._context.textureCache);
+	protected readonly transmissionTexture = new PropertyObserver<TextureDef, Texture>('transmissionTexture', this._context);
 
 	// KHR_materials_volume
-	protected readonly thicknessTexture = new PropertyVariantObserver<TextureDef, Texture, TextureParams>(this._context, this._context.textureCache);
+	protected readonly thicknessTexture = new PropertyObserver<TextureDef, Texture>('thicknessTexture', this._context);
 
-	private readonly _textureObservers: PropertyVariantObserver<TextureDef, Texture, TextureParams>[] = [];
+	private readonly _textureObservers: PropertyObserver<TextureDef, Texture>[] = [];
 	private readonly _textureUpdateFns: (() => void)[] = [];
 
 	public constructor(context: UpdateContext, source: MaterialDef) {
@@ -83,16 +81,16 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 
 	private bindTexture(
 			maps: string[],
-			observer: PropertyVariantObserver<TextureDef, Texture, TextureParams>,
+			observer: PropertyObserver<TextureDef, Texture>,
 			textureFn: () => TextureDef | null,
 			textureInfoFn: () => TextureInfoDef | null,
 			encoding: TextureEncoding): Subscription {
 
+		observer.map(this._context.textureMap, () => TextureMap.createParams(textureInfoFn()!, encoding));
+
 		this._textureObservers.push(observer);
 
 		this._textureUpdateFns.push(() => {
-			const textureInfo = textureInfoFn();
-			if (textureInfo) observer.setParams(createTextureParams(textureInfo, encoding));
 			observer.update(textureFn());
 		})
 
@@ -100,6 +98,7 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 			const material = this.value as any;
 			for (const map of maps) {
 				if (!(map in material)) continue; // Unlit ⊂ Standard ⊂ Physical (& Points, Lines)
+				// TODO(bug): When shading model changes, we re-allocate all textures. Why?
 				if (!!material[map] !== !!texture) material.needsUpdate = true; // Recompile on add/remove.
 				material[map] = texture;
 			}
@@ -155,8 +154,6 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 		}
 
 		for (const fn of this._textureUpdateFns) fn();
-
-		this._context.materialCache.updateSource(target as SourceMaterial);
 
 		return this;
 	}

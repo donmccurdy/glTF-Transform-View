@@ -5,3 +5,41 @@ export function eq(a: number[], b: number[]): boolean {
     }
     return true;
 }
+
+export interface THREEObject {
+	name: string;
+}
+
+export type Subscription = () => void;
+
+export class Subject<T> {
+	public value: T;
+	private _listeners: ((next: T, prev: T | null) => void)[] = [];
+
+	constructor(value: T) {
+		this.value = value;
+	}
+
+	public subscribe(listener: (next: T, prev: T | null) => void): Subscription {
+		this._listeners.push(listener);
+		listener(this.value, null);
+		return () => {
+            this._listeners.splice(this._listeners.indexOf(listener), 1);
+        };
+	}
+
+	protected next(value: T) {
+		for (const listener of this._listeners) {
+			listener(value, this.value);
+		}
+		this.value = value;
+	}
+
+	public notify() {
+		this.next(this.value);
+	}
+
+	public dispose() {
+		this._listeners.length = 0;
+	}
+}

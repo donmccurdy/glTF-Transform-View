@@ -1,8 +1,4 @@
-export interface THREEObject {
-	uuid: string;
-	name: string;
-	type: string | number;
-}
+import { THREEObject } from '../utils';
 
 interface CacheEntry<V, P> {
 	variant: V,
@@ -11,33 +7,32 @@ interface CacheEntry<V, P> {
 }
 
 /**
- * Abstract cache, supporting reuse of 'variant' objects derived from 'source'
- * objects, given a parameter set. Objects in the cache are disposed after no
- * users remain.
+ * Enables an Observer to 'map' incoming values to variants derived from the
+ * source objects, given a parameter set. Values are cached and disposed after
+ * no users remain.
  *
- * See: {@link PropertyVariantObserver}
+ * Example: MaterialMap is used to map incoming materials to the appropriate
+ * Point/Line/Mesh materials needed for a particular primitive.
  */
-export class VariantCache<S extends THREEObject, V extends THREEObject, P> {
+export abstract class ObserverMap<S extends THREEObject, V extends THREEObject, P> {
 	readonly _cache: Map<S, {[key: string]: CacheEntry<V,P>}> = new Map();
 
-	constructor(
-		private readonly _name: string,
-		private readonly _createVariant: (t: S, p: P) => V,
-		private readonly _updateVariant: (s: S, v: V, p: P) => V,
-		private readonly _disposeVariant: (v: V) => void
-	) {}
+	constructor(private readonly _name: string) {}
 
-	private _key(value: S, params: P) {
-		return value.uuid + ':' + Object.values(params).join(':');
+	protected abstract _createVariant(t: S, p: P): V;
+	protected abstract _updateVariant(s: S, v: V, p: P): V;
+	protected abstract _disposeVariant(v: V): void;
+
+	private _key(params: P) {
+		return Object.values(params).join(':');
 	}
 
 	/** Borrow an instance from the pool, creating it if necessary. */
-	public getVariant(value: S, params: P): V {
-		const key = this._key(value, params);
-
+	public requestVariant(value: S, params: P): V {
 		let cache = this._cache.get(value);
 		if (!cache) this._cache.set(value, cache = {});
 
+		const key = this._key(params);
 		if (cache[key]) {
 			cache[key].users++;
 			return cache[key].variant;
@@ -49,12 +44,8 @@ export class VariantCache<S extends THREEObject, V extends THREEObject, P> {
 		return variant;
 	}
 
-	public updateSource(srcValue: S): void {
-		const cacheMap = this._cache.get(srcValue)!;
-		for (const key in cacheMap) {
-			const cache = cacheMap[key];
-			this._updateVariant(srcValue, cache.variant, cache.params);
-		}
+	public updateVariant(s: S, v: V, p: P): V {
+		return this._updateVariant(s, v, p);
 	}
 
 	/** Return a variant to the pool, destroying it if no users remain. */
@@ -104,7 +95,10 @@ export class VariantCache<S extends THREEObject, V extends THREEObject, P> {
 		for (const [base, cache] of this._cache) {
 			let users = 0;
 			for (const key in cache) users += cache[key].users;
-			console.debug(`${this._name}::${base.type}::"${base.name}" → ${Object.keys(cache).length} variants, ${users} users`);
+			console.debug(`${this._name}::${(base as any).type || ''}::"${base.name}" → ${Object.keys(cache).length} variants, ${users} users`);
+		}
+		if (this._cache.size === 0) {
+			console.debug(`${this._name}::empty`);
 		}
 	}
 }

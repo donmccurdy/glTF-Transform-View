@@ -18,8 +18,6 @@ export class TextureBinding extends Binding<TextureDef, Texture> {
 		const source = this.source;
 		const target = this.value;
 
-		let needsUpdate = false;
-
 		if (source.getImage() !== this._image) {
 			this._image = source.getImage() as ArrayBuffer;
 			const blob = new Blob([this._image], {type: source.getMimeType()});
@@ -31,11 +29,6 @@ export class TextureBinding extends Binding<TextureDef, Texture> {
 				URL.revokeObjectURL(this._imageURL);
 				target.needsUpdate = true;
 			};
-			needsUpdate = true;
-		}
-
-		if (needsUpdate) {
-			this._context.textureCache.updateSource(target);
 		}
 
 		return this;

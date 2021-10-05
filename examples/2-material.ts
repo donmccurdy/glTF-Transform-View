@@ -121,3 +121,15 @@ function onWindowResize() {
 	renderer.setSize(window.innerWidth, window.innerHeight);
 	render();
 }
+
+function printGraph(node) {
+	console.group(' <' + node.type + '> ' + node.name + '#' + node.uuid.substr(0, 6));
+	node.children.forEach((child) => printGraph(child));
+	if (node.isMesh) {
+		console.group(' <' + node.geometry.type + '> ' + node.geometry.name + '#' + node.geometry.uuid.substr(0, 6));
+		console.groupEnd();
+		console.group(' <' + node.material.type + '> ' + node.material.name + '#' + node.material.uuid.substr(0, 6));
+		console.groupEnd();
+	}
+	console.groupEnd();
+}

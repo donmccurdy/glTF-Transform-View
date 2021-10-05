@@ -66,16 +66,8 @@ new RGBELoader()
 document.body.addEventListener('gltf-document', async (event) => {
 	const doc = (event as CustomEvent).detail as Document;
 
-	if (documentRenderer) {
-		documentRenderer.dispose();
-		const leaks = debugPool.list();
-		if (leaks.length > 0) {
-			console.warn('debugPool::LEAK', [...leaks]);
-		} else {
-			console.debug('debugPool::OK');
-		}
-	}
-	if (modelBefore) dispose(modelBefore);
+	if (modelBefore) disposeBefore(modelBefore);
+	if (modelAfter) disposeAfter(modelAfter);
 
 	await checkExtensions(doc);
 
@@ -116,7 +108,7 @@ function onWindowResize() {
 	render();
 }
 
-function dispose(model: Object3D) {
+function disposeBefore(model: Object3D) {
 	scene.remove(model);
 	model.traverse((o) => {
 		if ((o as Mesh).isMesh) {
@@ -130,6 +122,18 @@ function dispose(model: Object3D) {
 			material.dispose();
 		}
 	});
+}
+
+function disposeAfter(model: Object3D) {
+	scene.remove(model);
+	documentRenderer.dispose();
+
+	const leaks = debugPool.list();
+	if (leaks.length > 0) {
+		console.warn('debugPool::LEAK', [...leaks]);
+	} else {
+		console.debug('debugPool::OK');
+	}
 }
 
 function frameContent(object: Object3D, offset: 1 | -1) {

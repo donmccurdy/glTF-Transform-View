@@ -1,12 +1,14 @@
-import { Group, Mesh } from 'three';
+import { Group, Object3D } from 'three';
 import { Mesh as MeshDef, Primitive as PrimitiveDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
 import { PropertyListObserver } from '../observers';
 import { Binding } from './Binding';
 import { pool } from '../ObjectPool';
+import { Object3DMap } from '../maps';
 
 export class MeshBinding extends Binding<MeshDef, Group> {
-	protected primitives = new PropertyListObserver<PrimitiveDef, Mesh>(this._context);
+	protected primitives = new PropertyListObserver<PrimitiveDef, Object3D>('primitives', this._context)
+		.map(this._context.object3DMap, () => Object3DMap.createParams(this.source));
 
 	public constructor(context: UpdateContext, source: MeshDef) {
 		super(context, source, pool.request(new Group()));
@@ -16,6 +18,7 @@ export class MeshBinding extends Binding<MeshDef, Group> {
 			if (primitives.add) this.value.add(primitives.add);
 		});
 	}
+
 	public update(): this {
 		const source = this.source;
 		const target = this.value;

@@ -1,36 +1,62 @@
-import type { UpdateContext } from 'UpdateContext';
+import type { UpdateContext } from '../UpdateContext';
 import type { Property as PropertyDef } from '@gltf-transform/core';
-import { Observer, Subscription } from './Observer';
+import { Observer } from './Observer';
+import { THREEObject, Subscription } from '../utils';
 
-export class PropertyObserver<S extends PropertyDef, T> extends Observer<T | null> {
+export class PropertyObserver<S extends PropertyDef, T extends THREEObject> extends Observer<T | null> {
 	protected _source: S | null = null;
+	protected _valueBase: T | null = null;
 	protected _unsubscribe: Subscription | null = null;
 
-	constructor(protected _context: UpdateContext) {
+	constructor(public readonly name: string, protected _context: UpdateContext) {
 		super(null);
 	}
 
 	public update(source: S | null): void {
-		const renderer = source ? this._context.bind(source).updateOnce() : null;
+		const context = this._context;
+		const binding = source ? context.bind(source) : null;
 
-		if (this._source === source) return;
+		if (binding && context.deep) binding.updateOnce();
+
+		if (this._source === source) {
+			if (this._map && this._valueBase && this.value) {
+				this._map.cache.updateVariant(this._valueBase, this.value, this._map.paramsFn());
+			}
+			return;
+		}
 
 		this.unsubscribe();
 
 		this._source = source;
 
-		if (!source || !renderer) {
+		if (!source || !binding) {
+			this._disposeTarget();
 			this.next(null);
 			return;
 		}
 
-		this._unsubscribe = renderer.subscribe((target: T | null) => {
-			this.next(target);
+		this._unsubscribe = binding.subscribe((target: T | null) => {
+			this._disposeTarget();
+
+			this._valueBase = target;
+			const valueDst = this._map && target
+				? this._map.cache.requestVariant(target, this._map.paramsFn()) as T
+				: target;
+
+			this.next(valueDst);
 		});
+	}
+
+	private _disposeTarget() {
+		if (this._map && this.value) {
+			this._map.cache.releaseVariant(this.value);
+		}
+		this._valueBase = null;
 	}
 
 	public dispose() {
 		if (this._unsubscribe) this._unsubscribe();
+		this._disposeTarget();
 		super.dispose();
 	}
 

@@ -1,32 +1,19 @@
-export type Subscription = () => void;
+import type { Property as PropertyDef } from '@gltf-transform/core';
+import { Subject, THREEObject } from '../utils';
+import type { ObserverMap } from '../maps';
 
-export class Observer<T> {
-	public value: T;
-	private _listeners: ((next: T, prev: T | null) => void)[] = [];
+interface ObserverMapImpl {
+	cache: ObserverMap<THREEObject, THREEObject, object>;
+	paramsFn: () => object
+}
 
-	constructor(value: T) {
-		this.value = value;
-	}
-
-	public subscribe(listener: (next: T, prev: T | null) => void): Subscription {
-		const index = this._listeners.length;
-		this._listeners.push(listener);
-		listener(this.value, null);
-		return () => { this._listeners.splice(index, 1); };
-	}
-
-	protected next(value: T) {
-		for (const listener of this._listeners) {
-			listener(value, this.value);
-		}
-		this.value = value;
-	}
-
-	public notify() {
-		this.next(this.value);
-	}
-
-	public dispose() {
-		this._listeners.length = 0;
+export class Observer<T> extends Subject<T> {
+	protected _map: ObserverMapImpl | null = null;
+	public map<_S extends PropertyDef, _T extends THREEObject>(
+			cache: ObserverMap<THREEObject, THREEObject, object>,
+			paramsFn: () => object
+		): this {
+		this._map = {cache, paramsFn};
+		return this;
 	}
 }

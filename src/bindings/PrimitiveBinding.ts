@@ -3,8 +3,7 @@ import { Accessor as AccessorDef, GLTF, Material as MaterialDef, Primitive as Pr
 import type { UpdateContext } from '../UpdateContext';
 import { PropertyMapObserver, PropertyObserver } from '../observers';
 import { Binding } from './Binding';
-import { createMaterialParams, MaterialParams, VariantMaterial } from '../variants/material';
-import { PropertyVariantObserver } from '../observers/PropertyVariantObserver';
+import { MaterialMap, VariantMaterial } from '../maps';
 import { pool } from '../ObjectPool';
 
 // https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#default-material
@@ -27,9 +26,10 @@ function semanticToAttributeName(semantic: string): string {
 type MeshLike = Mesh | SkinnedMesh | Points | Line | LineSegments | LineLoop;
 
 export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
-	protected material = new PropertyVariantObserver<MaterialDef, VariantMaterial, MaterialParams>(this._context, this._context.materialCache as any);
-	protected indices = new PropertyObserver<AccessorDef, BufferAttribute>(this._context);
-	protected attributes = new PropertyMapObserver<AccessorDef, BufferAttribute>(this._context);
+	protected material = new PropertyObserver<MaterialDef, VariantMaterial>('material', this._context)
+		.map(this._context.materialMap, () => MaterialMap.createParams(this.source));
+	protected indices = new PropertyObserver<AccessorDef, BufferAttribute>('indices', this._context);
+	protected attributes = new PropertyMapObserver<AccessorDef, BufferAttribute>('attributes', this._context);
 
 	public constructor(context: UpdateContext, source: PrimitiveDef) {
 		super(
@@ -61,7 +61,6 @@ export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
 
 		this.indices.update(source.getIndices());
 		this.attributes.update(source.listSemantics(), source.listAttributes());
-		this.material.setParams(createMaterialParams(source));
 		this.material.update(source.getMaterial());
 
 		if (source.getMode() !== getObject3DMode(target)) {
@@ -78,7 +77,7 @@ export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
 			case PrimitiveDef.Mode.TRIANGLE_FAN:
 			case PrimitiveDef.Mode.TRIANGLE_STRIP:
 				// TODO(feat): Support SkinnedMesh.
-				// TODO(bug): Support triangle fan and triangle strip.
+				// TODO(feat): Support triangle fan and triangle strip.
 				return pool.request(new Mesh(geometry, material));
 			case PrimitiveDef.Mode.LINES:
 				return pool.request(new LineSegments(geometry, material));
@@ -114,7 +113,7 @@ function getObject3DMode(mesh: MeshLike): GLTF.MeshPrimitiveMode {
 	switch (mesh.type) {
 		case 'Mesh':
 		case 'SkinnedMesh':
-			// TODO(bug): Support triangle fan and triangle strip.
+			// TODO(feat): Support triangle fan and triangle strip.
 			return PrimitiveDef.Mode.TRIANGLES;
 		case 'LineSegments':
 			return PrimitiveDef.Mode.LINES;

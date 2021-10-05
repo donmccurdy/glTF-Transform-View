@@ -1,18 +1,19 @@
 import type { Property as PropertyDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
 import type { Binding } from '../bindings';
-import { Observer, Subscription } from './Observer';
+import { Observer } from './Observer';
+import { THREEObject, Subscription } from '../utils';
 
 export interface ListUpdate<T> {
 	remove?: T,
 	add?: T,
 }
 
-export class PropertyListObserver<S extends PropertyDef, T> extends Observer<ListUpdate<T>> {
+export class PropertyListObserver<S extends PropertyDef, T extends THREEObject> extends Observer<ListUpdate<T>> {
 	private _sources = new Set<S>();
 	private _unsubscribeMap = new Map<S, Subscription>();
 
-	constructor(private _context: UpdateContext) {
+	constructor(public readonly name: string, private _context: UpdateContext) {
 		super({});
 	}
 
@@ -39,8 +40,10 @@ export class PropertyListObserver<S extends PropertyDef, T> extends Observer<Lis
 		}
 
 		// Update.
-		for (const source of this._sources) {
-			context.bind(source).updateOnce();
+		if (context.deep) {
+			for (const source of this._sources) {
+				context.bind(source).updateOnce();
+			}
 		}
 	}
 

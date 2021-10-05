@@ -1,19 +1,19 @@
-import { Group, Object3D } from 'three';
+import { Object3D } from 'three';
 import { Mesh as MeshDef, Node as NodeDef, vec3, vec4 } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
 import { PropertyListObserver, PropertyObserver } from '../observers';
 import { eq } from '../utils';
 import { Binding } from './Binding';
 import { pool } from '../ObjectPool';
+import { Object3DMap } from '../maps';
 
 const _vec3: vec3 = [0, 0, 0];
 const _vec4: vec4 = [0, 0, 0, 0];
 
 export class NodeBinding extends Binding<NodeDef, Object3D> {
-	protected children = new PropertyListObserver<NodeDef, Object3D>(this._context);
-	protected mesh = new PropertyObserver<MeshDef, Group>(this._context);
-
-	private _mesh: Object3D | null = null;
+	protected children = new PropertyListObserver<NodeDef, Object3D>('children', this._context);
+	protected mesh = new PropertyObserver<MeshDef, Object3D>('mesh', this._context)
+		.map(this._context.object3DMap, () => Object3DMap.createParams(this.source));
 
 	constructor(context: UpdateContext, source: NodeDef) {
 		super(context, source, pool.request(new Object3D()));
@@ -23,8 +23,8 @@ export class NodeBinding extends Binding<NodeDef, Object3D> {
 			if (children.add) this.value.add(children.add);
 		});
 		this.mesh.subscribe((add, remove) => {
-			if (remove) this._setMesh(null);
-			if (add) this._setMesh(add);
+			if (remove) this.value.remove(remove);
+			if (add) this.value.add(add);
 		});
 	}
 
@@ -54,28 +54,11 @@ export class NodeBinding extends Binding<NodeDef, Object3D> {
 		return this;
 	}
 
-	private _setMesh(mesh: Object3D |  null) {
-		const target = this.value;
-		const prevMesh = this._mesh;
-
-		if (prevMesh) {
-			target.remove(pool.release(prevMesh));
-		}
-
-		if (mesh) {
-			// Clone. glTF mesh can be reused, three.js mesh cannot.
-			target.add((this._mesh = pool.request(mesh.clone())));
-		} else {
-			this._mesh = null;
-		}
-	}
-
 	public disposeTarget(target: Object3D): void {
 		pool.release(target);
 	}
 
 	public dispose() {
-		this._setMesh(null);
 		this.children.dispose();
 		this.mesh.dispose();
 		super.dispose();
