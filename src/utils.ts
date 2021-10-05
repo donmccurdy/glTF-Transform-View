@@ -10,7 +10,7 @@ export interface THREEObject {
 	name: string;
 }
 
-export type SubjectSubscription = () => void;
+export type Subscription = () => void;
 
 export class Subject<T> {
 	public value: T;
@@ -20,7 +20,7 @@ export class Subject<T> {
 		this.value = value;
 	}
 
-	public subscribe(listener: (next: T, prev: T | null) => void): SubjectSubscription {
+	public subscribe(listener: (next: T, prev: T | null) => void): Subscription {
 		this._listeners.push(listener);
 		listener(this.value, null);
 		return () => {
