@@ -19,7 +19,6 @@ export class PropertyObserver<S extends PropertyDef, T extends THREEObject> exte
 		if (binding && context.deep) binding.updateOnce();
 
 		if (this._source === source) {
-			// TODO(perf): We are probably running this _and_ the subscription below?
 			if (this._map && this._valueBase && this.value) {
 				this._map.cache.updateVariant(this._valueBase, this.value, this._map.paramsFn());
 			}

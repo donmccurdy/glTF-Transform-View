@@ -3,7 +3,7 @@ import { Accessor as AccessorDef, GLTF, Material as MaterialDef, Primitive as Pr
 import type { UpdateContext } from '../UpdateContext';
 import { PropertyMapObserver, PropertyObserver } from '../observers';
 import { Binding } from './Binding';
-import { createMaterialParams, VariantMaterial } from '../variants';
+import { MaterialMap, VariantMaterial } from '../maps';
 import { pool } from '../ObjectPool';
 
 // https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#default-material
@@ -27,7 +27,7 @@ type MeshLike = Mesh | SkinnedMesh | Points | Line | LineSegments | LineLoop;
 
 export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
 	protected material = new PropertyObserver<MaterialDef, VariantMaterial>('material', this._context)
-		.map(this, this._context.materialCache, () => createMaterialParams(this.source));
+		.map(this._context.materialMap, () => MaterialMap.createParams(this.source));
 	protected indices = new PropertyObserver<AccessorDef, BufferAttribute>('indices', this._context);
 	protected attributes = new PropertyMapObserver<AccessorDef, BufferAttribute>('attributes', this._context);
 

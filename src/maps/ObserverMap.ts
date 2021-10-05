@@ -7,13 +7,14 @@ interface CacheEntry<V, P> {
 }
 
 /**
- * Abstract cache, supporting reuse of 'variant' objects derived from 'source'
- * objects, given a parameter set. Objects in the cache are disposed after no
- * users remain.
+ * Enables an Observer to 'map' incoming values to variants derived from the
+ * source objects, given a parameter set. Values are cached and disposed after
+ * no users remain.
  *
- * See: {@link PropertyVariantObserver}
+ * Example: MaterialMap is used to map incoming materials to the appropriate
+ * Point/Line/Mesh materials needed for a particular primitive.
  */
-export abstract class VariantCache<S extends THREEObject, V extends THREEObject, P> {
+export abstract class ObserverMap<S extends THREEObject, V extends THREEObject, P> {
 	readonly _cache: Map<S, {[key: string]: CacheEntry<V,P>}> = new Map();
 
 	constructor(private readonly _name: string) {}

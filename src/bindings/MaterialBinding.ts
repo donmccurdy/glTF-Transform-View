@@ -4,7 +4,7 @@ import type { Clearcoat, IOR, Sheen, Specular, Transmission, Volume } from '@glt
 import type { UpdateContext } from '../UpdateContext';
 import { eq, Subscription } from '../utils';
 import { Binding } from './Binding';
-import { createTextureParams } from '../variants/TextureVariantCache';
+import { TextureMap } from '../maps';
 import { PropertyObserver } from '../observers';
 import { pool } from '../ObjectPool';
 
@@ -86,7 +86,7 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 			textureInfoFn: () => TextureInfoDef | null,
 			encoding: TextureEncoding): Subscription {
 
-		observer.map(this, this._context.textureCache, () => createTextureParams(textureInfoFn()!, encoding));
+		observer.map(this._context.textureMap, () => TextureMap.createParams(textureInfoFn()!, encoding));
 
 		this._textureObservers.push(observer);
 

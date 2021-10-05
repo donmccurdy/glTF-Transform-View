@@ -1,6 +1,6 @@
 import { Accessor as AccessorDef, Material as MaterialDef, Mesh as MeshDef, Node as NodeDef, Primitive as PrimitiveDef, Property as PropertyDef, PropertyType, Scene as SceneDef, Texture as TextureDef } from '@gltf-transform/core';
 import { AccessorBinding, Binding, MaterialBinding, MeshBinding, NodeBinding, PrimitiveBinding, SceneBinding, TextureBinding } from './bindings';
-import { MaterialVariantCache, MeshVariantCache, TextureVariantCache } from './variants';
+import { MaterialMap, Object3DMap, TextureMap } from './maps';
 
 // export enum UpdateMask {
 // 	SHALLOW = 0x0000,
@@ -17,9 +17,9 @@ export class UpdateContext {
 	private _bindings = new Set<Binding<PropertyDef, any>>();
 	private _sourceBindings = new WeakMap<PropertyDef, Binding<PropertyDef, any>>();
 
-	public textureCache = new TextureVariantCache('TextureCache');
-	public materialCache = new MaterialVariantCache('MaterialCache');
-	public meshCache = new MeshVariantCache('MeshCache');
+	public textureMap = new TextureMap('TextureMap');
+	public materialMap = new MaterialMap('MaterialMap');
+	public meshMap = new Object3DMap('MeshMap');
 
 	private _addBinding(renderer: Binding<PropertyDef, any>): void {
 		this._bindings.add(renderer);
@@ -82,11 +82,11 @@ export class UpdateContext {
 	}
 
 	public endUpdate() {
-		this.textureCache.flush();
+		this.textureMap.flush();
 		// this.textureCache._debug();
-		this.materialCache.flush();
+		this.materialMap.flush();
 		// this.materialCache._debug();
-		this.meshCache.flush();
+		this.meshMap.flush();
 		// this.meshCache._debug();
 	}
 
@@ -94,9 +94,9 @@ export class UpdateContext {
 		for (const renderer of this._bindings) {
 			renderer.dispose();
 		}
-		this.textureCache.dispose();
-		this.materialCache.dispose();
-		this.meshCache.dispose();
+		this.textureMap.dispose();
+		this.materialMap.dispose();
+		this.meshMap.dispose();
 		this._bindings.clear();
 	}
 }

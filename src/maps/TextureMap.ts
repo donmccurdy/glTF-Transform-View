@@ -1,7 +1,7 @@
 import { TextureInfo } from '@gltf-transform/core';
 import { pool } from '../ObjectPool';
 import { ClampToEdgeWrapping, LinearFilter, LinearMipmapLinearFilter, LinearMipmapNearestFilter, MirroredRepeatWrapping, NearestFilter, NearestMipmapLinearFilter, NearestMipmapNearestFilter, RepeatWrapping, Texture, TextureEncoding, TextureFilter, Wrapping } from 'three';
-import { VariantCache } from './VariantCache';
+import { ObserverMap } from './ObserverMap';
 
 const WEBGL_FILTERS: Record<number, TextureFilter> = {
 	9728: NearestFilter,
@@ -26,17 +26,7 @@ interface TextureParams {
 	wrapT: Wrapping,
 }
 
-export function createTextureParams(textureInfo: TextureInfo, encoding: TextureEncoding): TextureParams {
-	return {
-		minFilter: WEBGL_FILTERS[textureInfo.getMinFilter() as number] || LinearMipmapLinearFilter,
-		magFilter: WEBGL_FILTERS[textureInfo.getMagFilter() as number] || LinearFilter,
-		wrapS: WEBGL_WRAPPINGS[textureInfo.getWrapS()] || RepeatWrapping,
-		wrapT: WEBGL_WRAPPINGS[textureInfo.getWrapT()] || RepeatWrapping,
-		encoding: encoding,
-	}
-}
-
-export class TextureVariantCache extends VariantCache<Texture, Texture, TextureParams> {
+export class TextureMap extends ObserverMap<Texture, Texture, TextureParams> {
 	protected _createVariant(srcTexture: Texture, params: TextureParams): Texture {
 		console.debug('alloc::createTextureVariant');
 		const dstTexture = this._updateVariant(srcTexture, pool.request(srcTexture.clone()), params);
@@ -62,5 +52,15 @@ export class TextureVariantCache extends VariantCache<Texture, Texture, TextureP
 
 	protected _disposeVariant(texture: Texture): void {
 		pool.release(texture).dispose();
+	}
+
+	public static createParams(textureInfo: TextureInfo, encoding: TextureEncoding): TextureParams {
+		return {
+			minFilter: WEBGL_FILTERS[textureInfo.getMinFilter() as number] || LinearMipmapLinearFilter,
+			magFilter: WEBGL_FILTERS[textureInfo.getMagFilter() as number] || LinearFilter,
+			wrapS: WEBGL_WRAPPINGS[textureInfo.getWrapS()] || RepeatWrapping,
+			wrapT: WEBGL_WRAPPINGS[textureInfo.getWrapT()] || RepeatWrapping,
+			encoding: encoding,
+		}
 	}
 }

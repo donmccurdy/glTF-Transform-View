@@ -1,7 +1,7 @@
 import { GLTF, Primitive as PrimitiveDef } from '@gltf-transform/core';
 import { pool } from '../ObjectPool';
 import { LineBasicMaterial, Material, MeshBasicMaterial, MeshPhysicalMaterial, MeshStandardMaterial, PointsMaterial } from 'three';
-import { VariantCache } from './VariantCache';
+import { ObserverMap } from './ObserverMap';
 
 export type SourceMaterial = MeshBasicMaterial | MeshStandardMaterial | MeshPhysicalMaterial;
 export type VariantMaterial = MeshBasicMaterial | MeshStandardMaterial | MeshPhysicalMaterial | LineBasicMaterial | PointsMaterial;
@@ -14,17 +14,7 @@ interface MaterialParams {
 	useFlatShading: boolean,
 }
 
-export function createMaterialParams(primitive: PrimitiveDef): MaterialParams {
-	return {
-		mode: primitive.getMode(),
-		useVertexTangents: !!primitive.getAttribute('TANGENT'),
-		useVertexColors: !!primitive.getAttribute('COLOR_0'),
-		useFlatShading: !primitive.getAttribute('NORMAL'),
-		useMorphTargets: primitive.listTargets().length > 0,
-	}
-}
-
-export class MaterialVariantCache extends VariantCache<SourceMaterial, VariantMaterial, MaterialParams> {
+export class MaterialMap extends ObserverMap<SourceMaterial, VariantMaterial, MaterialParams> {
 	/** Creates a variant material for given source material and MaterialParams. */
 	protected _createVariant(srcMaterial: SourceMaterial, params: MaterialParams): VariantMaterial {
 		console.debug('alloc::createMaterialVariant');
@@ -88,5 +78,15 @@ export class MaterialVariantCache extends VariantCache<SourceMaterial, VariantMa
 
 	protected _disposeVariant(material: Material): void {
 		pool.release(material).dispose();
+	}
+
+	public static createParams(primitive: PrimitiveDef): MaterialParams {
+		return {
+			mode: primitive.getMode(),
+			useVertexTangents: !!primitive.getAttribute('TANGENT'),
+			useVertexColors: !!primitive.getAttribute('COLOR_0'),
+			useFlatShading: !primitive.getAttribute('NORMAL'),
+			useMorphTargets: primitive.listTargets().length > 0,
+		}
 	}
 }

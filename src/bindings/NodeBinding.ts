@@ -5,7 +5,7 @@ import { PropertyListObserver, PropertyObserver } from '../observers';
 import { eq } from '../utils';
 import { Binding } from './Binding';
 import { pool } from '../ObjectPool';
-import { createMeshParams } from '../variants';
+import { Object3DMap } from '../maps';
 
 const _vec3: vec3 = [0, 0, 0];
 const _vec4: vec4 = [0, 0, 0, 0];
@@ -13,7 +13,7 @@ const _vec4: vec4 = [0, 0, 0, 0];
 export class NodeBinding extends Binding<NodeDef, Object3D> {
 	protected children = new PropertyListObserver<NodeDef, Object3D>('children', this._context);
 	protected mesh = new PropertyObserver<MeshDef, Object3D>('mesh', this._context)
-		.map(this, this._context.meshCache, () => createMeshParams(this.source));
+		.map(this._context.meshMap, () => Object3DMap.createParams(this.source));
 
 	constructor(context: UpdateContext, source: NodeDef) {
 		super(context, source, pool.request(new Object3D()));

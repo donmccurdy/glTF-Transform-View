@@ -1,37 +1,6 @@
 import { Property as PropertyDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
-import { Subscription } from '../utils';
-
-class Subject<T> {
-	public value: T;
-	private _listeners: ((next: T, prev: T | null) => void)[] = [];
-
-	constructor(value: T) {
-		this.value = value;
-	}
-
-	public subscribe(listener: (next: T, prev: T | null) => void): Subscription {
-		const index = this._listeners.length;
-		this._listeners.push(listener);
-		listener(this.value, null);
-		return () => { this._listeners.splice(index, 1); };
-	}
-
-	protected next(value: T) {
-		for (const listener of this._listeners) {
-			listener(value, this.value);
-		}
-		this.value = value;
-	}
-
-	public notify() {
-		this.next(this.value);
-	}
-
-	public dispose() {
-		this._listeners.length = 0;
-	}
-}
+import { Subject, Subscription } from '../utils';
 
 export abstract class Binding <Source extends PropertyDef, Target> extends Subject<Target> {
 	public source: Source;
