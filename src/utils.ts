@@ -10,7 +10,7 @@ export interface THREEObject {
 	name: string;
 }
 
-export type Subscription = () => void;
+export type SubjectSubscription = () => void;
 
 export class Subject<T> {
 	public value: T;
@@ -20,11 +20,12 @@ export class Subject<T> {
 		this.value = value;
 	}
 
-	public subscribe(listener: (next: T, prev: T | null) => void): Subscription {
-		const index = this._listeners.length;
+	public subscribe(listener: (next: T, prev: T | null) => void): SubjectSubscription {
 		this._listeners.push(listener);
 		listener(this.value, null);
-		return () => { this._listeners.splice(index, 1); };
+		return () => {
+            this._listeners.splice(this._listeners.indexOf(listener), 1);
+        };
 	}
 
 	protected next(value: T) {

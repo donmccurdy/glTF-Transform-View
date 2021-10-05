@@ -2,7 +2,7 @@ import type { Property as PropertyDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
 import type { Binding } from '../bindings';
 import { Observer } from './Observer';
-import { THREEObject, Subscription } from '../utils';
+import { THREEObject, SubjectSubscription } from '../utils';
 
 export interface ListUpdate<T> {
 	remove?: T,
@@ -11,7 +11,7 @@ export interface ListUpdate<T> {
 
 export class PropertyListObserver<S extends PropertyDef, T extends THREEObject> extends Observer<ListUpdate<T>> {
 	private _sources = new Set<S>();
-	private _unsubscribeMap = new Map<S, Subscription>();
+	private _unsubscribeMap = new Map<S, SubjectSubscription>();
 
 	constructor(public readonly name: string, private _context: UpdateContext) {
 		super({});

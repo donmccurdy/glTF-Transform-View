@@ -1,12 +1,12 @@
 import type { UpdateContext } from '../UpdateContext';
 import type { Property as PropertyDef } from '@gltf-transform/core';
 import { Observer } from './Observer';
-import { THREEObject, Subscription } from '../utils';
+import { THREEObject, SubjectSubscription } from '../utils';
 
 export class PropertyObserver<S extends PropertyDef, T extends THREEObject> extends Observer<T | null> {
 	protected _source: S | null = null;
 	protected _valueBase: T | null = null;
-	protected _unsubscribe: Subscription | null = null;
+	protected _unsubscribe: SubjectSubscription | null = null;
 
 	constructor(public readonly name: string, protected _context: UpdateContext) {
 		super(null);

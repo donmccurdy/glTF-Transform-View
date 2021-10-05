@@ -1,13 +1,13 @@
 import { Property as PropertyDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
-import { Subject, Subscription } from '../utils';
+import { Subject, SubjectSubscription } from '../utils';
 
 export abstract class Binding <Source extends PropertyDef, Target> extends Subject<Target> {
 	public source: Source;
 
 	protected _context: UpdateContext;
 	protected _lastUpdateID: number = -1;
-	protected _targetUnsubscribe: Subscription;
+	protected _targetUnsubscribe: SubjectSubscription;
 
 	protected constructor(context: UpdateContext, source: Source, target: Target) {
 		super(target);
