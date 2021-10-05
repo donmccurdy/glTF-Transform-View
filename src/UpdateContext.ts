@@ -2,6 +2,8 @@ import { Accessor as AccessorDef, Material as MaterialDef, Mesh as MeshDef, Node
 import { AccessorBinding, Binding, MaterialBinding, MeshBinding, NodeBinding, PrimitiveBinding, SceneBinding, TextureBinding } from './bindings';
 import { MaterialMap, Object3DMap, TextureMap } from './maps';
 
+// TODO(perf): Support update mask.
+//
 // export enum UpdateMask {
 // 	SHALLOW = 0x0000,
 // 	DEEP = 0x1000,
@@ -9,7 +11,6 @@ import { MaterialMap, Object3DMap, TextureMap } from './maps';
 // 	VERTEX_DATA = 0x00100,
 // }
 
-// TODO(bug): Deep syncs are pretty messy... how do we prevent updating the same (reused) Mesh many times? Front recursion?
 export class UpdateContext {
 	public updateID = 1;
 	public deep = true;

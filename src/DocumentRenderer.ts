@@ -59,7 +59,7 @@ export class DocumentRenderer {
 			// console.debug(`• update::${next.propertyType}::${next.getName()}`);
 			nextBinding.update();
 
-			// TODO(perf): Not all child changes should invalidate the parent.
+			// TODO(perf): Selective invalidation and early exit.
 			for (const parent of next.listParents()) {
 				if (!dirtySet.has(parent)) {
 					dirtyList.push(parent);

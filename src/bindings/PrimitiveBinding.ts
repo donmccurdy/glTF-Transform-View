@@ -113,7 +113,7 @@ function getObject3DMode(mesh: MeshLike): GLTF.MeshPrimitiveMode {
 	switch (mesh.type) {
 		case 'Mesh':
 		case 'SkinnedMesh':
-			// TODO(bug): Support triangle fan and triangle strip.
+			// TODO(feat): Support triangle fan and triangle strip.
 			return PrimitiveDef.Mode.TRIANGLES;
 		case 'LineSegments':
 			return PrimitiveDef.Mode.LINES;

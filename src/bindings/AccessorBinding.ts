@@ -26,7 +26,7 @@ export class AccessorBinding extends Binding<AccessorDef, BufferAttribute> {
 			|| source.getNormalized() !== target.normalized) {
 			this.next(AccessorBinding.createTarget(source));
 		} else {
-			// TODO(feat): Conditional?
+			// TODO(perf): Support update mask.
 			target.needsUpdate = true;
 		}
 
