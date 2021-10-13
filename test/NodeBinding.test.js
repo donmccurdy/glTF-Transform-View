@@ -1,6 +1,6 @@
 import test from 'tape';
 import { Document } from '@gltf-transform/core';
-import { DocumentRenderer } from '../dist/render.modern.js';
+import { GLTFRenderer } from '../dist/render.modern.js';
 
 test('NodeBinding', t => {
 	const document = new Document();
@@ -13,7 +13,7 @@ test('NodeBinding', t => {
 		.setTranslation([5, 0, 0]);
 		sceneDef.addChild(nodeDef1.addChild(nodeDef2));
 
-	const renderer = new DocumentRenderer(document);
+	const renderer = new GLTFRenderer(document);
 	const scene = renderer.toObject3D();
 	t.equals(scene.children.length, 1, 'scene → 1 child');
 

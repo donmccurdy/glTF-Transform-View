@@ -1,6 +1,6 @@
 import test from 'tape';
 import { Document } from '@gltf-transform/core';
-import { DocumentRenderer } from '../dist/render.modern.js';
+import { GLTFRenderer } from '../dist/render.modern.js';
 
 test('SceneBinding', t => {
 	const document = new Document();
@@ -10,7 +10,7 @@ test('SceneBinding', t => {
 		.addChild(nodeDef = document.createNode('Node2'))
 		.addChild(document.createNode('Node3'));
 
-	const renderer = new DocumentRenderer(document);
+	const renderer = new GLTFRenderer(document);
 	const scene = renderer.toObject3D();
 
 	t.equals(scene.name, 'MyScene');

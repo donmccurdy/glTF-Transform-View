@@ -2,7 +2,7 @@ import { ACESFilmicToneMapping, AmbientLight, DirectionalLight, PMREMGenerator, 
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import { Document, Material } from '@gltf-transform/core';
-import { DocumentRenderer } from '../dist/render.modern.js';
+import { GLTFRenderer } from '../dist/render.modern.js';
 import { createMaterialPane } from './material-pane';
 import { createStatsPane } from './stats-pane.js';
 import { Pane } from 'tweakpane';
@@ -78,8 +78,8 @@ const doc = (() => {
 	return doc;
 })();
 
-const documentRenderer = new DocumentRenderer(doc);
-const model = documentRenderer.toObject3D();
+const modelRenderer = new GLTFRenderer(doc);
+const model = modelRenderer.toObject3D();
 scene.add(model);
 
 //
@@ -101,9 +101,9 @@ function animate() {
 	requestAnimationFrame(animate);
 
 	if (needsUpdate) {
-		console.time('DocumentRenderer::update');
-		documentRenderer.update(material);
-		console.timeEnd('DocumentRenderer::update');
+		console.time('GLTFRenderer::update');
+		modelRenderer.update(material);
+		console.timeEnd('GLTFRenderer::update');
 		needsUpdate = false;
 	}
 

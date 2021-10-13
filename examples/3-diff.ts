@@ -4,7 +4,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import { Document, WebIO } from '@gltf-transform/core';
 import { metalRough } from '@gltf-transform/functions';
-import { DocumentRenderer, DebugPool, setObjectPool } from '../dist/render.modern.js';
+import { GLTFRenderer, DebugPool, setObjectPool } from '../dist/render.modern.js';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 
 const debugPool = new DebugPool();
@@ -28,7 +28,7 @@ const pmremGenerator = new PMREMGenerator(renderer);
 pmremGenerator.compileEquirectangularShader();
 
 const scene = new Scene();
-let documentRenderer: DocumentRenderer;
+let modelRenderer: GLTFRenderer;
 let modelBefore: Object3D;
 let modelAfter: Object3D;
 
@@ -71,10 +71,10 @@ document.body.addEventListener('gltf-document', async (event) => {
 
 	await checkExtensions(doc);
 
-	console.time('DocumentRenderer::init');
-	documentRenderer = new DocumentRenderer(doc);
-	modelAfter = documentRenderer.toObject3D();
-	console.timeEnd('DocumentRenderer::init');
+	console.time('GLTFRenderer::init');
+	modelRenderer = new GLTFRenderer(doc);
+	modelAfter = modelRenderer.toObject3D();
+	console.timeEnd('GLTFRenderer::init');
 
 	console.time('WebIO::writeBinary');
 	const glb = io.writeBinary(doc);
@@ -126,7 +126,7 @@ function disposeBefore(model: Object3D) {
 
 function disposeAfter(model: Object3D) {
 	scene.remove(model);
-	documentRenderer.dispose();
+	modelRenderer.dispose();
 
 	const leaks = debugPool.list();
 	if (leaks.length > 0) {

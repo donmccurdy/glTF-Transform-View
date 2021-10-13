@@ -2,7 +2,7 @@ import { ACESFilmicToneMapping, AmbientLight, DirectionalLight, PMREMGenerator, 
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import { GLTF, Material, WebIO } from '@gltf-transform/core';
-import { DocumentRenderer } from '../dist/render.modern.js';
+import { GLTFRenderer } from '../dist/render.modern.js';
 import {Pane} from 'tweakpane';
 import * as TweakpanePluginThumbnailList from 'tweakpane-plugin-thumbnail-list';
 import { createStatsPane } from './stats-pane.js';
@@ -59,7 +59,7 @@ new RGBELoader()
 
 let material: Material;
 let needsUpdate = false;
-let documentRenderer;
+let modelRenderer: GLTFRenderer;
 
 const pane = new Pane({title: 'DamagedHelmet.glb'});
 pane.registerPlugin(TweakpanePluginThumbnailList);
@@ -69,12 +69,12 @@ const updateStats = createStatsPane(renderer, pane);
 
 const io = new WebIO();
 io.read('../assets/DamagedHelmet.glb').then(async (doc) => {
-	console.time('DocumentRenderer::init');
-	documentRenderer = new DocumentRenderer(doc);
-	console.timeEnd('DocumentRenderer::init');
+	console.time('GLTFRenderer::init');
+	modelRenderer = new GLTFRenderer(doc);
+	console.timeEnd('GLTFRenderer::init');
 
 	window['doc'] = doc;
-	const model = window['model'] = documentRenderer.toObject3D();
+	const model = window['model'] = modelRenderer.toObject3D();
 
 	scene.add(model);
 	animate();
@@ -95,7 +95,7 @@ io.read('../assets/DamagedHelmet.glb').then(async (doc) => {
 		}
 	}).on('change', (ev) => {
 		prim.setMode(ev.value as GLTF.MeshPrimitiveMode);
-		documentRenderer.update(prim);
+		modelRenderer.update(prim);
 	});
 });
 
@@ -105,9 +105,9 @@ function animate() {
 	requestAnimationFrame(animate);
 
 	if (needsUpdate) {
-		console.time('DocumentRenderer::update');
-		documentRenderer.update(material);
-		console.timeEnd('DocumentRenderer::update');
+		console.time('GLTFRenderer::update');
+		modelRenderer.update(material);
+		console.timeEnd('GLTFRenderer::update');
 
 		needsUpdate = false;
 	}

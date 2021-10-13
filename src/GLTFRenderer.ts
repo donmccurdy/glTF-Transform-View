@@ -9,12 +9,12 @@ import { SceneBinding } from './bindings';
  * updates with significantly lower latency than serializing and reloading to
  * THREE.GLTFLoader each time.
  */
-export class DocumentRenderer {
+export class GLTFRenderer {
 	/** @internal */ private _document: Document;
 	/** @internal */ private _context: UpdateContext;
 	/** @internal */ private _sceneBinding: SceneBinding;
 
-	/** Constructs a new DocumentRenderer. */
+	/** Constructs a new GLTFRenderer. */
 	constructor(document: Document) {
 		this._document = document;
 		this._context = new UpdateContext();

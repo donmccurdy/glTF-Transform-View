@@ -60,7 +60,7 @@ npm install --save @gltf-transform/render
 
 ```typescript
 import { Scene, WebGLRenderer, PerspectiveCamera } from 'three';
-import { DocumentRenderer } from '@gltf-transform/render';
+import { GLTFRenderer } from '@gltf-transform/render';
 import { WebIO } from '@gltf-transform/core';
 import { KHRONOS_EXTENSIONS } from '@gltf-transform/extensions';
 
@@ -74,9 +74,9 @@ const renderer = new WebGLRenderer();
 // Load glTF Document.
 const io = new WebIO().registerExtensions(KHRONOS_EXTENSIONS);
 const document = await io.read('./input.glb');
-const documentRenderer = new DocumentRenderer(document);
+const documentRenderer = new GLTFRenderer(document);
 
-// Add the DocumentRenderer's output to the scene (just once).
+// Add the GLTFRenderer's output to the scene (just once).
 const group = documentRenderer.toObject3D();
 scene.add(group);
 
