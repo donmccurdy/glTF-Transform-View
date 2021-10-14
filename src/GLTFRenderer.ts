@@ -1,7 +1,6 @@
-import { Object3D } from 'three';
-import { Document, Property } from '@gltf-transform/core';
+import { Group, Line, LineLoop, LineSegments, Material, Mesh, Object3D, Points, Texture } from 'three';
+import { Document, Property as PropertyDef, Scene as SceneDef, Node as NodeDef, Material as MaterialDef, Mesh as MeshDef, Primitive as PrimitiveDef, Texture as TextureDef } from '@gltf-transform/core';
 import { UpdateContext } from './UpdateContext';
-import { SceneBinding } from './bindings';
 
 /**
  * Constructs a THREE.Object3D from a glTF-Transform Document, and maintains a
@@ -12,30 +11,46 @@ import { SceneBinding } from './bindings';
 export class GLTFRenderer {
 	/** @internal */ private _document: Document;
 	/** @internal */ private _context: UpdateContext;
-	/** @internal */ private _sceneBinding: SceneBinding;
 
 	/** Constructs a new GLTFRenderer. */
 	constructor(document: Document) {
 		this._document = document;
 		this._context = new UpdateContext();
-		this._sceneBinding = this._context.bind(document.getRoot().listScenes().pop()!);
 	}
 
 	/**
-	 * Returns root THREE.Object3D instance for the document. Currently
-	 * based on the first Scene in the Document; later scenes are ignored.
+	 * For a given glTF-Transform Scene definition, returns an Object3D root note. Successive calls
+	 * with the same input will yield the same output Object3D instance.
 	 */
-	public toObject3D(): Object3D {
-		return this._sceneBinding.value;
+	public render(property: SceneDef): Object3D {
+		return this._context.bind(property).value;
 	}
 
-	/**
-	 * Performs a deep update of the entire scene.
-	 */
-	public updateAll(): void {
-		this._context.startUpdate(true);
-		this._sceneBinding.update();
-		this._context.endUpdate();
+	/** For a given source glTF-Transform Property definition, returns a list of rendered three.js objects. */
+	public findTargets(property: MaterialDef): Material[];
+	public findTargets(property: TextureDef): Texture[];
+	public findTargets(property: PrimitiveDef): (Mesh | Points | Line | LineLoop | LineSegments)[];
+	public findTargets(property: SceneDef | NodeDef | MeshDef): Object3D[];
+	public findTargets(property: SceneDef | NodeDef | MeshDef | PrimitiveDef | MaterialDef | TextureDef): (Mesh | Points | Line | LineLoop | LineSegments | Group | Object3D | Material | Texture)[] {
+		if (property instanceof SceneDef
+			|| property instanceof NodeDef
+			|| property instanceof MeshDef
+			|| property instanceof PrimitiveDef
+			|| property instanceof MaterialDef
+			|| property instanceof TextureDef) {
+			return this._context.findTargets(property as any);
+		}
+		throw new Error('GLTFRenderer: listTargets(...) supports only Scene, Node, Mesh, Primitive, and Material inputs.');
+	}
+
+	/** For a given Object3D target, finds the source glTF-Transform Property definition. */
+	public findSource(target: Mesh): PrimitiveDef | null
+	public findSource(target: Object3D): NodeDef | SceneDef | MeshDef | null
+	public findSource(target: Mesh | Group | Object3D): PrimitiveDef | MeshDef | NodeDef | SceneDef | null {
+		if (target instanceof Object3D) {
+			return this._context.findSource(target) as PrimitiveDef | MeshDef | NodeDef | SceneDef;
+		}
+		throw new Error('GLTFRenderer: findSource(...) supports only Object3D inputs.');
 	}
 
 	/**
@@ -43,10 +58,10 @@ export class GLTFRenderer {
 	 * given object. If deep, affects the given object and its descendants in
 	 * the resource dependency graph.
 	 */
-	public update(property: Property, deep = false): void {
+	public update(property: PropertyDef, deep = false): void {
 		this._context.startUpdate(deep);
 
-		const dirtyList: Property[] = [property];
+		const dirtyList: PropertyDef[] = [property];
 		const dirtySet = new WeakSet(dirtyList);
 
 		while (dirtyList.length > 0) {

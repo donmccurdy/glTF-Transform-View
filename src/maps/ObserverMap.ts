@@ -76,6 +76,30 @@ export abstract class ObserverMap<S extends THREEObject, V extends THREEObject, 
 		}
 	}
 
+	/** Returns the base object for a given variant. */
+	public findBase(variant: V): S | null {
+		for (const [base, cache] of this._cache) {
+			for (const key in cache) {
+				if (cache[key].variant === variant) return base;
+			}
+		}
+		return null;
+	}
+
+	/** Returns all variants for a given base object. */
+	public listVariants(base: S): V[] {
+		for (const [_base, cache] of this._cache) {
+			if (base !== _base) continue;
+
+			const variants = [];
+			for (const key in cache) {
+				variants.push(cache[key].variant);
+			}
+			return variants;
+		}
+		return [];
+	}
+
 	/** Disposes of all variants associated with this cache. */
 	public dispose() {
 		for (const [base, cache] of this._cache) {

@@ -81,8 +81,7 @@ const group = documentRenderer.toObject3D();
 scene.add(group);
 
 // When glTF Document is edited, trigger change detection.
-documentRenderer.updateAll(); // (a) full update
-documentRenderer.update(mesh); // (b) partial update
+documentRenderer.update(document); // (b) partial update
 
 // Render.
 function animate () {

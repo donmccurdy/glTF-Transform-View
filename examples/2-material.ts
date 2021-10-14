@@ -79,7 +79,8 @@ const doc = (() => {
 })();
 
 const modelRenderer = new GLTFRenderer(doc);
-const model = modelRenderer.toObject3D();
+const modelDef = doc.getRoot().getDefaultScene() || doc.getRoot().listScenes()[0];
+const model = modelRenderer.render(modelDef);
 scene.add(model);
 
 //

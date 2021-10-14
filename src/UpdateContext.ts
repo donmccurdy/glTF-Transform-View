@@ -1,4 +1,5 @@
 import { Accessor as AccessorDef, Material as MaterialDef, Mesh as MeshDef, Node as NodeDef, Primitive as PrimitiveDef, Property as PropertyDef, PropertyType, Scene as SceneDef, Texture as TextureDef } from '@gltf-transform/core';
+import { Object3D, Material, Texture } from 'three';
 import { AccessorBinding, Binding, MaterialBinding, MeshBinding, NodeBinding, PrimitiveBinding, SceneBinding, TextureBinding } from './bindings';
 import { MaterialMap, Object3DMap, TextureMap } from './maps';
 
@@ -89,6 +90,47 @@ export class UpdateContext {
 		// this.materialCache._debug();
 		this.object3DMap.flush();
 		// this.meshCache._debug();
+	}
+
+	/**
+	 * Given a target object (currently any THREE.Object3D), finds and returns the source
+	 * glTF-Transform Property definition.
+	 */
+	public findSource(target: Object3D): PropertyDef | null {
+		if (target === null) return null;
+
+		const base = this.object3DMap.findBase(target) || target;
+		for (const binding of this._bindings) {
+			if (binding.value === target || binding.value === base) {
+				return binding.source;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Given a source object (currently anything rendered as THREE.Object3D), finds and returns
+	 * the list of output THREE.Object3D instances.
+	 */
+	public findTargets(source: TextureDef): Texture[]
+	public findTargets(source: MaterialDef): Material[]
+	public findTargets(source: SceneDef | NodeDef | MeshDef | PrimitiveDef): Object3D[]
+	public findTargets(source: SceneDef | NodeDef | MeshDef | PrimitiveDef | MaterialDef | TextureDef): (Object3D | Material | Texture)[] {
+		const binding = this._sourceBindings.get(source);
+		if (!binding) return [];
+
+		if (source instanceof SceneDef || source instanceof NodeDef) {
+			return [binding.value];
+		} else if (source instanceof MeshDef || source instanceof PrimitiveDef) {
+			return this.object3DMap.listVariants(binding.value);
+		} else if (source instanceof MaterialDef) {
+			this.materialMap.listVariants(binding.value);
+		} else if (source instanceof TextureDef) {
+			this.textureMap.listVariants(binding.value);
+		}
+
+		throw new Error(`GLTFRenderer: Lookup type "${source.propertyType}" not implemented.`);
 	}
 
 	public dispose(): void {

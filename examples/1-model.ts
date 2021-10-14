@@ -74,7 +74,8 @@ io.read('../assets/DamagedHelmet.glb').then(async (doc) => {
 	console.timeEnd('GLTFRenderer::init');
 
 	window['doc'] = doc;
-	const model = window['model'] = modelRenderer.toObject3D();
+	const modelDef = doc.getRoot().getDefaultScene() || doc.getRoot().listScenes()[0];
+	const model = window['model'] = modelRenderer.render(modelDef);
 
 	scene.add(model);
 	animate();

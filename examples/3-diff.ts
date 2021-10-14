@@ -65,6 +65,7 @@ new RGBELoader()
 
 document.body.addEventListener('gltf-document', async (event) => {
 	const doc = (event as CustomEvent).detail as Document;
+	const modelDef = doc.getRoot().getDefaultScene() || doc.getRoot().listScenes()[0];
 
 	if (modelBefore) disposeBefore(modelBefore);
 	if (modelAfter) disposeAfter(modelAfter);
@@ -73,7 +74,7 @@ document.body.addEventListener('gltf-document', async (event) => {
 
 	console.time('GLTFRenderer::init');
 	modelRenderer = new GLTFRenderer(doc);
-	modelAfter = modelRenderer.toObject3D();
+	modelAfter = modelRenderer.render(modelDef);
 	console.timeEnd('GLTFRenderer::init');
 
 	console.time('WebIO::writeBinary');

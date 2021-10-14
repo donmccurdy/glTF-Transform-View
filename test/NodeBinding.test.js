@@ -11,10 +11,10 @@ test('NodeBinding', t => {
 		.setScale([0.5, 0.5, 0.5]);
 	const nodeDef2 = document.createNode('Node2')
 		.setTranslation([5, 0, 0]);
-		sceneDef.addChild(nodeDef1.addChild(nodeDef2));
+	sceneDef.addChild(nodeDef1.addChild(nodeDef2));
 
 	const renderer = new GLTFRenderer(document);
-	const scene = renderer.toObject3D();
+	const scene = renderer.render(sceneDef);
 	t.equals(scene.children.length, 1, 'scene → 1 child');
 
 	const node1 = scene.children[0];

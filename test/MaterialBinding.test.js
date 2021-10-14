@@ -17,10 +17,10 @@ test('MaterialBinding', t => {
 	const primDef = document.createPrimitive().setMaterial(materialDef);
 	const meshDef = document.createMesh('Mesh').addPrimitive(primDef);
 	const nodeDef = document.createNode('Node').setMesh(meshDef);
-	document.createScene('Scene').addChild(nodeDef);
+	const sceneDef = document.createScene('Scene').addChild(nodeDef);
 
 	const renderer = new GLTFRenderer(document);
-	const scene = renderer.toObject3D();
+	const scene = renderer.render(sceneDef);
 	let mesh = scene.children[0].children[0].children[0];
 	let material = mesh.material;
 

@@ -11,7 +11,7 @@ test('SceneBinding', t => {
 		.addChild(document.createNode('Node3'));
 
 	const renderer = new GLTFRenderer(document);
-	const scene = renderer.toObject3D();
+	const scene = renderer.render(sceneDef);
 
 	t.equals(scene.name, 'MyScene');
 	t.equals(scene.children.length, 3, 'scene → children → 3');
