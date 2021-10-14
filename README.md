@@ -77,11 +77,14 @@ const document = await io.read('./input.glb');
 const documentRenderer = new GLTFRenderer(document);
 
 // Add the GLTFRenderer's output to the scene (just once).
-const group = documentRenderer.toObject3D();
+const groupDef = document.getRoot().listScenes()[0];
+const group = documentRenderer.render(scene);
 scene.add(group);
 
 // When glTF Document is edited, trigger change detection.
-documentRenderer.update(document); // (b) partial update
+const materialDef = document.getRoot().listMaterials()[0];
+documentRenderer.update(materialDef); // partial update
+documentRenderer.update(groupDef);    // full update
 
 // Render.
 function animate () {
