@@ -36,20 +36,21 @@ export class TextureMap extends ObserverMap<Texture, Texture, TextureParams> {
 	protected _createVariant(srcTexture: Texture, params: TextureParams): Texture {
 		const dstTexture = this._updateVariant(srcTexture, pool.request(srcTexture.clone()), params);
 
-		if (dstTexture.image.complete) {
+		if (dstTexture.image && dstTexture.image.complete) {
 			dstTexture.needsUpdate = true;
+		} else if (dstTexture.image) {
+			dstTexture.image.addEventListener('load', () => (dstTexture.needsUpdate = true));
 		} else {
-			dstTexture.image.onload = () => (dstTexture.needsUpdate = true);
+			// ... KTX2?
 		}
 
 		return dstTexture;
 	}
 
 	protected _updateVariant(srcTexture: Texture, dstTexture: Texture, params: TextureParams): Texture {
-		const needsUpdate = textureHasTransform(dstTexture) !== paramsHasTransform(params)
+		const needsUpdate = dstTexture.encoding !== params.encoding
 			|| dstTexture.wrapS !== params.wrapS
-			|| dstTexture.wrapT !== params.wrapT
-			|| dstTexture.encoding !== params.encoding;
+			|| dstTexture.wrapT !== params.wrapT;
 
 		dstTexture.copy(srcTexture);
 		dstTexture.minFilter = params.minFilter;
@@ -61,7 +62,7 @@ export class TextureMap extends ObserverMap<Texture, Texture, TextureParams> {
 		dstTexture.rotation = params.rotation || 0;
 		dstTexture.repeat.fromArray(params.repeat || _VEC2.ONE);
 
-		if (needsUpdate) {
+		if (needsUpdate && dstTexture.image.complete) {
 			dstTexture.needsUpdate = true;
 		}
 
@@ -87,12 +88,12 @@ export class TextureMap extends ObserverMap<Texture, Texture, TextureParams> {
 	}
 }
 
-function textureHasTransform(texture: Texture): boolean {
-	const {offset, rotation, repeat} = texture;
-	return offset.x !== 0 || offset.y !== 0 || rotation !== 0 || repeat.x !== 1 || repeat.y !== 1;
-}
+// function textureHasTransform(texture: Texture): boolean {
+// 	const {offset, rotation, repeat} = texture;
+// 	return offset.x !== 0 || offset.y !== 0 || rotation !== 0 || repeat.x !== 1 || repeat.y !== 1;
+// }
 
-function paramsHasTransform(params: TextureParams): boolean {
-	const {offset, rotation, repeat} = params;
-	return offset[0] !== 0 || offset[1] !== 0 || rotation !== 0 || repeat[0] !== 1 || repeat[1] !== 1;
-}
+// function paramsHasTransform(params: TextureParams): boolean {
+// 	const {offset, rotation, repeat} = params;
+// 	return offset[0] !== 0 || offset[1] !== 0 || rotation !== 0 || repeat[0] !== 1 || repeat[1] !== 1;
+// }
