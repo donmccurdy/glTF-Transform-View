@@ -3,39 +3,30 @@ import { Texture as TextureDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
 import { Binding } from './Binding';
 import { pool } from '../ObjectPool';
+import { NULL_TEXTURE } from '../ImageProvider';
 
 export class TextureBinding extends Binding<TextureDef, Texture> {
 	private _image: ArrayBuffer | null = null;
-	private _imageEl: HTMLImageElement | null = null;
-	private _imageURL = '';
 
 	public constructor(context: UpdateContext, source: TextureDef) {
-		super(context, source, pool.request(new Texture()));
-		this.value.flipY = false;
+		super(context, source, pool.request(NULL_TEXTURE));
 	}
 
 	public update(): this {
 		const source = this.source;
-		const target = this.value;
 
-		if (source.getImage() !== this._image) {
-			this._image = source.getImage() as ArrayBuffer;
-			const blob = new Blob([this._image], {type: source.getMimeType()});
-			this._imageURL = URL.createObjectURL(blob);
-			this._imageEl = document.createElement('img');
-			this._imageEl.src = this._imageURL;
-			target.image = this._imageEl;
-			target.image.onload = () => {
-				URL.revokeObjectURL(this._imageURL);
-				target.needsUpdate = true;
-			};
+		const image = source.getImage() as ArrayBuffer;
+		if (image !== this._image) {
+			this._image = image;
+			this.disposeTarget(this.value);
+			this.next(pool.request(this._context.imageProvider.get(source)));
 		}
 
 		return this;
 	}
 
 	public disposeTarget(target: Texture): void {
-		pool.release(target).dispose();
+		pool.release(target);
 	}
 
 	public dispose() {

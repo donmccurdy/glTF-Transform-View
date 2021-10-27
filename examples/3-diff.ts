@@ -1,14 +1,17 @@
-import { ACESFilmicToneMapping, AmbientLight, DirectionalLight, PMREMGenerator, PerspectiveCamera, Scene, UnsignedByteType, WebGLRenderer, sRGBEncoding, Object3D, Mesh, Material, Box3, Vector3 } from 'three';
+import { ACESFilmicToneMapping, AmbientLight, DirectionalLight, PMREMGenerator, PerspectiveCamera, Scene, UnsignedByteType, WebGLRenderer, sRGBEncoding, Object3D, Mesh, Material, Box3, Vector3, REVISION } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import { Document, WebIO } from '@gltf-transform/core';
 import { metalRough } from '@gltf-transform/functions';
-import { GLTFRenderer, DebugPool, setObjectPool } from '../dist/render.modern.js';
+import { GLTFRenderer, DebugPool, setObjectPool, ImageProvider } from '../dist/render.modern.js';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
+import { KTX2_LOADER } from './util.js';
 
 const debugPool = new DebugPool();
 setObjectPool(debugPool);
+
+const imageProvider = new ImageProvider();
 
 const renderer = new WebGLRenderer({antialias: true});
 renderer.setPixelRatio( window.devicePixelRatio );
@@ -22,7 +25,7 @@ const containerEl = document.querySelector('#container');
 containerEl.appendChild(renderer.domElement);
 
 const io = new WebIO().registerExtensions(ALL_EXTENSIONS);
-const loader = new GLTFLoader();
+const loader = new GLTFLoader().setKTX2Loader(KTX2_LOADER);
 
 const pmremGenerator = new PMREMGenerator(renderer);
 pmremGenerator.compileEquirectangularShader();
@@ -45,7 +48,7 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.addEventListener('change', render);
 controls.update();
 
-window.addEventListener( 'resize', onWindowResize );
+window.addEventListener('resize', onWindowResize);
 
 //
 
@@ -67,13 +70,16 @@ document.body.addEventListener('gltf-document', async (event) => {
 	const doc = (event as CustomEvent).detail as Document;
 	const modelDef = doc.getRoot().getDefaultScene() || doc.getRoot().listScenes()[0];
 
+	imageProvider.clear();
+	await imageProvider.update(doc.getRoot().listTextures());
+
 	if (modelBefore) disposeBefore(modelBefore);
 	if (modelAfter) disposeAfter(modelAfter);
 
 	await checkExtensions(doc);
 
 	console.time('GLTFRenderer::init');
-	modelRenderer = new GLTFRenderer(doc);
+	modelRenderer = new GLTFRenderer(doc).setImageProvider(imageProvider);
 	modelAfter = modelRenderer.render(modelDef);
 	console.timeEnd('GLTFRenderer::init');
 
