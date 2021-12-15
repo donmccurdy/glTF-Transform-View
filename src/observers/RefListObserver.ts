@@ -9,7 +9,7 @@ export interface ListUpdate<T> {
 	add?: T,
 }
 
-export class PropertyListObserver<S extends PropertyDef, T extends THREEObject> extends Observer<ListUpdate<T>> {
+export class RefListObserver<S extends PropertyDef, T extends THREEObject> extends Observer<ListUpdate<T>> {
 	private _sources = new Set<S>();
 	private _unsubscribeMap = new Map<S, Subscription>();
 

@@ -1,12 +1,12 @@
 import { Group, Object3D } from 'three';
 import { Node as NodeDef, Scene as SceneDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
-import { PropertyListObserver } from '../observers';
+import { RefListObserver } from '../observers';
 import { Binding } from './Binding';
 import { pool } from '../ObjectPool';
 
 export class SceneBinding extends Binding<SceneDef, Group> {
-	protected children = new PropertyListObserver<NodeDef, Object3D>('children', this._context);
+	protected children = new RefListObserver<NodeDef, Object3D>('children', this._context);
 
 	public constructor(context: UpdateContext, source: SceneDef) {
 		super(context, source, pool.request(new Group()));

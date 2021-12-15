@@ -1,7 +1,7 @@
 import { Object3D } from 'three';
 import { Mesh as MeshDef, Node as NodeDef, vec3, vec4 } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
-import { PropertyListObserver, PropertyObserver } from '../observers';
+import { RefListObserver, RefObserver } from '../observers';
 import { eq } from '../utils';
 import { Binding } from './Binding';
 import { pool } from '../ObjectPool';
@@ -11,8 +11,8 @@ const _vec3: vec3 = [0, 0, 0];
 const _vec4: vec4 = [0, 0, 0, 0];
 
 export class NodeBinding extends Binding<NodeDef, Object3D> {
-	protected children = new PropertyListObserver<NodeDef, Object3D>('children', this._context);
-	protected mesh = new PropertyObserver<MeshDef, Object3D>('mesh', this._context)
+	protected children = new RefListObserver<NodeDef, Object3D>('children', this._context);
+	protected mesh = new RefObserver<MeshDef, Object3D>('mesh', this._context)
 		.map(this._context.object3DMap, () => Object3DMap.createParams(this.source));
 
 	constructor(context: UpdateContext, source: NodeDef) {

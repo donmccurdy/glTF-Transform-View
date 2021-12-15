@@ -3,7 +3,7 @@ import type { Property as PropertyDef } from '@gltf-transform/core';
 import { Observer } from './Observer';
 import { THREEObject, Subscription } from '../utils';
 
-export class PropertyObserver<S extends PropertyDef, T extends THREEObject> extends Observer<T | null> {
+export class RefObserver<S extends PropertyDef, T extends THREEObject> extends Observer<T | null> {
 	protected _source: S | null = null;
 	protected _valueBase: T | null = null;
 	protected _unsubscribe: Subscription | null = null;

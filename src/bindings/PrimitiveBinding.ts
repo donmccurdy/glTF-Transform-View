@@ -1,7 +1,7 @@
 import { BufferAttribute, BufferGeometry, Line, LineLoop, LineSegments, Material, Mesh, MeshStandardMaterial, Points, SkinnedMesh } from 'three';
 import { Accessor as AccessorDef, GLTF, Material as MaterialDef, Primitive as PrimitiveDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
-import { PropertyMapObserver, PropertyObserver } from '../observers';
+import { RefMapObserver, RefObserver } from '../observers';
 import { Binding } from './Binding';
 import { MaterialMap, VariantMaterial } from '../maps';
 import { pool } from '../ObjectPool';
@@ -26,10 +26,10 @@ function semanticToAttributeName(semantic: string): string {
 type MeshLike = Mesh | SkinnedMesh | Points | Line | LineSegments | LineLoop;
 
 export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
-	protected material = new PropertyObserver<MaterialDef, VariantMaterial>('material', this._context)
+	protected material = new RefObserver<MaterialDef, VariantMaterial>('material', this._context)
 		.map(this._context.materialMap, () => MaterialMap.createParams(this.source));
-	protected indices = new PropertyObserver<AccessorDef, BufferAttribute>('indices', this._context);
-	protected attributes = new PropertyMapObserver<AccessorDef, BufferAttribute>('attributes', this._context);
+	protected indices = new RefObserver<AccessorDef, BufferAttribute>('indices', this._context);
+	protected attributes = new RefMapObserver<AccessorDef, BufferAttribute>('attributes', this._context);
 
 	public constructor(context: UpdateContext, source: PrimitiveDef) {
 		super(

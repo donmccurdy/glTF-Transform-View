@@ -9,7 +9,7 @@ export interface MapUpdate<K, V> {
 	value: V | null,
 }
 
-export class PropertyMapObserver<S extends PropertyDef, T extends THREEObject> extends Observer<MapUpdate<string, T>> {
+export class RefMapObserver<S extends PropertyDef, T extends THREEObject> extends Observer<MapUpdate<string, T>> {
 	private _sources: {[key: string]: S} = {};
 	private _unsubscribeMap = new Map<S, Subscription>();
 
