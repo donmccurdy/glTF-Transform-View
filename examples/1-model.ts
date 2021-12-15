@@ -2,7 +2,7 @@ import { ACESFilmicToneMapping, AmbientLight, DirectionalLight, PMREMGenerator, 
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import { GLTF, Material, WebIO } from '@gltf-transform/core';
-import { GLTFRenderer } from '../dist/render.modern.js';
+import { GLTFRenderer, ImageProvider } from '../dist/render.modern.js';
 import {Pane} from 'tweakpane';
 import * as TweakpanePluginThumbnailList from 'tweakpane-plugin-thumbnail-list';
 import { createStatsPane } from './stats-pane.js';
@@ -66,11 +66,13 @@ pane.registerPlugin(TweakpanePluginThumbnailList);
 const updateStats = createStatsPane(renderer, pane);
 
 
-
 const io = new WebIO();
 io.read('../assets/DamagedHelmet.glb').then(async (doc) => {
+	const imageProvider = new ImageProvider();
+	await imageProvider.update(doc.getRoot().listTextures());
+
 	console.time('GLTFRenderer::init');
-	modelRenderer = new GLTFRenderer(doc);
+	modelRenderer = new GLTFRenderer(doc).setImageProvider(imageProvider);
 	console.timeEnd('GLTFRenderer::init');
 
 	window['doc'] = doc;
