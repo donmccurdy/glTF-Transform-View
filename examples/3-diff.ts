@@ -89,7 +89,7 @@ document.body.addEventListener('gltf-document', async (event) => {
 
 	console.time('GLTFLoader::parse');
 	modelBefore = await new Promise((resolve, reject) => {
-		loader.parse(glb, '', ({scene}) => resolve(scene), reject);
+		loader.parse(glb.buffer, '', ({scene}) => resolve(scene), reject);
 	}) as Object3D;
 	console.timeEnd('GLTFLoader::parse');
 

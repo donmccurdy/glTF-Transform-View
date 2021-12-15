@@ -30,9 +30,14 @@ export class UpdateContext {
 		this.imageProvider = provider;
 	}
 
-	private _addBinding(renderer: Binding<PropertyDef, any>): void {
-		this._bindings.add(renderer);
-		this._sourceBindings.set(renderer.source, renderer);
+	private _addBinding(binding: Binding<PropertyDef, any>): void {
+		const source = binding.source;
+		this._bindings.add(binding);
+		this._sourceBindings.set(source, binding);
+		source.addEventListener('dispose', () => {
+			this._bindings.delete(binding);
+			this._sourceBindings.delete(source);
+		});
 	}
 
 	public bind(source: null): null;

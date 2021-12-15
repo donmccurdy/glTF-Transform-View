@@ -61,14 +61,14 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 		this.bindTexture(['clearcoatNormalMap'], this.clearcoatNormalTexture, () => clearcoatExt()?.getClearcoatNormalTexture() || null, () => clearcoatExt()?.getClearcoatNormalTextureInfo() || null, LinearEncoding);
 
 		// KHR_materials_sheen
-		// const sheenExt = (): Sheen | null => source.getExtension<Sheen>('KHR_materials_sheen');
-		// this.bindTexture(['specularIntensityMap'], this.sheenColorTexture, () => sheenExt()?.getSheenColorTexture() || null, () => sheenExt()?.getSheenColorTextureInfo() || null, sRGBEncoding);
-		// this.bindTexture(['specularTintMap'], this.sheenRoughnessTexture, () => sheenExt()?.getSheenRoughnessTexture() || null, () => sheenExt()?.getSheenRoughnessTextureInfo() || null, LinearEncoding);
+		const sheenExt = (): Sheen | null => source.getExtension<Sheen>('KHR_materials_sheen');
+		this.bindTexture(['sheenColorMap'], this.sheenColorTexture, () => sheenExt()?.getSheenColorTexture() || null, () => sheenExt()?.getSheenColorTextureInfo() || null, sRGBEncoding);
+		this.bindTexture(['sheenRoughnessMap'], this.sheenRoughnessTexture, () => sheenExt()?.getSheenRoughnessTexture() || null, () => sheenExt()?.getSheenRoughnessTextureInfo() || null, LinearEncoding);
 
 		// KHR_materials_specular
 		const specularExt = (): Specular | null => source.getExtension<Specular>('KHR_materials_specular');
 		this.bindTexture(['specularIntensityMap'], this.specularTexture, () => specularExt()?.getSpecularTexture() || null, () => specularExt()?.getSpecularTextureInfo() || null, LinearEncoding);
-		this.bindTexture(['specularTintMap'], this.specularColorTexture, () => specularExt()?.getSpecularColorTexture() || null, () => specularExt()?.getSpecularColorTextureInfo() || null, sRGBEncoding);
+		this.bindTexture(['specularColorMap'], this.specularColorTexture, () => specularExt()?.getSpecularColorTexture() || null, () => specularExt()?.getSpecularColorTextureInfo() || null, sRGBEncoding);
 
 		// KHR_materials_transmission
 		const transmissionExt = (): Transmission | null => source.getExtension<Transmission>('KHR_materials_transmission');
@@ -266,14 +266,14 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 		const sheen = source.getExtension<Sheen>('KHR_materials_sheen');
 		if (sheen) {
 			const sourceSheenColor = sheen.getSheenColorFactor();
-			if (!eq(sourceSheenColor, target.sheenTint!.toArray(_vec3))) {
-				target.sheenTint!.fromArray(sourceSheenColor);
+			if (!eq(sourceSheenColor, target.sheenColor!.toArray(_vec3))) {
+				target.sheenColor!.fromArray(sourceSheenColor);
 			}
-			// if (sheen.getSheenRoughnessFactor() !== target.sheenRoughness) {
-			// 	target.sheenRoughness = sheen.getSheenRoughnessFactor();
-			// }
+			if (sheen.getSheenRoughnessFactor() !== target.sheenRoughness) {
+				target.sheenRoughness = sheen.getSheenRoughnessFactor();
+			}
 		} else {
-			target.sheenTint!.setRGB(0, 0, 0);
+			target.sheenColor!.setRGB(0, 0, 0);
 		}
 
 		// KHR_materials_specular
@@ -283,12 +283,12 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 				target.specularIntensity = specular.getSpecularFactor();
 			}
 			const sourceSpecularColor = specular.getSpecularColorFactor();
-			if (!eq(sourceSpecularColor, target.specularTint.toArray(_vec3))) {
-				target.specularTint.fromArray(sourceSpecularColor);
+			if (!eq(sourceSpecularColor, target.specularColor.toArray(_vec3))) {
+				target.specularColor.fromArray(sourceSpecularColor);
 			}
 		} else {
 			target.specularIntensity = 1.0;
-			target.specularTint.setRGB(1, 1, 1);
+			target.specularColor.setRGB(1, 1, 1);
 		}
 
 		// KHR_materials_transmission
@@ -313,8 +313,8 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 				target.attenuationDistance = volume.getAttenuationDistance();
 			}
 			const sourceAttenuationColor = volume.getAttenuationColor();
-			if (!eq(sourceAttenuationColor, (target as any).attenuationTint.toArray(_vec3))) {
-				(target as any).attenuationTint.fromArray(sourceAttenuationColor);
+			if (!eq(sourceAttenuationColor, target.attenuationColor.toArray(_vec3))) {
+				target.attenuationColor.fromArray(sourceAttenuationColor);
 			}
 		} else {
 			target.thickness = 0;

@@ -1,7 +1,7 @@
 import { Group, Line, LineLoop, LineSegments, Material, Mesh, Object3D, Points, Texture } from 'three';
 import { Document, Property as PropertyDef, Scene as SceneDef, Node as NodeDef, Material as MaterialDef, Mesh as MeshDef, Primitive as PrimitiveDef, Texture as TextureDef } from '@gltf-transform/core';
 import { UpdateContext } from './UpdateContext';
-import { ImageProvider, NullImageProvider } from './ImageProvider';
+import { ImageProvider } from './ImageProvider';
 
 /**
  * Constructs a THREE.Object3D from a glTF-Transform Document, and maintains a

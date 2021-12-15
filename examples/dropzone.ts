@@ -48,7 +48,7 @@ async function loadDocument(fileMap: Map<string, File>, rootFile: File, rootPath
 
 	if (rootFile.name.match(/\.(glb)$/)) {
 		const arrayBuffer = await rootFile.arrayBuffer();
-		jsonDocument = io.binaryToJSON(arrayBuffer);
+		jsonDocument = io.binaryToJSON(new Uint8Array(arrayBuffer));
 	} else {
 		jsonDocument = {
 			json: JSON.parse(await rootFile.text()),
@@ -56,7 +56,8 @@ async function loadDocument(fileMap: Map<string, File>, rootFile: File, rootPath
 		};
 		for (const [fileName, file] of fileMap.entries()) {
 			const path = fileName.replace(rootPath, '');
-			jsonDocument.resources[path] = await file.arrayBuffer();
+			const arrayBuffer = await file.arrayBuffer();
+			jsonDocument.resources[path] = new Uint8Array(arrayBuffer);
 		}
 	}
 
