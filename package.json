@@ -11,15 +11,15 @@
   "type": "module",
   "sideEffects": false,
   "dependencies": {
-    "@gltf-transform/core": "^0.12.13"
+    "@gltf-transform/core": "^2.0.0-alpha.1"
   },
   "peerDependencies": {
     "@types/three": ">=0.130.0",
     "three": ">=0.130.1"
   },
   "devDependencies": {
-    "@gltf-transform/extensions": "^0.12.13",
-    "@gltf-transform/functions": "^0.12.13",
+    "@gltf-transform/extensions": "^2.0.0-alpha.1",
+    "@gltf-transform/functions": "^2.0.0-alpha.1",
     "@tweakpane/core": "^1.0.6",
     "@types/three": "^0.132.1",
     "@typescript-eslint/eslint-plugin": "^4.31.2",
