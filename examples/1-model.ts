@@ -45,7 +45,6 @@ window.addEventListener( 'resize', onWindowResize );
 //
 
 new RGBELoader()
-	.setDataType( UnsignedByteType )
 	.load( '../assets/royal_esplanade_1k.hdr', ( texture ) => {
 		const envMap = pmremGenerator.fromEquirectangular( texture ).texture;
 		scene.background = envMap;
