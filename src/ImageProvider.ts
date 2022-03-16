@@ -1,6 +1,6 @@
 import { Texture as TextureDef } from '@gltf-transform/core';
 import { CompressedTexture, Texture, WebGLRenderer, REVISION } from 'three';
-import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader';
+import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
 
 const TRANSCODER_PATH = `https://unpkg.com/three@0.${REVISION}.x/examples/js/libs/basis/`;
 
