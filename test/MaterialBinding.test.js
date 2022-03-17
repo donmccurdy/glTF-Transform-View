@@ -1,6 +1,6 @@
 import test from 'tape';
 import { Document } from '@gltf-transform/core';
-import { GLTFRenderer, NullImageProvider } from '../dist/render.modern.js';
+import { GLTFRenderer } from '../dist/render.modern.js';
 
 test('MaterialBinding', t => {
 	const document = new Document();
@@ -18,7 +18,7 @@ test('MaterialBinding', t => {
 	const nodeDef = document.createNode('Node').setMesh(meshDef);
 	const sceneDef = document.createScene('Scene').addChild(nodeDef);
 
-	const renderer = new GLTFRenderer(document).setImageProvider(new NullImageProvider());
+	const renderer = new GLTFRenderer(document);
 	const scene = renderer.render(sceneDef);
 	let mesh = scene.children[0].children[0].children[0];
 	let material = mesh.material;
