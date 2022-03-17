@@ -4,15 +4,6 @@ import { AccessorBinding, Binding, MaterialBinding, MeshBinding, NodeBinding, Pr
 import { IImageProvider, ImageProvider, NullImageProvider } from './ImageProvider';
 import { MaterialMap, Object3DMap, TextureMap } from './maps';
 
-// TODO(perf): Support update mask.
-//
-// export enum UpdateMask {
-// 	SHALLOW = 0x0000,
-// 	DEEP = 0x1000,
-// 	TEXTURE_DATA = 0x0100,
-// 	VERTEX_DATA = 0x00100,
-// }
-
 export class UpdateContext {
 	public updateID = 1;
 	public deep = true;
@@ -97,11 +88,8 @@ export class UpdateContext {
 
 	public endUpdate() {
 		this.textureMap.flush();
-		// this.textureCache._debug();
 		this.materialMap.flush();
-		// this.materialCache._debug();
 		this.object3DMap.flush();
-		// this.meshCache._debug();
 	}
 
 	/**
