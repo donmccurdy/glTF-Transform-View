@@ -1,3 +1,3 @@
-export * from './GLTFRenderer';
+export { GLTFRenderer } from './GLTFRenderer';
 export { setObjectPool, DebugPool, NoopPool } from './ObjectPool';
-export { ImageProvider } from './ImageProvider';
+export { ImageProvider, NullImageProvider } from './ImageProvider';

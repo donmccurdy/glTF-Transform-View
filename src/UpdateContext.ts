@@ -1,7 +1,7 @@
 import { Accessor as AccessorDef, Material as MaterialDef, Mesh as MeshDef, Node as NodeDef, Primitive as PrimitiveDef, Property as PropertyDef, PropertyType, Scene as SceneDef, Texture as TextureDef } from '@gltf-transform/core';
 import { Object3D, Material, Texture } from 'three';
 import { AccessorBinding, Binding, MaterialBinding, MeshBinding, NodeBinding, PrimitiveBinding, SceneBinding, TextureBinding } from './bindings';
-import { ImageProvider, NullImageProvider } from './ImageProvider';
+import { IImageProvider, ImageProvider, NullImageProvider } from './ImageProvider';
 import { MaterialMap, Object3DMap, TextureMap } from './maps';
 
 // TODO(perf): Support update mask.
@@ -24,7 +24,7 @@ export class UpdateContext {
 	public materialMap = new MaterialMap('MaterialMap');
 	public object3DMap = new Object3DMap('Object3DMap');
 
-	public imageProvider: ImageProvider = new NullImageProvider();
+	public imageProvider: IImageProvider = new NullImageProvider();
 
 	public setImageProvider(provider: ImageProvider): void {
 		this.imageProvider = provider;

@@ -48,7 +48,7 @@ async function loadDocument(fileMap: Map<string, File>, rootFile: File, rootPath
 
 	if (rootFile.name.match(/\.(glb)$/)) {
 		const arrayBuffer = await rootFile.arrayBuffer();
-		jsonDocument = io.binaryToJSON(new Uint8Array(arrayBuffer));
+		jsonDocument = await io.binaryToJSON(new Uint8Array(arrayBuffer));
 	} else {
 		jsonDocument = {
 			json: JSON.parse(await rootFile.text()),
@@ -62,7 +62,7 @@ async function loadDocument(fileMap: Map<string, File>, rootFile: File, rootPath
 	}
 
 	normalizeURIs(jsonDocument);
-	doc = io.readJSON(jsonDocument);
+	doc = await io.readJSON(jsonDocument);
 	removeCompression(doc);
     document.body.dispatchEvent(new CustomEvent('gltf-document', {detail: doc}));
 }

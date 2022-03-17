@@ -1,16 +1,15 @@
 import test from 'tape';
 import { Document } from '@gltf-transform/core';
-import { GLTFRenderer } from '../dist/render.modern.js';
-import './_TestUtils.js';
+import { GLTFRenderer, NullImageProvider } from '../dist/render.modern.js';
 
 test('MaterialBinding', t => {
 	const document = new Document();
 	const texDef1 = document.createTexture('Tex1')
 		.setMimeType('image/png')
-		.setImage(new ArrayBuffer(0));
+		.setImage(new Uint8Array(0));
 	const texDef2 = document.createTexture('Tex2')
 		.setMimeType('image/png')
-		.setImage(new ArrayBuffer(0));
+		.setImage(new Uint8Array(0));
 	const materialDef = document.createMaterial('Material')
 		.setBaseColorTexture(texDef1)
 		.setEmissiveTexture(texDef2);
@@ -19,7 +18,7 @@ test('MaterialBinding', t => {
 	const nodeDef = document.createNode('Node').setMesh(meshDef);
 	const sceneDef = document.createScene('Scene').addChild(nodeDef);
 
-	const renderer = new GLTFRenderer(document);
+	const renderer = new GLTFRenderer(document).setImageProvider(new NullImageProvider());
 	const scene = renderer.render(sceneDef);
 	let mesh = scene.children[0].children[0].children[0];
 	let material = mesh.material;

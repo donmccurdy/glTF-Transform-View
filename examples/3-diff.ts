@@ -1,12 +1,11 @@
 import { ACESFilmicToneMapping, AmbientLight, DirectionalLight, PMREMGenerator, PerspectiveCamera, Scene, UnsignedByteType, WebGLRenderer, sRGBEncoding, Object3D, Mesh, Material, Box3, Vector3, REVISION } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import { Document, WebIO } from '@gltf-transform/core';
 import { metalRough } from '@gltf-transform/functions';
 import { GLTFRenderer, DebugPool, setObjectPool, ImageProvider } from '../dist/render.modern.js';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
-import { KTX2_LOADER } from './util.js';
+import { createEnvironment, createKTX2Loader } from './util.js';
 
 const debugPool = new DebugPool();
 setObjectPool(debugPool);
@@ -25,10 +24,7 @@ const containerEl = document.querySelector('#container');
 containerEl.appendChild(renderer.domElement);
 
 const io = new WebIO().registerExtensions(ALL_EXTENSIONS);
-const loader = new GLTFLoader().setKTX2Loader(KTX2_LOADER);
-
-const pmremGenerator = new PMREMGenerator(renderer);
-pmremGenerator.compileEquirectangularShader();
+const loader = new GLTFLoader().setKTX2Loader(createKTX2Loader());
 
 const scene = new Scene();
 let modelRenderer: GLTFRenderer;
@@ -40,6 +36,13 @@ const light2 = new DirectionalLight();
 light2.position.set(1, 2, 3);
 scene.add(light1, light2);
 
+createEnvironment(renderer)
+	.then((environment) => {
+		scene.environment = environment;
+		scene.background = environment;
+		render();
+	});
+
 const camera = new PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.25, 20);
 camera.position.set(-1.8, 0.6, 2.7);
 camera.lookAt(scene.position);
@@ -49,19 +52,6 @@ controls.addEventListener('change', render);
 controls.update();
 
 window.addEventListener('resize', onWindowResize);
-
-//
-
-new RGBELoader()
-	.load( '../assets/royal_esplanade_1k.hdr', ( texture ) => {
-		const envMap = pmremGenerator.fromEquirectangular( texture ).texture;
-		scene.background = envMap;
-		scene.environment = envMap;
-
-		render();
-		texture.dispose();
-		pmremGenerator.dispose();
-	} );
 
 //
 
@@ -83,7 +73,7 @@ document.body.addEventListener('gltf-document', async (event) => {
 	console.timeEnd('GLTFRenderer::init');
 
 	console.time('WebIO::writeBinary');
-	const glb = io.writeBinary(doc);
+	const glb = await io.writeBinary(doc);
 	console.timeEnd('WebIO::writeBinary');
 
 	console.time('GLTFLoader::parse');

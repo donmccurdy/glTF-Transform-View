@@ -4,15 +4,15 @@ import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
 
 const TRANSCODER_PATH = `https://unpkg.com/three@0.${REVISION}.x/examples/js/libs/basis/`;
 
-// Singleton KTX2Loader instance to pool Web Workers.
-const KTX2_LOADER = (() => {
+// Use a single KTX2Loader instance to pool Web Workers.
+function createKTX2Loader() {
 	const renderer = new WebGLRenderer();
 	const loader = new KTX2Loader()
 		.detectSupport(renderer)
 		.setTranscoderPath(TRANSCODER_PATH);
 	renderer.dispose();
 	return loader;
-})();
+}
 
 // Placeholder image.
 const NULL_IMAGE_URI = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAAXNSR0IArs4c6QAAABNJREFUGFdj/M9w9z8DEmAkXQAAyCMLcU6pckIAAAAASUVORK5CYII=';
@@ -25,8 +25,15 @@ export const NULL_TEXTURE = (() => {
 	return texture;
 })();
 
-export class ImageProvider {
+export interface IImageProvider {
+	update(textureDefs: TextureDef[]): Promise<void>;
+	get(textureDef: TextureDef): Texture | CompressedTexture;
+	clear(): void;
+}
+
+export class ImageProvider implements IImageProvider {
 	private _cache = new Map<ArrayBuffer, Texture|CompressedTexture>();
+	private _ktx2Loader = createKTX2Loader();
 
 	async update(textureDefs: TextureDef[]): Promise<void> {
 		const pending = textureDefs.map(async (textureDef) => {
@@ -82,14 +89,14 @@ export class ImageProvider {
 	private async _loadKTX2Image(image: ArrayBuffer): Promise<CompressedTexture> {
 		const blob = new Blob([image], {type: 'image/ktx2'});
 		const imageURL = URL.createObjectURL(blob);
-		const texture = await KTX2_LOADER.loadAsync(imageURL);
+		const texture = await this._ktx2Loader.loadAsync(imageURL);
 		URL.revokeObjectURL(imageURL);
 		return texture;
 	}
 }
 
-export class NullImageProvider extends ImageProvider {
-	get(texture: TextureDef): Texture {
-		return NULL_TEXTURE;
-	}
+export class NullImageProvider implements IImageProvider {
+	async update(textureDefs: TextureDef[]): Promise<void> {}
+	get(texture: TextureDef): Texture { return NULL_TEXTURE; }
+	clear(): void {}
 }

@@ -1,8 +1,9 @@
+require('source-map-support').install();
+
 global.Blob = class Blob {
 	constructor (data, options) {
 		this.data = data;
 		this.options = options;
-
 	}
 };
 

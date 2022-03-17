@@ -1,11 +1,11 @@
 import { ACESFilmicToneMapping, AmbientLight, DirectionalLight, PMREMGenerator, PerspectiveCamera, Scene, UnsignedByteType, WebGLRenderer, sRGBEncoding, TorusKnotBufferGeometry } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import { Document, Material } from '@gltf-transform/core';
 import { GLTFRenderer } from '../dist/render.modern.js';
 import { createMaterialPane } from './material-pane';
 import { createStatsPane } from './stats-pane.js';
 import { Pane } from 'tweakpane';
+import { createEnvironment } from './util.js';
 
 const renderer = new WebGLRenderer({antialias: true});
 renderer.setPixelRatio( window.devicePixelRatio );
@@ -28,6 +28,13 @@ const light2 = new DirectionalLight();
 light2.position.set(1, 2, 3);
 scene.add(light1, light2);
 
+createEnvironment(renderer)
+	.then((environment) => {
+		scene.environment = environment;
+		scene.background = environment;
+		render();
+	});
+
 const camera = new PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.25, 20);
 camera.position.set(-4, 1.2, 5.4);
 camera.lookAt(scene.position);
@@ -40,18 +47,6 @@ controls.target.set(0, 0, - 0.2);
 controls.update();
 
 window.addEventListener('resize', onWindowResize);
-
-//
-
-new RGBELoader()
-	.load( '../assets/royal_esplanade_1k.hdr', ( texture ) => {
-		const envMap = pmremGenerator.fromEquirectangular( texture ).texture;
-		scene.background = envMap;
-		scene.environment = envMap;
-
-		texture.dispose();
-		pmremGenerator.dispose();
-	} );
 
 //
 
