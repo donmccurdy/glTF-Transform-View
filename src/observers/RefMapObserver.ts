@@ -48,13 +48,6 @@ export class RefMapObserver<S extends PropertyDef, T extends THREEObject> extend
 			const nextRenderer = context.bind(nextSource) as Binding<S, T>;
 			this.next({key, value: nextRenderer.value}) // Emit added item.
 		}
-
-		// Update.
-		if (context.deep) {
-			for (const key in this._sources) {
-				context.bind(this._sources[key]).updateOnce();
-			}
-		}
 	}
 
 	public dispose() {

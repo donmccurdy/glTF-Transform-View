@@ -38,13 +38,6 @@ export class RefListObserver<S extends PropertyDef, T extends THREEObject> exten
 			this._sources.add(nextSource);
 			this.subscribeSource(nextSource); // Emit added item.
 		}
-
-		// Update.
-		if (context.deep) {
-			for (const source of this._sources) {
-				context.bind(source).updateOnce();
-			}
-		}
 	}
 
 	public dispose() {

@@ -13,11 +13,12 @@ test('SceneBinding', t => {
 	const renderer = new GLTFRenderer(document);
 	const scene = renderer.render(sceneDef);
 
-	t.equals(scene.name, 'MyScene');
+	t.equals(scene.name, 'MyScene', 'scene → name');
+	sceneDef.setName('MySceneRenamed');
+	t.equals(scene.name, 'MySceneRenamed', 'scene → name (renamed)');
 	t.equals(scene.children.length, 3, 'scene → children → 3');
 
 	nodeDef.dispose();
-	renderer.update(sceneDef);
 	t.equals(scene.children.length, 2, 'scene → children → 2');
 
 	t.end();

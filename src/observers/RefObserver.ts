@@ -16,8 +16,6 @@ export class RefObserver<S extends PropertyDef, T extends THREEObject> extends O
 		const context = this._context;
 		const binding = source ? context.bind(source) : null;
 
-		if (binding && context.deep) binding.updateOnce();
-
 		if (this._source === source) {
 			if (this._map && this._valueBase && this.value) {
 				this._map.cache.updateVariant(this._valueBase, this.value, this._map.paramsFn());

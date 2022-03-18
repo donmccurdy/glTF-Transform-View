@@ -17,17 +17,11 @@ export abstract class Binding <Source extends PropertyDef, Target> extends Subje
 		this._targetUnsubscribe = this.subscribe((next, prev) => {
 			if (prev && prev !== next) this.disposeTarget(prev);
 		});
+
+		source.addEventListener('change', () => this.update());
 	}
 
 	public abstract update(): this;
-
-	public updateOnce(): this {
-		if (this._context.deep && this._lastUpdateID < this._context.updateID) {
-			this._lastUpdateID = this._context.updateID;
-			this.update();
-		}
-		return this;
-	}
 
 	public dispose(): void {
 		this._targetUnsubscribe();
