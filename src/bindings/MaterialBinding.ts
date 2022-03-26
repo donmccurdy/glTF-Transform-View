@@ -130,6 +130,8 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 		const source = this.source;
 		let target = this.value;
 
+		console.log('MaterialBinding::update');
+
 		const shadingModel = getShadingModel(source);
 		if (shadingModel === ShadingModel.UNLIT && target.type !== 'MeshBasicMaterial'
 			|| shadingModel === ShadingModel.STANDARD && target.type !== 'MeshStandardMaterial'

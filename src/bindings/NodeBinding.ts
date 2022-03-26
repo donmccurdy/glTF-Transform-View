@@ -21,10 +21,18 @@ export class NodeBinding extends Binding<NodeDef, Object3D> {
 		this.children.subscribe((children) => {
 			if (children.remove) this.value.remove(children.remove);
 			if (children.add) this.value.add(children.add);
+			// TODO(test): required to flush changes to maps? who else subscribes to this?
+			// TODO(bug): redundant if update called .next(target) ...
+			this.notify();
 		});
 		this.mesh.subscribe((add, remove) => {
+			console.log('NodeBinding::mesh::subscribe', {add, remove});
 			if (remove) this.value.remove(remove);
 			if (add) this.value.add(add);
+			// TODO(test): required to flush changes to maps? who else subscribes to this?
+			// TODO(bug): redundant if update called .next(target) ...
+			// TODO(bug): This is getting called where {remove === add}...
+			this.notify();
 		});
 	}
 

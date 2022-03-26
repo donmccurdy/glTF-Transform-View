@@ -9,16 +9,16 @@ type Object3DDef = PrimitiveDef | MeshDef | NodeDef;
 export class Object3DMap extends ObserverMap<Object3D, Object3D, Object3DParams> {
 	private static _parentIDs = new WeakMap<PropertyDef, string>();
 
-	protected _createVariant(srcMesh: Object3D): Object3D {
-		return pool.request(srcMesh.clone());
+	protected _createVariant(srcObject: Object3D): Object3D {
+		return pool.request(srcObject.clone());
 	}
 
-	protected _updateVariant(srcMesh: Object3D, dstMesh: Object3D): Object3D {
-		return dstMesh.clear().copy(srcMesh);
+	protected _updateVariant(srcObject: Object3D, dstObject: Object3D): Object3D {
+		return dstObject.clear().copy(srcObject);
 	}
 
-	protected _disposeVariant(mesh: Object3D): void {
-		pool.release(mesh);
+	protected _disposeVariant(object: Object3D): void {
+		pool.release(object);
 	}
 
 	/** Generates a unique Object3D for every parent. */

@@ -14,8 +14,12 @@ export class MeshBinding extends Binding<MeshDef, Group> {
 		super(context, source, pool.request(new Group()));
 
 		this.primitives.subscribe((primitives) => {
+			console.log('MeshBinding::primitives::subscribe', primitives, this.value.children.includes(primitives.remove!), this.value.children.length);
 			if (primitives.remove) this.value.remove(primitives.remove);
 			if (primitives.add) this.value.add(primitives.add);
+			// TODO(test): required to flush changes to maps? who else subscribes to this?
+			// TODO(bug): redundant if update called .next(target) ...
+			this.notify();
 		});
 	}
 

@@ -40,9 +40,9 @@ rendered in the preview.
 Basic workflow:
 
 1. Load a glTF [Document](https://gltf-transform.donmccurdy.com/classes/core.document.html) with glTF-Transform's [WebIO](https://gltf-transform.donmccurdy.com/classes/core.webio.html)
-2. Construct three.js scene with `DocumentRenderer`
+2. Construct three.js scene with `GLTFRenderer`
 3. Begin ~60 FPS render loop
-4. Apply changes to [Document](https://gltf-transform.donmccurdy.com/classes/core.document.html); update `DocumentRenderer` state
+4. Apply changes to [Document](https://gltf-transform.donmccurdy.com/classes/core.document.html)
 
 The cost of this fast edit/refresh loop is a somewhat slower first-time load
 and additional memory overhead, so the project is not meant to replace
@@ -83,8 +83,7 @@ scene.add(group);
 
 // When glTF Document is edited, trigger change detection.
 const materialDef = document.getRoot().listMaterials()[0];
-documentRenderer.update(materialDef); // partial update
-documentRenderer.update(groupDef);    // full update
+materialDef.setBaseColorHex(0xFF0000);
 
 // Render.
 function animate () {
@@ -95,17 +94,18 @@ function animate () {
 
 ### Bindings
 
-| binding   | status | comments     |
-|-----------|--------|--------------|
-| Scene     | ✅     | Dynamic      |
-| Node      | ✅     | Dynamic      |
-| Material  | ✅     | Dynamic      |
-| Texture   | 🚧     | Static       |
-| Mesh      | 🚧     | Static       |
-| Primitive | 🚧     | Static       |
-| Animation | ❌     | No bindings  |
-| Camera    | ❌     | No bindings  |
-| Light     | ❌     | No bindings  |
+| binding   | status | comments    |
+|-----------|--------|-------------|
+| Scene     | ✅      | Dynamic     |
+| Node      | ✅      | Dynamic     |
+| Mesh      | ✅      | Dynamic     |
+| Primitive | ✅      | Dynamic     |
+| Accessor  | ✅      | Dynamic     |
+| Material  | ✅      | Dynamic     |
+| Texture   | ✅      | Dynamic     |
+| Animation | ❌      | No bindings |
+| Camera    | ❌      | No bindings |
+| Light     | ❌      | No bindings |
 
 **Legend:**
 
@@ -137,7 +137,7 @@ yarn dev
 yarn test
 ```
 
-<!---
+-
 
 ### Structure
 
@@ -146,8 +146,8 @@ One of more interesting challenges of this project is that glTF properties do no
 - a glTF "Primitive" maps to THREE.Mesh, THREE.SkinnedMesh, THREE.Points, THREE.Lines, etc., depending on its content. While this is a 1:1 relationship, if the Primitive's content changes, the bindings may need to replace (not mutate) the existing three.js class instance.
 - a glTF "Material" maps to THREE.MeshStandardMaterial, THREE.MeshBasicMaterial, or THREE.MeshPhysicalMaterial depending on its content. Additionally, the context in which the Material is used (points? lines? mesh? skinned mesh?) may require changing the class (e.g. PointsMaterial) or properties of the material (e.g. `.vertexColors` or `.flatNormals`). This is a 1:many relationship, since a Material may be reused in multiple contexts throughout the glTF document.
 
-To support these cases, this library defines concepts of "bindings" (observing a glTF source property) and "variants" (observing contextually-derived versions of the property). Either type of observer may emit a replacement object when content changes.
+To support these cases, this library defines concepts of "bindings" (observing a glTF source property) and "maps" (observing contextually-derived versions of the property). Either type of observer may emit a replacement object when content changes.
 
 ![Bindings diagram](./assets/bindings_diagram.svg)
 
---->
+-

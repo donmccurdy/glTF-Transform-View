@@ -11,6 +11,8 @@ export class SceneBinding extends Binding<SceneDef, Group> {
 	public constructor(context: UpdateContext, source: SceneDef) {
 		super(context, source, pool.request(new Group()));
 		this.children.subscribe((children) => {
+			console.log('SceneBinding::children::subscribe');
+			// TODO(bug): 'child.remove' is not found.
 			if (children.remove) this.value.remove(children.remove);
 			if (children.add) this.value.add(children.add);
 		});

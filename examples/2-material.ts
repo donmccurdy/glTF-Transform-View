@@ -83,9 +83,6 @@ const pane = new Pane({title: 'DamagedHelmet.glb'});
 createMaterialPane(pane, doc, material);
 const updateStats = createStatsPane(renderer, pane);
 
-let needsUpdate = false;
-pane.on('change', () => (needsUpdate = true));
-
 //
 
 animate();
@@ -94,14 +91,6 @@ animate();
 
 function animate() {
 	requestAnimationFrame(animate);
-
-	if (needsUpdate) {
-		console.time('GLTFRenderer::update');
-		modelRenderer.update(material);
-		console.timeEnd('GLTFRenderer::update');
-		needsUpdate = false;
-	}
-
 	render();
 	updateStats();
 }

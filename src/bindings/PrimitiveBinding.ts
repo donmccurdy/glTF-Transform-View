@@ -38,7 +38,10 @@ export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
 			PrimitiveBinding.createTarget(source, pool.request(new BufferGeometry()), DEFAULT_MATERIAL),
 		);
 
-		this.material.subscribe((material) => (this.value.material = material as Material));
+		this.material.subscribe((material) => {
+			console.log('prim::material::subscribe::event');
+			(this.value.material = material as Material);
+		});
 		this.indices.subscribe((indices) => this.value.geometry.setIndex(indices));
 		this.attributes.subscribe(({key, value}) => {
 			if (value) this.value.geometry.setAttribute(semanticToAttributeName(key), value);
@@ -64,7 +67,11 @@ export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
 		this.material.update(source.getMaterial());
 
 		if (source.getMode() !== getObject3DMode(target)) {
+			// TODO(bug): If mode changes, material subscription needs to flush...
+			this.material.notify(); // ... surely the RefObserver could handle this?
 			this.next(PrimitiveBinding.createTarget(source, target.geometry, target.material as Material));
+			console.log('mode has changed!');
+			this.material.notify(); // ... surely the RefObserver could handle this?
 			this.disposeTarget(target);
 		}
 

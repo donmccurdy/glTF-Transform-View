@@ -5,9 +5,6 @@ import { IImageProvider, ImageProvider, NullImageProvider } from './ImageProvide
 import { MaterialMap, Object3DMap, TextureMap } from './maps';
 
 export class UpdateContext {
-	public updateID = 1;
-	public deep = true;
-
 	private _bindings = new Set<Binding<PropertyDef, any>>();
 	private _sourceBindings = new WeakMap<PropertyDef, Binding<PropertyDef, any>>();
 
@@ -81,12 +78,7 @@ export class UpdateContext {
 		return this._sourceBindings.get(source) || null;
 	}
 
-	public startUpdate(deep = false) {
-		this.updateID++;
-		this.deep = deep;
-	}
-
-	public endUpdate() {
+	public gc() {
 		this.textureMap.flush();
 		this.materialMap.flush();
 		this.object3DMap.flush();

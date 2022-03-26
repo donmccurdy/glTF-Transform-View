@@ -7,24 +7,38 @@ export abstract class Binding <Source extends PropertyDef, Target> extends Subje
 
 	protected _context: UpdateContext;
 	protected _lastUpdateID: number = -1;
-	protected _targetUnsubscribe: Subscription;
+	protected _subscriptions: Subscription[] = [];
 
 	protected constructor(context: UpdateContext, source: Source, target: Target) {
 		super(target);
 		this._context = context;
 		this.source = source;
 
-		this._targetUnsubscribe = this.subscribe((next, prev) => {
-			if (prev && prev !== next) this.disposeTarget(prev);
-		});
+		const onChange = () => {
+			const prevValue = this.value;
+			this.update();
+			if (this.value === prevValue) {
+				this.dispatchEvent('change', {});
+			}
+		}
+		const onDispose = () => this.dispose();
 
-		source.addEventListener('change', () => this.update());
+		source.addEventListener('change', onChange);
+		source.addEventListener('dispose', onDispose);
+
+		this._subscriptions.push(
+			this.subscribe((next, prev) => {
+				if (prev && prev !== next) this.disposeTarget(prev);
+			}),
+			() => source.removeEventListener('change', onChange),
+			() => source.removeEventListener('dispose', onDispose),
+		);
 	}
 
 	public abstract update(): this;
 
 	public dispose(): void {
-		this._targetUnsubscribe();
+		for (const unsub of this._subscriptions) unsub();
 		if (this.value) this.disposeTarget(this.value);
 		super.dispose();
 	}

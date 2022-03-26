@@ -1,67 +1,68 @@
-import type { UpdateContext } from '../UpdateContext';
 import type { Property as PropertyDef } from '@gltf-transform/core';
 import { Observer } from './Observer';
-import { THREEObject, Subscription } from '../utils';
+import { THREEObject } from '../utils';
+import { Binding } from '../bindings';
 
-export class RefObserver<S extends PropertyDef, T extends THREEObject> extends Observer<T | null> {
-	protected _source: S | null = null;
-	protected _valueBase: T | null = null;
-	protected _unsubscribe: Subscription | null = null;
-
-	constructor(public readonly name: string, protected _context: UpdateContext) {
-		super(null);
-	}
+// TODO(cleanup): Deeply tempted to pull all of the base/variant
+// dealings OUT of the Ref*Observer classes. Just publish something
+// like {source, base} that a stateless pipe could deal with, given
+// access to the ObserverMap instances?
+export class RefObserver<S extends PropertyDef, T extends THREEObject> extends Observer<S, T, T | null> {
+	private _source: S | null = null;
+	// private _base: T | null = null;
+	// private _variant: T | null = null;
 
 	public update(source: S | null): void {
-		const context = this._context;
-		const binding = source ? context.bind(source) : null;
-
-		if (this._source === source) {
-			if (this._map && this._valueBase && this.value) {
-				this._map.cache.updateVariant(this._valueBase, this.value, this._map.paramsFn());
-			}
-			return;
-		}
-
-		this.unsubscribe();
-
-		this._source = source;
-
-		if (!source || !binding) {
-			this._disposeTarget();
-			this.next(null);
-			return;
-		}
-
-		this._unsubscribe = binding.subscribe((target: T | null) => {
-			this._disposeTarget();
-
-			this._valueBase = target;
-			const valueDst = this._map && target
-				? this._map.cache.requestVariant(target, this._map.paramsFn()) as T
-				: target;
-
-			this.next(valueDst);
-		});
+		if (source === this._source) return;
+		if (this._source) this._removeSource(this._source);
+		if (source) this._addSource(source);
+		this.flush();
 	}
 
-	private _disposeTarget() {
-		if (this._map && this.value) {
-			this._map.cache.releaseVariant(this.value);
-		}
-		this._valueBase = null;
+	protected flush() {
+		const value = this._queue.pop() as T | null;
+		this._queue.length = 0;
+		this.next(value);
+	}
+
+	protected _addSource(source: S) {
+		super._addSource(source);
+		this._source = source;
+
+		const binding = this._context.bind(source) as Binding<S, T>;
+		this._sourceSubscriptions.get(source)!
+			.push(binding.subscribe((nextBase: T | null, prevBase: T | null) => {
+				// this._mapRelease(this._variant);
+
+				// this._base = nextBase;
+				// this._variant = this._mapRequest(this._base);
+				// this.queue(this._variant);
+				this.queue(nextBase);
+			}))
+	}
+
+	protected _updateSource(source: S) {
+		// const prevVariant = this._variant;
+		// this._mapRelease(prevVariant);
+		// this._mapUpdate()
+		// this._variant = this._mapRequest(this._base);
+		// if (this._variant !== prevVariant) {
+		// 	this.queue(this._variant);
+		// }
+	}
+
+	protected _removeSource(source: S) {
+		// this._mapRelease(this._variant);
+		// this._variant = null;
+		// this._base = null;
+		this._source = null;
+		this.queue(null);
+
+		super._removeSource(source);
 	}
 
 	public dispose() {
-		if (this._unsubscribe) this._unsubscribe();
-		this._disposeTarget();
+		// this._mapRelease(this._variant);
 		super.dispose();
-	}
-
-	protected unsubscribe() {
-		if (this._unsubscribe) {
-			this._unsubscribe();
-			this._unsubscribe = null;
-		}
 	}
 }
