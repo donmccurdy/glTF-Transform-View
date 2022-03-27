@@ -1,122 +1,174 @@
 import type { Property as PropertyDef } from '@gltf-transform/core';
-import { Event, EventDispatcher, Subject, Subscription, THREEObject } from '../utils';
-import type { ObserverMap } from '../maps';
-import { UpdateContext } from '../UpdateContext';
+import type { UpdateContext } from '../UpdateContext';
 import type { Binding } from '../bindings';
+import { Subject, Subscription } from '../utils';
 
-interface ObserverMapImpl {
-	cache: ObserverMap<THREEObject, THREEObject, object>;
-	paramsFn: () => object,
-	unsub: () => void,
+/**
+ * Exposes a limited view of the Observer interface to objects
+ * using it as an output socket.
+ */
+export interface Output<V> extends Subject<V | null> {
+	detach(): void;
 }
 
-// TODO(bug): Only RefObserver actually implements the map() function...
-export class Observer<S extends PropertyDef, T extends THREEObject, E> extends Subject<E> {
-	public readonly name;
-	protected readonly _context: UpdateContext;
-	protected readonly _queue: E[] = [];
-	protected readonly _sourceSubscriptions = new Map<S, Subscription[]>();
-	protected _map: ObserverMapImpl | null = null;
+// TODO(impl): Where/how do change events get handled? Am I
+// crazy in thinking those can just propagate with .next(value)?
 
-	constructor(name: string, context: UpdateContext, value: E) {
-		super(value);
+// TODO(impl): MapObserver
+
+export class Observer<S extends PropertyDef, B extends Binding<S, V>, V> extends Subject<V | null> implements Output<V> {
+	public readonly name;
+	public binding: B | null = null;
+	private _bindingParams: Record<string, unknown> = {};
+
+	private readonly _context: UpdateContext;
+
+	constructor(name: string, context: UpdateContext,) {
+		super(null);
 		this.name = name;
 		this._context = context;
 	}
 
-	protected queue(value: E) {
-		this._queue.push(value);
+	/**************************************************************************
+	 * Child interface. (Binding (Child))
+	 */
+
+	/** @usage  */
+	detach() {
+		this._clear();
 	}
 
-	protected flush() {
-		for (const value of this._queue) {
-			this.next(value);
+	/**************************************************************************
+	 * Parent interface. (Binding (Parent), ListObserver, MapObserver)
+	 */
+
+	updateSource(source: S | null) {
+		const binding = source ? this._context.bind(source) as B : null;
+		if (binding === this.binding) return;
+
+		this._clear();
+
+		if (binding) {
+			this.binding = binding;
+			this.binding.addOutput(this, this._bindingParams);
 		}
 	}
 
-	// public map<_S extends PropertyDef, _T extends THREEObject>(
-	// 		cache: ObserverMap<THREEObject, THREEObject, object>,
-	// 		paramsFn: () => object,
-	// 		paramsSrc: Binding<PropertyDef, unknown>,
-	// 	): this {
-	// 	if (this._map) throw new Error('Cannot change ObserverMap.');
-	// 	const unsub = paramsSrc.on('change', () => {
-	// 		// TODO(impl): ???
-	// 	});
-	// 	this._map = {cache, paramsFn, unsub};
-	// 	return this;
-	// }
-
-	// protected _mapRequest(base: T | null): T | null {
-	// 	// TODO(bug): need to be very careful about requesting
-	// 	// and releasing variants consistently.
-	// 	if (this._map && base) {
-	// 		return this._map.cache.requestVariant(base, this._map.paramsFn()) as T;
-	// 	}
-	// 	return base;
-	// }
-
-	// protected _mapRelease(base: T | null) {
-	// 	if (this._map && base) {
-	// 		this._map.cache.releaseVariant(base);
-	// 	}
-	// }
-
-	// // TODO(cleanup): Meaning of 'update' inconsistent here vs
-	// // in observer.update(...)...
-	// //  ... if _params_ change, parent binding should initiate
-	// //  ... if _base_ changes, ...?
-	// protected _mapUpdate(base: T) {
-	// 	if (!this._map) return;
-	// 	const params = this._map.paramsFn();
-	// 	// TODO(bug): Way too much here...
-	// 	// for (const variant of this._map.cache.listVariants(base)) {
-	// 	// 	this._map.cache.updateVariant(base, variant, params);
-	// 	// }
-	// }
-
-	protected _addSource(source: S) {
-		// Note: Replacement delegated to subclasses.
-
-		const binding = this._context.bind(source) as Binding<S, T>;
-		this._sourceSubscriptions.set(source, [
-			binding.on('change', () => {
-				this._updateSource(source);
-				this.flush();
-			}),
-			binding.on('dispose', () => {
-				this._removeSource(source);
-				this.flush();
-			})
-		]);
+	updateParams(params: Record<string, unknown>) {
+		this._bindingParams = params;
+		if (this.binding) {
+			this.binding.updateOutput(this, this._bindingParams);
+		}
 	}
 
-	protected _updateSource(source: S) {
-		// const binding = this._context.bind(source) as Binding<S, T>;
-		// this._mapUpdate(binding.value);
+	dispose() {
+		this._clear();
 	}
 
-	protected _removeSource(source: S) {
-		const unsubs = this._sourceSubscriptions.get(source) || [];
-		for (const unsub of unsubs) unsub();
-		this._sourceSubscriptions.delete(source);
+	/**************************************************************************
+	 * Internal.
+	 */
 
-		// const binding = this._context.bind(source);
-		// const base = this._sourceToBase.get(source);
-		// if (base) {
-		// 	// ???
-		// }
-		// this._sourceToBase.delete(source);
+	private _clear() {
+		if (this.binding) {
+			this.binding.removeOutput(this);
+			this.binding = null;
+		}
+	}
+}
 
-		// TODO(impl): Invoke .next(...)?
+export class ListObserver<S extends PropertyDef, B extends Binding<S, V>, V> extends Subject<V[]> {
+	public readonly name: string;
+
+	protected readonly _context: UpdateContext;
+
+	private readonly _observers: Observer<S, B, V>[] = [];
+	private readonly _subscriptions: Subscription[] = [];
+
+	constructor(name: string, context: UpdateContext) {
+		super([]);
+		this.name = name;
+		this._context = context;
+	}
+
+	public updateSourceList(sources: S[]) {
+		const added = new Set<B>();
+		const removed = new Set<number>();
+
+		let needsUpdate = false;
+
+		for (let i = 0; i < sources.length || i < this._observers.length; i++) {
+			const source = sources[i];
+			const observer = this._observers[i];
+
+			if (!source) {
+				removed.add(i);
+				needsUpdate = true;
+			} else if (!observer) {
+				added.add(this._context.bind(source) as B);
+				needsUpdate = true;
+			} else if (source !== observer.binding!.source) {
+				observer.updateSource(source);
+				needsUpdate = true;
+			}
+		}
+
+		for (let i = this._observers.length; i >= 0; i--) {
+			this._remove(i);
+		}
+
+		for (const add of added) {
+			this._add(add);
+		}
+
+		if (needsUpdate) {
+			this.next(this._observers.map((o) => o.value!));
+		}
+	}
+
+	public updateParams(params: Record<string, unknown>) {
+		for (const observer of this._observers) {
+			observer.updateParams(params);
+		}
+	}
+
+	private _add(binding: B) {
+		const observer = new Observer(this.name + '[#]', this._context) as Observer<S, B, V>;
+		observer.updateSource(binding.source);
+		this._observers.push(observer);
+		this._subscriptions.push(observer.subscribe((next) => {
+			if (!next) {
+				this._remove(this._observers.indexOf(observer));
+			}
+			this.next(this._observers.map((o) => o.value!));
+		}));
+	}
+
+	private _remove(index: number) {
+		const observer = this._observers[index];
+		const unsub = this._subscriptions[index];
+
+		unsub();
+		observer.dispose();
+
+		this._observers.splice(index, 1);
+		this._subscriptions.splice(index, 1);
 	}
 
 	public dispose() {
-		for (const [_, unsubs] of this._sourceSubscriptions) {
-			for (const unsub of unsubs) unsub();
+		for (const unsub of this._subscriptions) {
+			unsub();
 		}
-		this._sourceSubscriptions.clear();
-		// if (this._map) this._map.unsub();
-		super.dispose();
+		for (const observer of this._observers) {
+			observer.dispose();
+		}
+		this._observers.length = 0;
+		this._subscriptions.length = 0;
 	}
+}
+
+export class MapObserver<S extends PropertyDef, B extends Binding<S, V>, V> extends Subject<Record<string, V>> {
+	private readonly _observers: Record<string, Observer<S, B, V>> = {};
+	private readonly _subscriptions: Record<string, Subscription> = {};
+
 }

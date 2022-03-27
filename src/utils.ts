@@ -57,23 +57,19 @@ export class Subject<T> extends EventDispatcher {
 
 	public subscribe(listener: (next: T, prev: T | null) => void): Subscription {
 		this._subscribers.push(listener);
-		listener(this.value, null);
+		// NOTE: Don't really want this in Observer...
+		// listener(this.value, null);
 		return () => {
             this._subscribers.splice(this._subscribers.indexOf(listener), 1);
         };
 	}
 
-	protected next(value: T) {
+	public next(value: T) {
 		for (const listener of this._subscribers) {
 			listener(value, this.value);
 		}
 		this.value = value;
 	}
-
-	// TODO(cleanup): Try to remove.
-	// public notify() {
-	// 	this.next(this.value);
-	// }
 
 	public dispose() {
 		this._subscribers.length = 0;
