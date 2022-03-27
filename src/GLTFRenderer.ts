@@ -34,30 +34,30 @@ export class GLTFRenderer {
 	}
 
 	/** For a given source glTF-Transform Property definition, returns a list of rendered three.js objects. */
-	public findTargets(property: MaterialDef): Material[];
-	public findTargets(property: TextureDef): Texture[];
-	public findTargets(property: PrimitiveDef): (Mesh | Points | Line | LineLoop | LineSegments)[];
-	public findTargets(property: SceneDef | NodeDef | MeshDef): Object3D[];
-	public findTargets(property: SceneDef | NodeDef | MeshDef | PrimitiveDef | MaterialDef | TextureDef): (Mesh | Points | Line | LineLoop | LineSegments | Group | Object3D | Material | Texture)[] {
+	public findValues(property: MaterialDef): Material[];
+	public findValues(property: TextureDef): Texture[];
+	public findValues(property: PrimitiveDef): (Mesh | Points | Line | LineLoop | LineSegments)[];
+	public findValues(property: SceneDef | NodeDef | MeshDef): Object3D[];
+	public findValues(property: SceneDef | NodeDef | MeshDef | PrimitiveDef | MaterialDef | TextureDef): (Mesh | Points | Line | LineLoop | LineSegments | Group | Object3D | Material | Texture)[] {
 		if (property instanceof SceneDef
 			|| property instanceof NodeDef
 			|| property instanceof MeshDef
 			|| property instanceof PrimitiveDef
 			|| property instanceof MaterialDef
 			|| property instanceof TextureDef) {
-			return this._context.findTargets(property as any);
+			return this._context.findValues(property as any);
 		}
 		throw new Error('GLTFRenderer: listTargets(...) supports only Scene, Node, Mesh, Primitive, and Material inputs.');
 	}
 
 	/** For a given Object3D target, finds the source glTF-Transform Property definition. */
-	public findSource(target: Mesh): PrimitiveDef | null
-	public findSource(target: Object3D): NodeDef | SceneDef | MeshDef | null
-	public findSource(target: Mesh | Group | Object3D): PrimitiveDef | MeshDef | NodeDef | SceneDef | null {
+	public findDef(target: Mesh): PrimitiveDef | null
+	public findDef(target: Object3D): NodeDef | SceneDef | MeshDef | null
+	public findDef(target: Mesh | Group | Object3D): PrimitiveDef | MeshDef | NodeDef | SceneDef | null {
 		if (target instanceof Object3D) {
-			return this._context.findSource(target) as PrimitiveDef | MeshDef | NodeDef | SceneDef;
+			return this._context.findDef(target) as PrimitiveDef | MeshDef | NodeDef | SceneDef;
 		}
-		throw new Error('GLTFRenderer: findSource(...) supports only Object3D inputs.');
+		throw new Error('GLTFRenderer: findDef(...) supports only Object3D inputs.');
 	}
 
 	public gc(): void {

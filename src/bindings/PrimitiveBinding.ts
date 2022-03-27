@@ -1,10 +1,13 @@
 import { BufferAttribute, BufferGeometry, Line, LineLoop, LineSegments, Material, Mesh, MeshStandardMaterial, Points, SkinnedMesh } from 'three';
 import { Accessor as AccessorDef, GLTF, Material as MaterialDef, Primitive as PrimitiveDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
-import { RefMapObserver, RefObserver } from '../observers';
 import { Binding } from './Binding';
-import { MaterialMap, VariantMaterial } from '../maps';
 import { pool } from '../ObjectPool';
+import type { MaterialBinding } from './MaterialBinding';
+import { MapObserver, Observer } from '../observers';
+import type { AccessorBinding } from './AccessorBinding';
+import { MaterialMap } from '../maps';
+import { MeshLike } from '../utils';
 
 // https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#default-material
 const DEFAULT_MATERIAL = new MeshStandardMaterial({color: 0xFFFFFF, roughness: 1.0, metalness: 1.0});
@@ -23,38 +26,43 @@ function semanticToAttributeName(semantic: string): string {
 	}
 }
 
-type MeshLike = Mesh | SkinnedMesh | Points | Line | LineSegments | LineLoop;
-
 export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
-	protected material = new RefObserver<MaterialDef, VariantMaterial>('material', this._context)
-		.map(this._context.materialMap, () => MaterialMap.createParams(this.source));
-	protected indices = new RefObserver<AccessorDef, BufferAttribute>('indices', this._context);
-	protected attributes = new RefMapObserver<AccessorDef, BufferAttribute>('attributes', this._context);
+	protected material = new Observer<MaterialDef, MaterialBinding, Material>('material', this._context);
+	protected indices = new Observer<AccessorDef, AccessorBinding, BufferAttribute>('indices', this._context);
+	protected attributes = new MapObserver<AccessorDef, AccessorBinding, BufferAttribute>('attributes', this._context);
 
-	public constructor(context: UpdateContext, source: PrimitiveDef) {
+	public constructor(context: UpdateContext, def: PrimitiveDef) {
 		super(
 			context,
-			source,
-			PrimitiveBinding.createTarget(source, pool.request(new BufferGeometry()), DEFAULT_MATERIAL),
+			def,
+			PrimitiveBinding.createValue(def, pool.request(new BufferGeometry()), DEFAULT_MATERIAL),
 		);
 
 		this.material.subscribe((material) => {
-			console.log('prim::material::subscribe::event');
-			(this.value.material = material as Material);
+			this.value.material = material!;
+			this.publishAll();
 		});
-		this.indices.subscribe((indices) => this.value.geometry.setIndex(indices));
-		this.attributes.subscribe(({key, value}) => {
-			if (value) this.value.geometry.setAttribute(semanticToAttributeName(key), value);
-			if (!value) this.value.geometry.deleteAttribute(semanticToAttributeName(key));
+		this.indices.subscribe((indices) => {
+			this.value.geometry.setIndex(indices);
+			this.publishAll();
+		});
+		this.attributes.subscribe((nextAttributes, prevAttributes) => {
+			for (const key in prevAttributes) {
+				this.value.geometry.deleteAttribute(semanticToAttributeName(key));
+			}
+			for (const key in nextAttributes) {
+				this.value.geometry.setAttribute(semanticToAttributeName(key), nextAttributes[key]);
+			}
+			this.publishAll();
 		});
 	}
 
 	public update(): this {
-		const source = this.source;
-		const target = this.value;
+		const def = this.def;
+		const value = this.value;
 
-		if (source.getName() !== target.name) {
-			target.name = source.getName();
+		if (def.getName() !== value.name) {
+			value.name = def.getName();
 		}
 
 		// Order is important here:
@@ -62,23 +70,19 @@ export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
 		//  (2) Material params must update before material.
 		//  (3) Mode can safely come last, but that's non-obvious.
 
-		this.indices.update(source.getIndices());
-		this.attributes.update(source.listSemantics(), source.listAttributes());
-		this.material.update(source.getMaterial());
+		this.indices.updateSource(def.getIndices());
+		this.attributes.updateSourceMap(def.listSemantics(), def.listAttributes());
+		this.material.updateSource(def.getMaterial());
 
-		if (source.getMode() !== getObject3DMode(target)) {
-			// TODO(bug): If mode changes, material subscription needs to flush...
-			this.material.notify(); // ... surely the RefObserver could handle this?
-			this.next(PrimitiveBinding.createTarget(source, target.geometry, target.material as Material));
-			console.log('mode has changed!');
-			this.material.notify(); // ... surely the RefObserver could handle this?
-			this.disposeTarget(target);
+		if (def.getMode() !== getObject3DMode(value)) {
+			const materialParams = MaterialMap.createParams(def) as unknown as Record<string, unknown>;
+			this.material.updateParams(materialParams);
 		}
 
-		return this;
+		return this.publishAll(); // TODO(perf)
 	}
 
-	private static createTarget(source: PrimitiveDef, geometry: BufferGeometry, material: Material): MeshLike {
+	private static createValue(source: PrimitiveDef, geometry: BufferGeometry, material: Material): MeshLike {
 		switch (source.getMode()) {
 			case PrimitiveDef.Mode.TRIANGLES:
 			case PrimitiveDef.Mode.TRIANGLE_FAN:
@@ -99,7 +103,7 @@ export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
 		}
 	}
 
-	public disposeTarget(_target: MeshLike): void {
+	public disposeValue(_target: MeshLike): void {
 		pool.release(_target);
 		// geometry and material are reused.
 	}

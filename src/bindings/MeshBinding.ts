@@ -1,42 +1,41 @@
-import { Group, Object3D } from 'three';
+import { Group } from 'three';
 import { Mesh as MeshDef, Primitive as PrimitiveDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
-import { RefListObserver } from '../observers';
 import { Binding } from './Binding';
 import { pool } from '../ObjectPool';
 import { Object3DMap } from '../maps';
+import type { PrimitiveBinding } from './PrimitiveBinding';
+import { ListObserver } from '../observers';
+import { MeshLike } from '../utils';
 
 export class MeshBinding extends Binding<MeshDef, Group> {
-	protected primitives = new RefListObserver<PrimitiveDef, Object3D>('primitives', this._context)
-		.map(this._context.object3DMap, () => Object3DMap.createParams(this.source));
+	protected primitives = new ListObserver<PrimitiveDef, PrimitiveBinding, MeshLike>('primitives', this._context)
+		.updateParams(Object3DMap.createParams(this.def) as unknown as Record<string, unknown>)
 
-	public constructor(context: UpdateContext, source: MeshDef) {
-		super(context, source, pool.request(new Group()));
+	public constructor(context: UpdateContext, def: MeshDef) {
+		super(context, def, pool.request(new Group()));
 
-		this.primitives.subscribe((primitives) => {
-			console.log('MeshBinding::primitives::subscribe', primitives, this.value.children.includes(primitives.remove!), this.value.children.length);
-			if (primitives.remove) this.value.remove(primitives.remove);
-			if (primitives.add) this.value.add(primitives.add);
-			// TODO(test): required to flush changes to maps? who else subscribes to this?
-			// TODO(bug): redundant if update called .next(target) ...
-			this.notify();
+		this.primitives.subscribe((nextPrims, prevPrims) => {
+			this.value.remove(...prevPrims!);
+			this.value.add(...nextPrims);
+			this.publishAll();
 		});
 	}
 
 	public update(): this {
-		const source = this.source;
-		const target = this.value;
+		const def = this.def;
+		const value = this.value;
 
-		if (source.getName() !== target.name) {
-			target.name = source.getName();
+		if (def.getName() !== value.name) {
+			value.name = def.getName();
 		}
 
-		this.primitives.update(source.listPrimitives());
+		this.primitives.updateSourceList(def.listPrimitives());
 
-		return this;
+		return this.publishAll(); // TODO(perf)
 	}
 
-	public disposeTarget(target: Group) {
+	public disposeValue(target: Group) {
 		pool.release(target);
 	}
 

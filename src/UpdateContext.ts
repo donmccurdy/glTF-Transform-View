@@ -6,7 +6,7 @@ import { MaterialMap, Object3DMap, TextureMap } from './maps';
 
 export class UpdateContext {
 	private _bindings = new Set<Binding<PropertyDef, any>>();
-	private _sourceBindings = new WeakMap<PropertyDef, Binding<PropertyDef, any>>();
+	private _defBindings = new WeakMap<PropertyDef, Binding<PropertyDef, any>>();
 
 	public textureMap = new TextureMap('TextureMap');
 	public materialMap = new MaterialMap('MaterialMap');
@@ -19,54 +19,54 @@ export class UpdateContext {
 	}
 
 	private _addBinding(binding: Binding<PropertyDef, any>): void {
-		const source = binding.source;
+		const source = binding.def;
 		this._bindings.add(binding);
-		this._sourceBindings.set(source, binding);
+		this._defBindings.set(source, binding);
 		source.addEventListener('dispose', () => {
 			this._bindings.delete(binding);
-			this._sourceBindings.delete(source);
+			this._defBindings.delete(source);
 		});
 	}
 
-	public bind(source: null): null;
-	public bind(source: AccessorDef): AccessorBinding;
-	public bind(source: MaterialDef): MaterialBinding;
-	public bind(source: MeshDef): MeshBinding;
-	public bind(source: NodeDef): NodeBinding;
-	public bind(source: PrimitiveDef): PrimitiveBinding;
-	public bind(source: SceneDef): SceneBinding;
-	public bind(source: PropertyDef): Binding<PropertyDef, any>;
-	public bind(source: PropertyDef | null): Binding<PropertyDef, any> | null {
-		if (!source) return null;
-		if (this._sourceBindings.has(source)) {
-			return this._sourceBindings.get(source)!;
+	public bind(def: null): null;
+	public bind(def: AccessorDef): AccessorBinding;
+	public bind(def: MaterialDef): MaterialBinding;
+	public bind(def: MeshDef): MeshBinding;
+	public bind(def: NodeDef): NodeBinding;
+	public bind(def: PrimitiveDef): PrimitiveBinding;
+	public bind(def: SceneDef): SceneBinding;
+	public bind(def: PropertyDef): Binding<PropertyDef, any>;
+	public bind(def: PropertyDef | null): Binding<PropertyDef, any> | null {
+		if (!def) return null;
+		if (this._defBindings.has(def)) {
+			return this._defBindings.get(def)!;
 		}
 
 		let binding: Binding<PropertyDef, any>;
-		switch (source.propertyType) {
+		switch (def.propertyType) {
 			case PropertyType.ACCESSOR:
-				binding = new AccessorBinding(this, source as AccessorDef);
+				binding = new AccessorBinding(this, def as AccessorDef);
 				break;
 			case PropertyType.MATERIAL:
-				binding = new MaterialBinding(this, source as MaterialDef);
+				binding = new MaterialBinding(this, def as MaterialDef);
 				break;
 			case PropertyType.MESH:
-				binding = new MeshBinding(this, source as MeshDef);
+				binding = new MeshBinding(this, def as MeshDef);
 				break;
 			case PropertyType.NODE:
-				binding = new NodeBinding(this, source as NodeDef);
+				binding = new NodeBinding(this, def as NodeDef);
 				break;
 			case PropertyType.PRIMITIVE:
-				binding = new PrimitiveBinding(this, source as PrimitiveDef);
+				binding = new PrimitiveBinding(this, def as PrimitiveDef);
 				break;
 			case PropertyType.SCENE:
-				binding = new SceneBinding(this, source as SceneDef);
+				binding = new SceneBinding(this, def as SceneDef);
 				break;
 			case PropertyType.TEXTURE:
-				binding = new TextureBinding(this, source as TextureDef);
+				binding = new TextureBinding(this, def as TextureDef);
 				break;
 			default:
-				throw new Error(`Unimplemented type: ${source.propertyType}`);
+				throw new Error(`Unimplemented type: ${def.propertyType}`);
 		}
 
 		binding.update();
@@ -75,7 +75,7 @@ export class UpdateContext {
 	}
 
 	public weakBind(source: PropertyDef): Binding<PropertyDef, any> | null {
-		return this._sourceBindings.get(source) || null;
+		return this._defBindings.get(source) || null;
 	}
 
 	public gc() {
@@ -88,13 +88,13 @@ export class UpdateContext {
 	 * Given a target object (currently any THREE.Object3D), finds and returns the source
 	 * glTF-Transform Property definition.
 	 */
-	public findSource(target: Object3D): PropertyDef | null {
+	public findDef(target: Object3D): PropertyDef | null {
 		if (target === null) return null;
 
 		const base = this.object3DMap.findBase(target) || target;
 		for (const binding of this._bindings) {
 			if (binding.value === target || binding.value === base) {
-				return binding.source;
+				return binding.def;
 			}
 		}
 
@@ -105,24 +105,24 @@ export class UpdateContext {
 	 * Given a source object (currently anything rendered as THREE.Object3D), finds and returns
 	 * the list of output THREE.Object3D instances.
 	 */
-	public findTargets(source: TextureDef): Texture[]
-	public findTargets(source: MaterialDef): Material[]
-	public findTargets(source: SceneDef | NodeDef | MeshDef | PrimitiveDef): Object3D[]
-	public findTargets(source: SceneDef | NodeDef | MeshDef | PrimitiveDef | MaterialDef | TextureDef): (Object3D | Material | Texture)[] {
-		const binding = this._sourceBindings.get(source);
+	public findValues(def: TextureDef): Texture[]
+	public findValues(def: MaterialDef): Material[]
+	public findValues(def: SceneDef | NodeDef | MeshDef | PrimitiveDef): Object3D[]
+	public findValues(def: SceneDef | NodeDef | MeshDef | PrimitiveDef | MaterialDef | TextureDef): (Object3D | Material | Texture)[] {
+		const binding = this._defBindings.get(def);
 		if (!binding) return [];
 
-		if (source instanceof SceneDef || source instanceof NodeDef) {
+		if (def instanceof SceneDef || def instanceof NodeDef) {
 			return [binding.value];
-		} else if (source instanceof MeshDef || source instanceof PrimitiveDef) {
+		} else if (def instanceof MeshDef || def instanceof PrimitiveDef) {
 			return this.object3DMap.listVariants(binding.value);
-		} else if (source instanceof MaterialDef) {
+		} else if (def instanceof MaterialDef) {
 			this.materialMap.listVariants(binding.value);
-		} else if (source instanceof TextureDef) {
+		} else if (def instanceof TextureDef) {
 			this.textureMap.listVariants(binding.value);
 		}
 
-		throw new Error(`GLTFRenderer: Lookup type "${source.propertyType}" not implemented.`);
+		throw new Error(`GLTFRenderer: Lookup type "${def.propertyType}" not implemented.`);
 	}
 
 	public dispose(): void {

@@ -13,19 +13,25 @@ export class TextureBinding extends Binding<TextureDef, Texture> {
 	}
 
 	public update(): this {
-		const source = this.source;
+		const def = this.def;
+		const value = this.value;
 
-		const image = source.getImage() as ArrayBuffer;
-		if (image !== this._image) {
-			this._image = image;
-			this.disposeTarget(this.value);
-			this.next(pool.request(this._context.imageProvider.get(source)));
+		if (def.getName() !== value.name) {
+			value.name = def.getName();
 		}
 
-		return this;
+		const image = def.getImage() as ArrayBuffer;
+		if (image !== this._image) {
+			this._image = image;
+			// TODO(cleanup): Consolidate?
+			this.disposeValue(this.value);
+			this.value = pool.request(this._context.imageProvider.get(def));
+		}
+
+		return this.publishAll(); // TODO(perf)
 	}
 
-	public disposeTarget(target: Texture): void {
+	public disposeValue(target: Texture): void {
 		pool.release(target);
 	}
 
