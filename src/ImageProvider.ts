@@ -25,13 +25,13 @@ export const NULL_TEXTURE = (() => {
 	return texture;
 })();
 
-export interface IImageProvider {
+export interface ImageProvider {
 	update(textureDefs: TextureDef[]): Promise<void>;
 	get(textureDef: TextureDef): Texture | CompressedTexture;
 	clear(): void;
 }
 
-export class ImageProvider implements IImageProvider {
+export class DefaultImageProvider implements ImageProvider {
 	private _cache = new Map<ArrayBuffer, Texture|CompressedTexture>();
 	private _ktx2Loader = createKTX2Loader();
 
@@ -95,7 +95,7 @@ export class ImageProvider implements IImageProvider {
 	}
 }
 
-export class NullImageProvider implements IImageProvider {
+export class NullImageProvider implements ImageProvider {
 	async update(textureDefs: TextureDef[]): Promise<void> {}
 	get(texture: TextureDef): Texture { return NULL_TEXTURE; }
 	clear(): void {}

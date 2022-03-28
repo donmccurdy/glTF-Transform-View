@@ -2,10 +2,9 @@ import { BufferAttribute, BufferGeometry, Line, LineLoop, LineSegments, Material
 import { Accessor as AccessorDef, GLTF, Material as MaterialDef, Primitive as PrimitiveDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
 import { Binding } from './Binding';
-import { pool } from '../ObjectPool';
 import { RefMapObserver, RefObserver } from '../observers';
-import { MaterialMap } from '../maps';
-import { MeshLike } from '../utils';
+import { MeshLike } from '../constants';
+import { MaterialParams, MaterialPool, ValuePool } from '../pools';
 
 // https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#default-material
 const DEFAULT_MATERIAL = new MeshStandardMaterial({color: 0xFFFFFF, roughness: 1.0, metalness: 1.0});
@@ -25,7 +24,8 @@ function semanticToAttributeName(semantic: string): string {
 }
 
 export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
-	protected material = new RefObserver<MaterialDef, Material>('material', this._context);
+	protected material = new RefObserver<MaterialDef, Material, MaterialParams>('material', this._context)
+		.setParamsFn(() => MaterialPool.createParams(this.def));
 	protected indices = new RefObserver<AccessorDef, BufferAttribute>('indices', this._context);
 	protected attributes = new RefMapObserver<AccessorDef, BufferAttribute>('attributes', this._context);
 
@@ -33,7 +33,8 @@ export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
 		super(
 			context,
 			def,
-			PrimitiveBinding.createValue(def, pool.request(new BufferGeometry()), DEFAULT_MATERIAL),
+			PrimitiveBinding.createValue(def, new BufferGeometry(), DEFAULT_MATERIAL, context.primitivePool),
+			context.primitivePool,
 		);
 
 		this.material.subscribe((material) => {
@@ -77,44 +78,34 @@ export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
 		this.material.updateRef(def.getMaterial());
 
 		if (def.getMode() !== getObject3DMode(value)) {
-			this.material.setParamsFn(
-				() => MaterialMap.createParams(def) as unknown as Record<string, unknown>
-			);
+			this.material.updateParams();
 		}
 
 		return this.publishAll(); // TODO(perf)
 	}
 
-	private static createValue(source: PrimitiveDef, geometry: BufferGeometry, material: Material): MeshLike {
+	private static createValue(source: PrimitiveDef, geometry: BufferGeometry, material: Material, pool: ValuePool<MeshLike>): MeshLike {
 		switch (source.getMode()) {
 			case PrimitiveDef.Mode.TRIANGLES:
 			case PrimitiveDef.Mode.TRIANGLE_FAN:
 			case PrimitiveDef.Mode.TRIANGLE_STRIP:
 				// TODO(feat): Support SkinnedMesh.
 				// TODO(feat): Support triangle fan and triangle strip.
-				return pool.request(new Mesh(geometry, material));
+				return pool.requestBase(new Mesh(geometry, material));
 			case PrimitiveDef.Mode.LINES:
-				return pool.request(new LineSegments(geometry, material));
+				return pool.requestBase(new LineSegments(geometry, material));
 			case PrimitiveDef.Mode.LINE_LOOP:
-				return pool.request(new LineLoop(geometry, material));
+				return pool.requestBase(new LineLoop(geometry, material));
 			case PrimitiveDef.Mode.LINE_STRIP:
-				return pool.request(new Line(geometry, material));
+				return pool.requestBase(new Line(geometry, material));
 			case PrimitiveDef.Mode.POINTS:
-				return pool.request(new Points(geometry, material));
+				return pool.requestBase(new Points(geometry, material));
 			default:
 				throw new Error(`Unexpected primitive mode: ${source.getMode()}`);
 		}
 	}
 
-	public disposeValue(_target: MeshLike): void {
-		pool.release(_target);
-		// geometry and material are reused.
-	}
-
 	public dispose() {
-		if (this.value) {
-			pool.release(this.value.geometry).dispose();
-		}
 		this.material.dispose();
 		this.indices.dispose();
 		this.attributes.dispose();

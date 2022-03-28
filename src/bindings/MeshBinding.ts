@@ -2,17 +2,16 @@ import { Group } from 'three';
 import { Mesh as MeshDef, Primitive as PrimitiveDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
 import { Binding } from './Binding';
-import { pool } from '../ObjectPool';
-import { Object3DMap } from '../maps';
 import { RefListObserver } from '../observers';
-import { MeshLike } from '../utils';
+import { MeshLike } from '../constants';
+import { Object3DParams, Object3DPool } from '../pools';
 
 export class MeshBinding extends Binding<MeshDef, Group> {
-	protected primitives = new RefListObserver<PrimitiveDef, MeshLike>('primitives', this._context)
-		.setParamsFn(() => Object3DMap.createParams(this.def) as unknown as Record<string, unknown>)
+	protected primitives = new RefListObserver<PrimitiveDef, MeshLike, Object3DParams>('primitives', this._context)
+		.setParamsFn(() => Object3DPool.createParams(this.def))
 
 	public constructor(context: UpdateContext, def: MeshDef) {
-		super(context, def, pool.request(new Group()));
+		super(context, def, context.meshPool.requestBase(new Group()), context.meshPool);
 
 		this.primitives.subscribe((nextPrims, prevPrims) => {
 			this.value.remove(...prevPrims!);
@@ -25,6 +24,8 @@ export class MeshBinding extends Binding<MeshDef, Group> {
 		const def = this.def;
 		const value = this.value;
 
+		console.log('MeshBinding::update');
+
 		if (def.getName() !== value.name) {
 			value.name = def.getName();
 		}
@@ -32,10 +33,6 @@ export class MeshBinding extends Binding<MeshDef, Group> {
 		this.primitives.updateRefList(def.listPrimitives());
 
 		return this.publishAll(); // TODO(perf)
-	}
-
-	public disposeValue(target: Group) {
-		pool.release(target);
 	}
 
 	public dispose() {

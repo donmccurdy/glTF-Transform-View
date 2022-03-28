@@ -1,8 +1,9 @@
 import type { Property as PropertyDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
 import type { Binding } from '../bindings';
-import { Subject } from '../Subject';
-import { Subscription } from '../EventDispatcher';
+import { Subject } from '../utils/Subject';
+import { Subscription } from '../utils/EventDispatcher';
+import { EmptyParams } from '../pools';
 
 /**
  * Exposes a limited view of the RefObserver interface to objects
@@ -18,11 +19,12 @@ export interface Output<Value> extends Subject<Value | null> {
 // TODO(docs): The _only_ time an observer should call .next()
 // is after "forwarding" from Observer to ListObserver or
 // MapObserver, correct?
+// ... any, .update(...) really.
 
-export class RefObserver<Def extends PropertyDef, Value> extends Subject<Value | null> implements Output<Value> {
+export class RefObserver<Def extends PropertyDef, Value, Params = EmptyParams> extends Subject<Value | null> implements Output<Value> {
 	readonly name;
 	binding: Binding<Def, Value> | null = null;
-	private _bindingParamsFn: () => Record<string, unknown> = () => ({});
+	private _bindingParamsFn: () => Params = () => ({} as Params);
 
 	private readonly _context: UpdateContext;
 
@@ -44,8 +46,9 @@ export class RefObserver<Def extends PropertyDef, Value> extends Subject<Value |
 	 * Parent interface. (Binding (Parent), ListObserver, MapObserver)
 	 */
 
-	setParamsFn(paramsFn: () => Record<string, unknown>) {
+	setParamsFn(paramsFn: () => Params): this {
 		this._bindingParamsFn = paramsFn;
+		return this;
 	}
 
 	updateRef(def: Def | null) {
@@ -56,13 +59,17 @@ export class RefObserver<Def extends PropertyDef, Value> extends Subject<Value |
 
 		if (binding) {
 			this.binding = binding;
-			this.binding.addOutput(this, this._bindingParamsFn());
+			this.binding.addOutput(this, this._bindingParamsFn);
+			// TODO(bug): must be double-forwarding and disposing or something...
+			// this.next(binding.value);
+		} else {
+			// this.next(null);
 		}
 	}
 
 	updateParams() {
 		if (this.binding) {
-			this.binding.updateOutput(this, this._bindingParamsFn());
+			this.binding.updateOutput(this);
 		}
 	}
 
@@ -82,7 +89,7 @@ export class RefObserver<Def extends PropertyDef, Value> extends Subject<Value |
 	}
 }
 
-export class RefListObserver<Def extends PropertyDef, Value> extends Subject<Value[]> {
+export class RefListObserver<Def extends PropertyDef, Value, Params = EmptyParams> extends Subject<Value[]> {
 	readonly name: string;
 
 	protected readonly _context: UpdateContext;
@@ -133,7 +140,7 @@ export class RefListObserver<Def extends PropertyDef, Value> extends Subject<Val
 		}
 	}
 
-	setParamsFn(paramsFn: () => Record<string, unknown>): this {
+	setParamsFn(paramsFn: () => Params): this {
 		for (const observer of this._observers) {
 			observer.setParamsFn(paramsFn);
 		}
@@ -185,7 +192,7 @@ export class RefListObserver<Def extends PropertyDef, Value> extends Subject<Val
 	}
 }
 
-export class RefMapObserver<Def extends PropertyDef, Value> extends Subject<Record<string, Value>> {
+export class RefMapObserver<Def extends PropertyDef, Value, Params = EmptyParams> extends Subject<Record<string, Value>> {
 	readonly name: string;
 
 	protected readonly _context: UpdateContext;
@@ -229,7 +236,7 @@ export class RefMapObserver<Def extends PropertyDef, Value> extends Subject<Reco
 		}
 	}
 
-	setParamsFn(paramsFn: () => Record<string, unknown>) {
+	setParamsFn(paramsFn: () => Params): this {
 		for (const key in this._observers) {
 			const observer = this._observers[key];
 			observer.setParamsFn(paramsFn);

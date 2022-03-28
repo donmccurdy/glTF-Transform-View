@@ -2,15 +2,20 @@ import { BufferAttribute } from 'three';
 import { Accessor as AccessorDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
 import { Binding } from './Binding';
-import { pool } from '../ObjectPool';
+import { ValuePool } from '../pools';
 
 export class AccessorBinding extends Binding<AccessorDef, BufferAttribute> {
 	public constructor(context: UpdateContext, def: AccessorDef) {
-		super(context, def, AccessorBinding.createValue(def));
+		super(
+			context,
+			def,
+			AccessorBinding.createValue(def, context.accessorPool),
+			context.accessorPool,
+		);
 	}
 
-	private static createValue(def: AccessorDef): BufferAttribute {
-		return pool.request(new BufferAttribute(
+	private static createValue(def: AccessorDef, pool: ValuePool<BufferAttribute>) {
+		return pool.requestBase(new BufferAttribute(
 			def.getArray()!,
 			def.getElementSize(),
 			def.getNormalized()
@@ -24,17 +29,12 @@ export class AccessorBinding extends Binding<AccessorDef, BufferAttribute> {
 		if (def.getArray() !== value.array
 			|| def.getElementSize() !== value.itemSize
 			|| def.getNormalized() !== value.normalized) {
-			// TODO(cleanup): Consolidate?
-			this.disposeValue(value);
-			this.value = AccessorBinding.createValue(def);
+			this.pool.releaseBase(value);
+			this.value = AccessorBinding.createValue(def, this.pool);
 		} else {
 			value.needsUpdate = true;
 		}
 
 		return this.publishAll(); // TODO(perf)
-	}
-
-	public disposeValue(value: BufferAttribute): void {
-		pool.release(value);
 	}
 }

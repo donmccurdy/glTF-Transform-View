@@ -3,18 +3,19 @@ import { Mesh as MeshDef, Node as NodeDef, vec3, vec4 } from '@gltf-transform/co
 import type { UpdateContext } from '../UpdateContext';
 import { eq } from '../utils';
 import { Binding } from './Binding';
-import { pool } from '../ObjectPool';
 import { RefListObserver, RefObserver } from '../observers';
+import { Object3DPool } from '../pools';
 
 const _vec3: vec3 = [0, 0, 0];
 const _vec4: vec4 = [0, 0, 0, 0];
 
 export class NodeBinding extends Binding<NodeDef, Object3D> {
 	protected children = new RefListObserver<NodeDef, Object3D>('children', this._context);
-	protected mesh = new RefObserver<MeshDef, Group>('mesh', this._context);
+	protected mesh = new RefObserver<MeshDef, Group>('mesh', this._context)
+		.setParamsFn(() => Object3DPool.createParams(this.def));
 
 	constructor(context: UpdateContext, def: NodeDef) {
-		super(context, def, pool.request(new Object3D()));
+		super(context, def, context.nodePool.requestBase(new Object3D()), context.nodePool);
 
 		this.children.subscribe((nextChildren, prevChildren) => {
 			this.value.remove(...prevChildren!);
@@ -52,10 +53,6 @@ export class NodeBinding extends Binding<NodeDef, Object3D> {
 		this.mesh.updateRef(def.getMesh());
 
 		return this.publishAll(); // TODO(perf)
-	}
-
-	public disposeValue(value: Object3D): void {
-		pool.release(value);
 	}
 
 	public dispose() {

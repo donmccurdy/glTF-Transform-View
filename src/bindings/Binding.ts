@@ -1,26 +1,27 @@
 import { Property as PropertyDef } from '@gltf-transform/core';
 import { RefObserver, Output } from '../observers';
 import type { UpdateContext } from '../UpdateContext';
-import type { Subscription } from '../EventDispatcher';
+import type { Subscription } from '../utils/EventDispatcher';
+import { EmptyParams, ValuePool } from '../pools';
 
-// TODO(impl): Lifecycle for base values.
-// TODO(impl): Lifecycle for output values.
 // TODO(impl): Graph layouts are hard. Maybe just a spreadsheet debug view?
 
-export abstract class Binding <Def extends PropertyDef, Value> {
+export abstract class Binding <Def extends PropertyDef, Value, Params = EmptyParams> {
 	def: Def;
 	value: Value;
+	pool: ValuePool<Value, Params>;
 
 	protected _context: UpdateContext;
 	protected _lastUpdateID: number = -1;
 	protected _subscriptions: Subscription[] = [];
 	protected _outputs = new Set<Output<Value>>();
-	protected _outputParams = new Map<Output<Value>, Record<string, unknown>>();
+	protected _outputParamsFns = new Map<Output<Value>, () => Params>();
 
-	protected constructor(context: UpdateContext, def: Def, value: Value) {
+	protected constructor(context: UpdateContext, def: Def, value: Value, pool: ValuePool<Value>) {
 		this._context = context;
 		this.def = def;
 		this.value = value;
+		this.pool = pool;
 
 		const onChange = () => this.update();
 		const onDispose = () => this.dispose();
@@ -40,19 +41,6 @@ export abstract class Binding <Def extends PropertyDef, Value> {
 
 	abstract update(): this;
 
-	// TODO(impl): Should be able to dispose base and variant values.
-	abstract disposeValue(value: Value): void;
-
-	requestValue(output: Output<Value>): Value {
-		// TODO(impl): Variation.
-		// const outputParams = this._outputParams.get(output);
-		return this.value;
-	}
-
-	releaseValue(value: Value): void {
-		// TODO(impl): Reference counting and disposal.
-	}
-
 	publishAll(): this {
 		for (const output of this._outputs) {
 			this.publish(output);
@@ -62,26 +50,25 @@ export abstract class Binding <Def extends PropertyDef, Value> {
 
 	publish(output: Output<Value>): this {
 		if (output.value) {
-			this.releaseValue(output.value);
+			this.pool.releaseVariant(output.value);
 		}
-		output.next(this.requestValue(output));
+		const paramsFn = this._outputParamsFns.get(output)!;
+		output.next(this.pool.requestVariant(this.value, paramsFn()));
 		return this;
 	}
 
 	dispose(): void {
 		for (const unsub of this._subscriptions) unsub();
 		if (this.value) {
-			this.releaseValue(this.value); // TODO(test): Necessary?
-			this.disposeValue(this.value);
+			this.pool.releaseBase(this.value); // TODO(test): Necessary?
 		}
 
 		for (const output of this._outputs) {
-			const outputValue = output.value;
+			const value = output.value;
 			output.detach();
 			output.next(null);
-			if (outputValue) {
-				this.releaseValue(outputValue); // TODO(test): Necessary?
-				this.disposeValue(outputValue);
+			if (value) {
+				this.pool.releaseVariant(value);
 			}
 		}
 	}
@@ -90,21 +77,20 @@ export abstract class Binding <Def extends PropertyDef, Value> {
 	 * Output.
 	 */
 
-	addOutput(output: RefObserver<Def, Value>, params: Record<string, unknown>): this {
+	addOutput(output: RefObserver<Def, Value>, paramsFn: () => Params): this {
 		this._outputs.add(output);
-		this._outputParams.set(output, params);
+		this._outputParamsFns.set(output, paramsFn);
 		// TODO(perf): ListObserver and MapObserver may advance many times during initialization.
 		return this.publish(output);
 	}
 
-	updateOutput(output: RefObserver<Def, Value>, params: Record<string, unknown>): this {
-		this._outputParams.set(output, params);
+	updateOutput(output: RefObserver<Def, Value>): this {
 		return this.publish(output);
 	}
 
 	removeOutput(output: RefObserver<Def, Value>): this {
 		this._outputs.delete(output);
-		this._outputParams.delete(output);
+		this._outputParamsFns.delete(output);
 		return this; // TODO(test): No publish!
 	}
 }

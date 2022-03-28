@@ -2,14 +2,13 @@ import { Group, Object3D } from 'three';
 import { Node as NodeDef, Scene as SceneDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
 import { Binding } from './Binding';
-import { pool } from '../ObjectPool';
 import { RefListObserver } from '../observers';
 
 export class SceneBinding extends Binding<SceneDef, Group> {
 	protected children = new RefListObserver<NodeDef, Object3D>('children', this._context);
 
 	public constructor(context: UpdateContext, source: SceneDef) {
-		super(context, source, pool.request(new Group()));
+		super(context, source, context.scenePool.requestBase(new Group()), context.scenePool);
 		this.children.subscribe((nextChildren, prevChildren) => {
 			this.value.remove(...prevChildren!);
 			this.value.add(...nextChildren);
@@ -21,6 +20,8 @@ export class SceneBinding extends Binding<SceneDef, Group> {
 		const source = this.def;
 		const target = this.value;
 
+		console.log('SceneBinding::update');
+
 		if (source.getName() !== target.name) {
 			target.name = source.getName();
 		}
@@ -28,10 +29,6 @@ export class SceneBinding extends Binding<SceneDef, Group> {
 		this.children.updateRefList(source.listChildren());
 
 		return this.publishAll(); // TODO(perf)
-	}
-
-	public disposeValue(target: Group): void {
-		pool.release(target);
 	}
 
 	public dispose() {

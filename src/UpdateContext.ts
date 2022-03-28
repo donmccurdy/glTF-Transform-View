@@ -1,20 +1,24 @@
 import { Accessor as AccessorDef, Material as MaterialDef, Mesh as MeshDef, Node as NodeDef, Primitive as PrimitiveDef, Property as PropertyDef, PropertyType, Scene as SceneDef, Texture as TextureDef } from '@gltf-transform/core';
-import { Object3D, Material, Texture } from 'three';
+import { Object3D, BufferAttribute, Group, Mesh } from 'three';
 import { AccessorBinding, Binding, MaterialBinding, MeshBinding, NodeBinding, PrimitiveBinding, SceneBinding, TextureBinding } from './bindings';
-import { IImageProvider, ImageProvider, NullImageProvider } from './ImageProvider';
-import { MaterialMap, Object3DMap, TextureMap } from './maps';
+import { DefaultImageProvider, ImageProvider, NullImageProvider } from './ImageProvider';
+import { MaterialPool, Object3DPool, Pool, TexturePool } from './pools';
 
 export class UpdateContext {
 	private _bindings = new Set<Binding<PropertyDef, any>>();
 	private _defBindings = new WeakMap<PropertyDef, Binding<PropertyDef, any>>();
 
-	public textureMap = new TextureMap('TextureMap');
-	public materialMap = new MaterialMap('MaterialMap');
-	public object3DMap = new Object3DMap('Object3DMap');
+	readonly accessorPool = new Pool<BufferAttribute>();
+	readonly materialPool = new MaterialPool();
+	readonly meshPool = new Object3DPool<Group>();
+	readonly nodePool = new Pool<Object3D>();
+	readonly primitivePool = new Object3DPool<Mesh>();
+	readonly scenePool = new Pool<Group>();
+	readonly texturePool = new TexturePool();
 
-	public imageProvider: IImageProvider = new NullImageProvider();
+	public imageProvider: ImageProvider = new NullImageProvider();
 
-	public setImageProvider(provider: ImageProvider): void {
+	public setImageProvider(provider: DefaultImageProvider): void {
 		this.imageProvider = provider;
 	}
 
@@ -79,59 +83,67 @@ export class UpdateContext {
 	}
 
 	public gc() {
-		this.textureMap.flush();
-		this.materialMap.flush();
-		this.object3DMap.flush();
+		// TODO(cleanup)
+		// this.textureMap.flush();
+		// this.materialMap.flush();
+		// this.object3DMap.flush();
 	}
 
 	/**
 	 * Given a target object (currently any THREE.Object3D), finds and returns the source
 	 * glTF-Transform Property definition.
 	 */
-	public findDef(target: Object3D): PropertyDef | null {
-		if (target === null) return null;
+	// public findDef(target: Object3D): PropertyDef | null {
+	// 	if (target === null) return null;
 
-		const base = this.object3DMap.findBase(target) || target;
-		for (const binding of this._bindings) {
-			if (binding.value === target || binding.value === base) {
-				return binding.def;
-			}
-		}
+	// 	let base;
 
-		return null;
-	}
+	// 	if (base = this.primitivePool.findBase(target))
+	// 	const base = this.object3DMap.findBase(target) || target;
+	// 	for (const binding of this._bindings) {
+	// 		if (binding.value === target || binding.value === base) {
+	// 			return binding.def;
+	// 		}
+	// 	}
+
+	// 	return null;
+	// }
 
 	/**
 	 * Given a source object (currently anything rendered as THREE.Object3D), finds and returns
 	 * the list of output THREE.Object3D instances.
 	 */
-	public findValues(def: TextureDef): Texture[]
-	public findValues(def: MaterialDef): Material[]
-	public findValues(def: SceneDef | NodeDef | MeshDef | PrimitiveDef): Object3D[]
-	public findValues(def: SceneDef | NodeDef | MeshDef | PrimitiveDef | MaterialDef | TextureDef): (Object3D | Material | Texture)[] {
-		const binding = this._defBindings.get(def);
-		if (!binding) return [];
+	// public findValues(def: TextureDef): Texture[]
+	// public findValues(def: MaterialDef): Material[]
+	// public findValues(def: SceneDef | NodeDef | MeshDef | PrimitiveDef): Object3D[]
+	// public findValues(def: SceneDef | NodeDef | MeshDef | PrimitiveDef | MaterialDef | TextureDef): (Object3D | Material | Texture)[] {
+	// 	const binding = this._defBindings.get(def);
+	// 	if (!binding) return [];
 
-		if (def instanceof SceneDef || def instanceof NodeDef) {
-			return [binding.value];
-		} else if (def instanceof MeshDef || def instanceof PrimitiveDef) {
-			return this.object3DMap.listVariants(binding.value);
-		} else if (def instanceof MaterialDef) {
-			this.materialMap.listVariants(binding.value);
-		} else if (def instanceof TextureDef) {
-			this.textureMap.listVariants(binding.value);
-		}
+	// 	if (def instanceof SceneDef || def instanceof NodeDef) {
+	// 		return [binding.value];
+	// 	} else if (def instanceof MeshDef || def instanceof PrimitiveDef) {
+	// 		return this.object3DMap.listVariants(binding.value);
+	// 	} else if (def instanceof MaterialDef) {
+	// 		this.materialMap.listVariants(binding.value);
+	// 	} else if (def instanceof TextureDef) {
+	// 		this.textureMap.listVariants(binding.value);
+	// 	}
 
-		throw new Error(`GLTFRenderer: Lookup type "${def.propertyType}" not implemented.`);
-	}
+	// 	throw new Error(`GLTFRenderer: Lookup type "${def.propertyType}" not implemented.`);
+	// }
 
 	public dispose(): void {
 		for (const renderer of this._bindings) {
 			renderer.dispose();
 		}
-		this.textureMap.dispose();
-		this.materialMap.dispose();
-		this.object3DMap.dispose();
+		this.accessorPool.dispose();
+		this.materialPool.dispose();
+		this.meshPool.dispose();
+		this.nodePool.dispose();
+		this.primitivePool.dispose();
+		this.scenePool.dispose();
+		this.texturePool.dispose();
 		this._bindings.clear();
 	}
 }

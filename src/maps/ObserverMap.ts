@@ -1,4 +1,4 @@
-import { THREEObject } from '../utils';
+import { THREEObject } from '../constants';
 
 interface CacheEntry<V, P> {
 	variant: V,

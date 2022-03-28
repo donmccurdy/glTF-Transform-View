@@ -1,12 +1,11 @@
 import { GLTF, Primitive as PrimitiveDef } from '@gltf-transform/core';
-import { pool } from '../ObjectPool';
 import { LineBasicMaterial, Material, MeshBasicMaterial, MeshPhysicalMaterial, MeshStandardMaterial, PointsMaterial } from 'three';
-import { ObserverMap } from './ObserverMap';
+import type { ValuePool } from './Pool';
 
 export type SourceMaterial = MeshBasicMaterial | MeshStandardMaterial | MeshPhysicalMaterial;
 export type VariantMaterial = MeshBasicMaterial | MeshStandardMaterial | MeshPhysicalMaterial | LineBasicMaterial | PointsMaterial;
 
-interface MaterialParams {
+export interface MaterialParams {
 	mode: GLTF.MeshPrimitiveMode,
 	useVertexTangents: boolean,
 	useVertexColors: boolean,
@@ -14,20 +13,49 @@ interface MaterialParams {
 	useFlatShading: boolean,
 }
 
-export class MaterialMap extends ObserverMap<SourceMaterial, VariantMaterial, MaterialParams> {
+export class MaterialPool implements ValuePool<Material, MaterialParams> {
+    static createParams(primitive: PrimitiveDef): MaterialParams {
+		return {
+			mode: primitive.getMode(),
+			useVertexTangents: !!primitive.getAttribute('TANGENT'),
+			useVertexColors: !!primitive.getAttribute('COLOR_0'),
+			useFlatShading: !primitive.getAttribute('NORMAL'),
+			useMorphTargets: primitive.listTargets().length > 0,
+		}
+	}
+
+    requestBase(base: Material): Material {
+        return base;
+    }
+    releaseBase(base: Material): void {
+        base.dispose();
+    }
+    requestVariant(base: Material, params: MaterialParams): Material {
+        return this._createVariant(base as SourceMaterial, params);
+    }
+    releaseVariant(variant: Material): void {
+        variant.dispose();
+    }
+    dispose(): void {
+        throw new Error('Method not implemented.');
+    }
+    debug(): void {
+        throw new Error('Method not implemented.');
+    }
+
 	/** Creates a variant material for given source material and MaterialParams. */
 	protected _createVariant(srcMaterial: SourceMaterial, params: MaterialParams): VariantMaterial {
 		switch (params.mode) {
 			case PrimitiveDef.Mode.TRIANGLES:
 			case PrimitiveDef.Mode.TRIANGLE_FAN:
 			case PrimitiveDef.Mode.TRIANGLE_STRIP:
-				return this._updateVariant(srcMaterial, pool.request(srcMaterial.clone()), params);
+				return this._updateVariant(srcMaterial, srcMaterial.clone(), params);
 			case PrimitiveDef.Mode.LINES:
 			case PrimitiveDef.Mode.LINE_LOOP:
 			case PrimitiveDef.Mode.LINE_STRIP:
-				return this._updateVariant(srcMaterial, pool.request(new LineBasicMaterial()), params);
+				return this._updateVariant(srcMaterial, new LineBasicMaterial(), params);
 			case PrimitiveDef.Mode.POINTS:
-				return this._updateVariant(srcMaterial, pool.request(new PointsMaterial()), params);
+				return this._updateVariant(srcMaterial, new PointsMaterial(), params);
 			default:
 				throw new Error(`Unexpected primitive mode: ${params.mode}`);
 		}
@@ -73,19 +101,5 @@ export class MaterialMap extends ObserverMap<SourceMaterial, VariantMaterial, Ma
 		}
 
 		return dstMaterial;
-	}
-
-	protected _disposeVariant(material: Material): void {
-		pool.release(material).dispose();
-	}
-
-	public static createParams(primitive: PrimitiveDef): MaterialParams {
-		return {
-			mode: primitive.getMode(),
-			useVertexTangents: !!primitive.getAttribute('TANGENT'),
-			useVertexColors: !!primitive.getAttribute('COLOR_0'),
-			useFlatShading: !primitive.getAttribute('NORMAL'),
-			useMorphTargets: primitive.listTargets().length > 0,
-		}
 	}
 }
