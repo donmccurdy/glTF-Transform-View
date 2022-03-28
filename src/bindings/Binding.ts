@@ -60,7 +60,7 @@ export abstract class Binding <Def extends PropertyDef, Value, Params = EmptyPar
 	dispose(): void {
 		for (const unsub of this._subscriptions) unsub();
 		if (this.value) {
-			this.pool.releaseBase(this.value); // TODO(test): Necessary?
+			this.pool.releaseBase(this.value);
 		}
 
 		for (const output of this._outputs) {

@@ -1,5 +1,4 @@
 import { TextureInfo, vec2 } from '@gltf-transform/core';
-import { pool } from '../utils/ObjectPool';
 import { ClampToEdgeWrapping, LinearFilter, LinearMipmapLinearFilter, LinearMipmapNearestFilter, MirroredRepeatWrapping, NearestFilter, NearestMipmapLinearFilter, NearestMipmapNearestFilter, RepeatWrapping, Texture, TextureEncoding, TextureFilter, Wrapping } from 'three';
 import type { Transform } from '@gltf-transform/extensions';
 import { ValuePool } from './Pool';
@@ -51,13 +50,13 @@ export class TexturePool implements ValuePool<Texture, TextureParams> {
         return base;
     }
     releaseBase(base: Texture): void {
-        base.dispose();
+        // base.dispose();
     }
     requestVariant(base: Texture, params: TextureParams): Texture {
         return this._createVariant(base, params);
     }
     releaseVariant(variant: Texture): void {
-        variant.dispose();
+        // variant.dispose();
     }
     dispose(): void {
         throw new Error('Method not implemented.');
@@ -67,7 +66,7 @@ export class TexturePool implements ValuePool<Texture, TextureParams> {
     }
 
 	protected _createVariant(srcTexture: Texture, params: TextureParams): Texture {
-		return this._updateVariant(srcTexture, pool.request(srcTexture.clone()), params);
+		return this._updateVariant(srcTexture, srcTexture.clone(), params);
 	}
 
 	protected _updateVariant(srcTexture: Texture, dstTexture: Texture, params: TextureParams): Texture {

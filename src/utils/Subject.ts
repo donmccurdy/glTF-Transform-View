@@ -11,8 +11,6 @@ export class Subject<T> extends EventDispatcher {
 
 	public subscribe(listener: (next: T, prev: T | null) => void): Subscription {
 		this._subscribers.push(listener);
-		// TODO(cleanup): Don't really want this in Observer...
-		// listener(this.value, null);
 		return () => {
             this._subscribers.splice(this._subscribers.indexOf(listener), 1);
         };

@@ -28,13 +28,13 @@ export class MaterialPool implements ValuePool<Material, MaterialParams> {
         return base;
     }
     releaseBase(base: Material): void {
-        base.dispose();
+        // base.dispose();
     }
     requestVariant(base: Material, params: MaterialParams): Material {
         return this._createVariant(base as SourceMaterial, params);
     }
     releaseVariant(variant: Material): void {
-        variant.dispose();
+        // variant.dispose();
     }
     dispose(): void {
         throw new Error('Method not implemented.');

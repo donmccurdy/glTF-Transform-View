@@ -47,11 +47,13 @@ export class RefObserver<Def extends PropertyDef, Value, Params = EmptyParams> e
 	 */
 
 	setParamsFn(paramsFn: () => Params): this {
+		console.log('setParamsFn:' + this.name);
 		this._bindingParamsFn = paramsFn;
 		return this;
 	}
 
 	updateRef(def: Def | null) {
+		console.log('updateRef:' + this.name);
 		const binding = def ? this._context.bind(def) as Binding<Def, Value> : null;
 		if (binding === this.binding) return;
 
@@ -60,10 +62,9 @@ export class RefObserver<Def extends PropertyDef, Value, Params = EmptyParams> e
 		if (binding) {
 			this.binding = binding;
 			this.binding.addOutput(this, this._bindingParamsFn);
-			// TODO(bug): must be double-forwarding and disposing or something...
-			// this.next(binding.value);
+			this.binding.publish(this);
 		} else {
-			// this.next(null);
+			this.next(null);
 		}
 	}
 

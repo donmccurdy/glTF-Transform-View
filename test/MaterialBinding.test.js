@@ -29,7 +29,6 @@ test('MaterialBinding', t => {
 	t.ok(material.emissiveMap, 'material.emissiveMap → ok');
 
 	texDef1.dispose();
-	renderer.update(materialDef);
 	mesh = scene.children[0].children[0].children[0];
 	material = mesh.material;
 

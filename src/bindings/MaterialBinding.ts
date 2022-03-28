@@ -16,7 +16,9 @@ enum ShadingModel {
 	PHYSICAL = 2,
 }
 
-// TODO(bug): Set up change listeners on material extensions.
+// TODO(bug): Missing change listeners on ExtensionProperty.
+// TODO(bug): Missing change listeners on TextureInfo.
+// TODO(bug): Delayed effect of changing alphaMode.
 
 export class MaterialBinding extends Binding<MaterialDef, Material> {
 	protected readonly baseColorTexture = new RefObserver<TextureDef, Texture, TextureParams>('baseColorTexture', this._context);
