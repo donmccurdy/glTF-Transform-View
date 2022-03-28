@@ -4,15 +4,14 @@ import type { UpdateContext } from '../UpdateContext';
 import { eq } from '../utils';
 import { Binding } from './Binding';
 import { pool } from '../ObjectPool';
-import { ListObserver, Observer } from '../observers';
-import type { MeshBinding } from './MeshBinding';
+import { RefListObserver, RefObserver } from '../observers';
 
 const _vec3: vec3 = [0, 0, 0];
 const _vec4: vec4 = [0, 0, 0, 0];
 
 export class NodeBinding extends Binding<NodeDef, Object3D> {
-	protected children = new ListObserver<NodeDef, NodeBinding, Object3D>('children', this._context);
-	protected mesh = new Observer<MeshDef, MeshBinding, Group>('mesh', this._context);
+	protected children = new RefListObserver<NodeDef, Object3D>('children', this._context);
+	protected mesh = new RefObserver<MeshDef, Group>('mesh', this._context);
 
 	constructor(context: UpdateContext, def: NodeDef) {
 		super(context, def, pool.request(new Object3D()));
@@ -49,8 +48,8 @@ export class NodeBinding extends Binding<NodeDef, Object3D> {
 			value.scale.fromArray(def.getScale());
 		}
 
-		this.children.updateSourceList(def.listChildren());
-		this.mesh.updateSource(def.getMesh());
+		this.children.updateRefList(def.listChildren());
+		this.mesh.updateRef(def.getMesh());
 
 		return this.publishAll(); // TODO(perf)
 	}

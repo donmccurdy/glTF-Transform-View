@@ -5,26 +5,24 @@ import { Subject } from '../Subject';
 import { Subscription } from '../EventDispatcher';
 
 /**
- * Exposes a limited view of the Observer interface to objects
+ * Exposes a limited view of the RefObserver interface to objects
  * using it as an output socket.
  */
-export interface Output<V> extends Subject<V | null> {
+export interface Output<Value> extends Subject<Value | null> {
 	detach(): void;
 }
 
 // TODO(impl): Where/how do change events get handled? Am I
 // crazy in thinking those can just propagate with .next(value)?
 
-// TODO(impl): MapObserver
-
 // TODO(docs): The _only_ time an observer should call .next()
 // is after "forwarding" from Observer to ListObserver or
 // MapObserver, correct?
 
-export class Observer<S extends PropertyDef, B extends Binding<S, V>, V> extends Subject<V | null> implements Output<V> {
+export class RefObserver<Def extends PropertyDef, Value> extends Subject<Value | null> implements Output<Value> {
 	readonly name;
-	binding: B | null = null;
-	private _bindingParams: Record<string, unknown> = {};
+	binding: Binding<Def, Value> | null = null;
+	private _bindingParamsFn: () => Record<string, unknown> = () => ({});
 
 	private readonly _context: UpdateContext;
 
@@ -38,7 +36,6 @@ export class Observer<S extends PropertyDef, B extends Binding<S, V>, V> extends
 	 * Child interface. (Binding (Child))
 	 */
 
-	/** @usage  */
 	detach() {
 		this._clear();
 	}
@@ -47,22 +44,25 @@ export class Observer<S extends PropertyDef, B extends Binding<S, V>, V> extends
 	 * Parent interface. (Binding (Parent), ListObserver, MapObserver)
 	 */
 
-	updateSource(source: S | null) {
-		const binding = source ? this._context.bind(source) as B : null;
+	setParamsFn(paramsFn: () => Record<string, unknown>) {
+		this._bindingParamsFn = paramsFn;
+	}
+
+	updateRef(def: Def | null) {
+		const binding = def ? this._context.bind(def) as Binding<Def, Value> : null;
 		if (binding === this.binding) return;
 
 		this._clear();
 
 		if (binding) {
 			this.binding = binding;
-			this.binding.addOutput(this, this._bindingParams);
+			this.binding.addOutput(this, this._bindingParamsFn());
 		}
 	}
 
-	updateParams(params: Record<string, unknown>) {
-		this._bindingParams = params;
+	updateParams() {
 		if (this.binding) {
-			this.binding.updateOutput(this, this._bindingParams);
+			this.binding.updateOutput(this, this._bindingParamsFn());
 		}
 	}
 
@@ -82,12 +82,12 @@ export class Observer<S extends PropertyDef, B extends Binding<S, V>, V> extends
 	}
 }
 
-export class ListObserver<S extends PropertyDef, B extends Binding<S, V>, V> extends Subject<V[]> {
+export class RefListObserver<Def extends PropertyDef, Value> extends Subject<Value[]> {
 	readonly name: string;
 
 	protected readonly _context: UpdateContext;
 
-	private readonly _observers: Observer<S, B, V>[] = [];
+	private readonly _observers: RefObserver<Def, Value>[] = [];
 	private readonly _subscriptions: Subscription[] = [];
 
 	constructor(name: string, context: UpdateContext) {
@@ -96,8 +96,8 @@ export class ListObserver<S extends PropertyDef, B extends Binding<S, V>, V> ext
 		this._context = context;
 	}
 
-	updateSourceList(sources: S[]) {
-		const added = new Set<B>();
+	updateRefList(sources: Def[]) {
+		const added = new Set<Binding<Def, Value>>();
 		const removed = new Set<number>();
 
 		let needsUpdate = false;
@@ -110,16 +110,18 @@ export class ListObserver<S extends PropertyDef, B extends Binding<S, V>, V> ext
 				removed.add(i);
 				needsUpdate = true;
 			} else if (!observer) {
-				added.add(this._context.bind(source) as B);
+				added.add(this._context.bind(source) as Binding<Def, Value>);
 				needsUpdate = true;
 			} else if (source !== observer.binding!.def) {
-				observer.updateSource(source);
+				observer.updateRef(source);
 				needsUpdate = true;
 			}
 		}
 
 		for (let i = this._observers.length; i >= 0; i--) {
-			this._remove(i);
+			if (removed.has(i)) {
+				this._remove(i);
+			}
 		}
 
 		for (const add of added) {
@@ -127,26 +129,32 @@ export class ListObserver<S extends PropertyDef, B extends Binding<S, V>, V> ext
 		}
 
 		if (needsUpdate) {
-			this.next(this._observers.map((o) => o.value!));
+			this._publish();
 		}
 	}
 
-	updateParams(params: Record<string, unknown>): this {
+	setParamsFn(paramsFn: () => Record<string, unknown>): this {
 		for (const observer of this._observers) {
-			observer.updateParams(params);
+			observer.setParamsFn(paramsFn);
 		}
 		return this;
 	}
 
-	private _add(binding: B) {
-		const observer = new Observer(this.name + '[#]', this._context) as Observer<S, B, V>;
-		observer.updateSource(binding.def);
+	updateParams() {
+		for (const observer of this._observers) {
+			observer.updateParams();
+		}
+	}
+
+	private _add(binding: Binding<Def, Value>) {
+		const observer = new RefObserver(this.name + '[]', this._context) as RefObserver<Def, Value>;
+		observer.updateRef(binding.def);
 		this._observers.push(observer);
 		this._subscriptions.push(observer.subscribe((next) => {
 			if (!next) {
 				this._remove(this._observers.indexOf(observer));
 			}
-			this.next(this._observers.map((o) => o.value!));
+			this._publish();
 		}));
 	}
 
@@ -161,6 +169,10 @@ export class ListObserver<S extends PropertyDef, B extends Binding<S, V>, V> ext
 		this._subscriptions.splice(index, 1);
 	}
 
+	private _publish() {
+		this.next(this._observers.map((o) => o.value!));
+	}
+
 	dispose() {
 		for (const unsub of this._subscriptions) {
 			unsub();
@@ -173,12 +185,12 @@ export class ListObserver<S extends PropertyDef, B extends Binding<S, V>, V> ext
 	}
 }
 
-export class MapObserver<S extends PropertyDef, B extends Binding<S, V>, V> extends Subject<Record<string, V>> {
+export class RefMapObserver<Def extends PropertyDef, Value> extends Subject<Record<string, Value>> {
 	readonly name: string;
 
 	protected readonly _context: UpdateContext;
 
-	private readonly _observers: Record<string, Observer<S, B, V>> = {};
+	private readonly _observers: Record<string, RefObserver<Def, Value>> = {};
 	private readonly _subscriptions: Record<string, Subscription> = {};
 
 	constructor(name: string, context: UpdateContext) {
@@ -187,32 +199,61 @@ export class MapObserver<S extends PropertyDef, B extends Binding<S, V>, V> exte
 		this._context = context;
 	}
 
-	updateSourceMap(keys: string[], sources: S[]) {
-		// TODO(impl)
-	}
+	updateRefMap(keys: string[], defs: Def[]) {
+		const nextKeys = new Set(keys);
+		const nextDefs = {} as Record<string, Def>;
+		for (let i = 0; i < keys.length; i++) nextDefs[keys[i]] = defs[i];
 
-	updateParams(params: Record<string, unknown>) {
+		let needsUpdate = false;
+
 		for (const key in this._observers) {
+			if (!nextKeys.has(key)) {
+				this._remove(key);
+				needsUpdate = true;
+			}
+		}
+
+		for (const key of keys) {
 			const observer = this._observers[key];
-			observer.updateParams(params);
+			if (!observer) {
+				this._add(key, this._context.bind(nextDefs[key]) as Binding<Def, Value>);
+				needsUpdate = true;
+			} else if (observer.binding!.def !== nextDefs[key]) {
+				observer.updateRef(nextDefs[key]);
+				needsUpdate = true;
+			}
+		}
+
+		if (needsUpdate) {
+			this._publish();
 		}
 	}
 
-	private _add(key: string, binding: B) {
-		const observer = new Observer(this.name + `[${key}]`, this._context) as Observer<S, B, V>;
-		observer.updateSource(binding.def);
+	setParamsFn(paramsFn: () => Record<string, unknown>) {
+		for (const key in this._observers) {
+			const observer = this._observers[key];
+			observer.setParamsFn(paramsFn);
+		}
+		return this;
+	}
+
+	updateParams() {
+		for (const key in this._observers) {
+			const observer = this._observers[key];
+			observer.updateParams();
+		}
+	}
+
+	private _add(key: string, binding: Binding<Def, Value>) {
+		const observer = new RefObserver(this.name + `[${key}]`, this._context) as RefObserver<Def, Value>;
+		observer.updateRef(binding.def);
 
 		this._observers[key] = observer;
 		this._subscriptions[key] = observer.subscribe((next) => {
 			if (!next) {
 				this._remove(key);
 			}
-			this.next(
-				Object.fromEntries(
-					Object.entries(this._observers)
-						.map(([key, observer]) => [key, observer.value])
-				) as Record<string, V>
-			);
+			this._publish();
 		});
 	}
 
@@ -225,6 +266,12 @@ export class MapObserver<S extends PropertyDef, B extends Binding<S, V>, V> exte
 
 		delete this._subscriptions[key];
 		delete this._observers[key];
+	}
+
+	private _publish() {
+		const entries = Object.entries(this._observers)
+			.map(([key, observer]) => [key, observer.value]);
+		this.next(Object.fromEntries(entries));
 	}
 
 	dispose() {

@@ -3,9 +3,7 @@ import { Accessor as AccessorDef, GLTF, Material as MaterialDef, Primitive as Pr
 import type { UpdateContext } from '../UpdateContext';
 import { Binding } from './Binding';
 import { pool } from '../ObjectPool';
-import type { MaterialBinding } from './MaterialBinding';
-import { MapObserver, Observer } from '../observers';
-import type { AccessorBinding } from './AccessorBinding';
+import { RefMapObserver, RefObserver } from '../observers';
 import { MaterialMap } from '../maps';
 import { MeshLike } from '../utils';
 
@@ -27,9 +25,9 @@ function semanticToAttributeName(semantic: string): string {
 }
 
 export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
-	protected material = new Observer<MaterialDef, MaterialBinding, Material>('material', this._context);
-	protected indices = new Observer<AccessorDef, AccessorBinding, BufferAttribute>('indices', this._context);
-	protected attributes = new MapObserver<AccessorDef, AccessorBinding, BufferAttribute>('attributes', this._context);
+	protected material = new RefObserver<MaterialDef, Material>('material', this._context);
+	protected indices = new RefObserver<AccessorDef, BufferAttribute>('indices', this._context);
+	protected attributes = new RefMapObserver<AccessorDef, BufferAttribute>('attributes', this._context);
 
 	public constructor(context: UpdateContext, def: PrimitiveDef) {
 		super(
@@ -39,12 +37,16 @@ export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
 		);
 
 		this.material.subscribe((material) => {
-			this.value.material = material!;
-			this.publishAll();
+			if (this.value.material !== material) {
+				this.value.material = material!;
+				this.publishAll();
+			}
 		});
-		this.indices.subscribe((indices) => {
-			this.value.geometry.setIndex(indices);
-			this.publishAll();
+		this.indices.subscribe((index) => {
+			if (this.value.geometry.index !== index) {
+				this.value.geometry.setIndex(index);
+				this.publishAll();
+			}
 		});
 		this.attributes.subscribe((nextAttributes, prevAttributes) => {
 			for (const key in prevAttributes) {
@@ -70,13 +72,14 @@ export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
 		//  (2) Material params must update before material.
 		//  (3) Mode can safely come last, but that's non-obvious.
 
-		this.indices.updateSource(def.getIndices());
-		this.attributes.updateSourceMap(def.listSemantics(), def.listAttributes());
-		this.material.updateSource(def.getMaterial());
+		this.indices.updateRef(def.getIndices());
+		this.attributes.updateRefMap(def.listSemantics(), def.listAttributes());
+		this.material.updateRef(def.getMaterial());
 
 		if (def.getMode() !== getObject3DMode(value)) {
-			const materialParams = MaterialMap.createParams(def) as unknown as Record<string, unknown>;
-			this.material.updateParams(materialParams);
+			this.material.setParamsFn(
+				() => MaterialMap.createParams(def) as unknown as Record<string, unknown>
+			);
 		}
 
 		return this.publishAll(); // TODO(perf)

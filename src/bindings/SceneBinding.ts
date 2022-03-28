@@ -3,11 +3,10 @@ import { Node as NodeDef, Scene as SceneDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
 import { Binding } from './Binding';
 import { pool } from '../ObjectPool';
-import { NodeBinding } from './NodeBinding';
-import { ListObserver } from '../observers';
+import { RefListObserver } from '../observers';
 
 export class SceneBinding extends Binding<SceneDef, Group> {
-	protected children = new ListObserver<NodeDef, NodeBinding, Object3D>('children', this._context);
+	protected children = new RefListObserver<NodeDef, Object3D>('children', this._context);
 
 	public constructor(context: UpdateContext, source: SceneDef) {
 		super(context, source, pool.request(new Group()));
@@ -26,7 +25,7 @@ export class SceneBinding extends Binding<SceneDef, Group> {
 			target.name = source.getName();
 		}
 
-		this.children.updateSourceList(source.listChildren());
+		this.children.updateRefList(source.listChildren());
 
 		return this.publishAll(); // TODO(perf)
 	}

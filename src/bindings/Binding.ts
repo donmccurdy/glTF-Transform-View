@@ -1,5 +1,5 @@
 import { Property as PropertyDef } from '@gltf-transform/core';
-import { Observer, Output } from '../observers';
+import { RefObserver, Output } from '../observers';
 import type { UpdateContext } from '../UpdateContext';
 import type { Subscription } from '../EventDispatcher';
 
@@ -90,19 +90,19 @@ export abstract class Binding <Def extends PropertyDef, Value> {
 	 * Output.
 	 */
 
-	addOutput(output: Observer<Def, Binding<Def, Value>, Value>, params: Record<string, unknown>): this {
+	addOutput(output: RefObserver<Def, Value>, params: Record<string, unknown>): this {
 		this._outputs.add(output);
 		this._outputParams.set(output, params);
 		// TODO(perf): ListObserver and MapObserver may advance many times during initialization.
 		return this.publish(output);
 	}
 
-	updateOutput(output: Observer<Def, Binding<Def, Value>, Value>, params: Record<string, unknown>): this {
+	updateOutput(output: RefObserver<Def, Value>, params: Record<string, unknown>): this {
 		this._outputParams.set(output, params);
 		return this.publish(output);
 	}
 
-	removeOutput(output: Observer<Def, Binding<Def, Value>, Value>): this {
+	removeOutput(output: RefObserver<Def, Value>): this {
 		this._outputs.delete(output);
 		this._outputParams.delete(output);
 		return this; // TODO(test): No publish!
