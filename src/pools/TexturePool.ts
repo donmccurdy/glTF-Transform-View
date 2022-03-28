@@ -31,6 +31,8 @@ export interface TextureParams {
 
 const _VEC2 = {ZERO: [0, 0] as vec2, ONE: [1, 1] as vec2};
 
+// TODO(bug): Texture count continually increases ...
+
 export class TexturePool implements ValuePool<Texture, TextureParams> {
     static createParams(textureInfo: TextureInfo, encoding: TextureEncoding): TextureParams {
 		const transform = textureInfo.getExtension<Transform>('KHR_texture_transform');

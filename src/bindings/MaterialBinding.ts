@@ -1,10 +1,10 @@
-import { DoubleSide, FrontSide, LinearEncoding, Material, MeshBasicMaterial, MeshPhysicalMaterial, MeshStandardMaterial, Texture, TextureEncoding, sRGBEncoding, MathUtils } from 'three';
-import { Material as MaterialDef, Texture as TextureDef, TextureInfo as TextureInfoDef, vec3 } from '@gltf-transform/core';
+import { DoubleSide, FrontSide, LinearEncoding, Material, MeshBasicMaterial, MeshPhysicalMaterial, MeshStandardMaterial, Texture, TextureEncoding, sRGBEncoding } from 'three';
+import { ExtensionProperty as ExtensionPropertyDef, Material as MaterialDef, Texture as TextureDef, TextureInfo as TextureInfoDef, vec3 } from '@gltf-transform/core';
 import type { Clearcoat, IOR, Sheen, Specular, Transmission, Volume } from '@gltf-transform/extensions';
 import type { UpdateContext } from '../UpdateContext';
 import { eq } from '../utils';
 import { Binding } from './Binding';
-import { RefObserver } from '../observers';
+import { RefListObserver, RefObserver } from '../observers';
 import { Subscription } from '../utils/EventDispatcher';
 import { TextureParams, TexturePool, ValuePool } from '../pools';
 
@@ -16,10 +16,14 @@ enum ShadingModel {
 	PHYSICAL = 2,
 }
 
-// TODO(bug): Missing change listeners on ExtensionProperty.
-// TODO(bug): Missing change listeners on TextureInfo.
+// TODO(bug): When material type changes, texture bindings do not update. Likely affected:
+// - MaterialBinding
+// - PrimitiveBinding
+// TODO(bug): Missing change listeners on TextureInfo... delegate?
 
 export class MaterialBinding extends Binding<MaterialDef, Material> {
+	protected readonly extensions = new RefListObserver<ExtensionPropertyDef, ExtensionPropertyDef>('extensions', this._context);
+
 	protected readonly baseColorTexture = new RefObserver<TextureDef, Texture, TextureParams>('baseColorTexture', this._context);
 	protected readonly emissiveTexture = new RefObserver<TextureDef, Texture, TextureParams>('emissiveTexture', this._context);
 	protected readonly normalTexture = new RefObserver<TextureDef, Texture, TextureParams>('normalTexture', this._context);
@@ -47,9 +51,12 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 
 	private readonly _textureObservers: RefObserver<TextureDef, Texture, TextureParams>[] = [];
 	private readonly _textureUpdateFns: (() => void)[] = [];
+	private readonly _textureApplyFns: (() => void)[] = [];
 
 	public constructor(context: UpdateContext, def: MaterialDef) {
 		super(context, def, MaterialBinding.createValue(def, context.materialPool), context.materialPool);
+
+		this.extensions.subscribe(() => this.update());
 
 		this.bindTexture(['map'], this.baseColorTexture, () => def.getBaseColorTexture(), () => def.getBaseColorTextureInfo(), sRGBEncoding);
 		this.bindTexture(['emissiveMap'], this.emissiveTexture, () => def.getEmissiveTexture(), () => def.getEmissiveTextureInfo(), sRGBEncoding);
@@ -91,19 +98,25 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 
 		observer.setParamsFn(() => TexturePool.createParams(textureInfoFn()!, encoding));
 
-		this._textureObservers.push(observer);
-
-		this._textureUpdateFns.push(() => {
-			observer.updateRef(textureFn());
-		})
-
-		return observer.subscribe((texture) => {
+		const applyTextureFn = (texture: Texture | null) => {
 			const material = this.value as any;
 			for (const map of maps) {
 				if (!(map in material)) continue; // Unlit ⊂ Standard ⊂ Physical (& Points, Lines)
 				if (!!material[map] !== !!texture) material.needsUpdate = true; // Recompile on add/remove.
 				material[map] = texture;
 			}
+		}
+
+		this._textureObservers.push(observer);
+
+		this._textureUpdateFns.push(() => {
+			observer.updateRef(textureFn());
+		})
+
+		this._textureApplyFns.push(() => applyTextureFn(observer.value));
+
+		return observer.subscribe((texture) => {
+			applyTextureFn(texture);
 			this.publishAll();
 		});
 	}
@@ -128,6 +141,8 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 
 		console.log('MaterialBinding::update');
 
+		this.extensions.updateRefList(def.listExtensions());
+
 		const shadingModel = getShadingModel(def);
 		if (shadingModel === ShadingModel.UNLIT && value.type !== 'MeshBasicMaterial'
 			|| shadingModel === ShadingModel.STANDARD && value.type !== 'MeshStandardMaterial'
@@ -135,7 +150,7 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 			this.pool.releaseBase(this.value);
 			this.value = MaterialBinding.createValue(def, this.pool);
 			value = this.value;
-
+			for (const fn of this._textureApplyFns) fn();
 			console.debug(`MaterialBinding::shadingModel → ${value.type}`);
 		}
 
@@ -319,6 +334,7 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 	}
 
 	public dispose() {
+		this.extensions.dispose();
 		for (const observer of this._textureObservers) {
 			observer.dispose();
 		}

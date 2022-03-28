@@ -1,6 +1,6 @@
-import { Accessor as AccessorDef, Material as MaterialDef, Mesh as MeshDef, Node as NodeDef, Primitive as PrimitiveDef, Property as PropertyDef, PropertyType, Scene as SceneDef, Texture as TextureDef } from '@gltf-transform/core';
+import { Accessor as AccessorDef, ExtensionProperty as ExtensionPropertyDef, Material as MaterialDef, Mesh as MeshDef, Node as NodeDef, Primitive as PrimitiveDef, Property as PropertyDef, PropertyType, Scene as SceneDef, Texture as TextureDef } from '@gltf-transform/core';
 import { Object3D, BufferAttribute, Group, Mesh } from 'three';
-import { AccessorBinding, Binding, MaterialBinding, MeshBinding, NodeBinding, PrimitiveBinding, SceneBinding, TextureBinding } from './bindings';
+import { AccessorBinding, Binding, ExtensionBinding, MaterialBinding, MeshBinding, NodeBinding, PrimitiveBinding, SceneBinding, TextureBinding } from './bindings';
 import { DefaultImageProvider, ImageProvider, NullImageProvider } from './ImageProvider';
 import { MaterialPool, Object3DPool, Pool, TexturePool } from './pools';
 
@@ -9,6 +9,7 @@ export class UpdateContext {
 	private _defBindings = new WeakMap<PropertyDef, Binding<PropertyDef, any>>();
 
 	readonly accessorPool = new Pool<BufferAttribute>();
+	readonly extensionPool = new Pool<ExtensionPropertyDef>();
 	readonly materialPool = new MaterialPool();
 	readonly meshPool = new Object3DPool<Group>();
 	readonly nodePool = new Pool<Object3D>();
@@ -69,8 +70,13 @@ export class UpdateContext {
 			case PropertyType.TEXTURE:
 				binding = new TextureBinding(this, def as TextureDef);
 				break;
-			default:
-				throw new Error(`Unimplemented type: ${def.propertyType}`);
+			default: {
+				if (def instanceof ExtensionPropertyDef) {
+					binding = new ExtensionBinding(this, def as ExtensionPropertyDef);
+				} else {
+					throw new Error(`Unimplemented type: ${def.propertyType}`);
+				}
+			}
 		}
 
 		binding.update();

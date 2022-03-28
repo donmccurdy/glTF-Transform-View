@@ -2,14 +2,14 @@ import { EventDispatcher, Subscription } from "./EventDispatcher";
 
 export class Subject<T> extends EventDispatcher {
 	public value: T;
-	private _subscribers: ((next: T, prev: T | null) => void)[] = [];
+	private _subscribers: ((next: T, prev: T) => void)[] = [];
 
 	constructor(value: T) {
 		super();
 		this.value = value;
 	}
 
-	public subscribe(listener: (next: T, prev: T | null) => void): Subscription {
+	public subscribe(listener: (next: T, prev: T) => void): Subscription {
 		this._subscribers.push(listener);
 		return () => {
             this._subscribers.splice(this._subscribers.indexOf(listener), 1);
