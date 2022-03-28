@@ -62,7 +62,7 @@ export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
 
 	public update(): this {
 		const def = this.def;
-		const value = this.value;
+		let value = this.value;
 
 		if (def.getName() !== value.name) {
 			value.name = def.getName();
@@ -78,6 +78,10 @@ export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
 		this.material.updateRef(def.getMaterial());
 
 		if (def.getMode() !== getObject3DMode(value)) {
+			this.pool.releaseBase(value);
+			// TODO(bug): Material temporarily invalid here over next three lines.
+			this.value = value = PrimitiveBinding.createValue(def, value.geometry, value.material as Material, this.pool);
+			console.debug(`MaterialBinding::mode → ${value.type}`);
 			this.material.updateParams();
 		}
 
