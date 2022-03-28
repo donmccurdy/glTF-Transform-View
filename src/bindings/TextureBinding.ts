@@ -7,11 +7,11 @@ import { NULL_TEXTURE } from '../ImageProvider';
 export class TextureBinding extends Binding<TextureDef, Texture> {
 	private _image: ArrayBuffer | null = null;
 
-	public constructor(context: UpdateContext, source: TextureDef) {
+	constructor(context: UpdateContext, source: TextureDef) {
 		super(context, source, context.texturePool.requestBase(NULL_TEXTURE), context.texturePool);
 	}
 
-	public update(): this {
+	update() {
 		const def = this.def;
 		const value = this.value;
 
@@ -22,15 +22,12 @@ export class TextureBinding extends Binding<TextureDef, Texture> {
 		const image = def.getImage() as ArrayBuffer;
 		if (image !== this._image) {
 			this._image = image;
-			// TODO(cleanup): Consolidate?
 			this.pool.releaseBase(this.value);
 			this.value = this.pool.requestBase(this._context.imageProvider.get(def));
 		}
-
-		return this.publishAll(); // TODO(perf)
 	}
 
-	public dispose() {
+	dispose() {
 		super.dispose();
 	}
 }

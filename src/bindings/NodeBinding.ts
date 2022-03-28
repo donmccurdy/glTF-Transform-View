@@ -29,7 +29,7 @@ export class NodeBinding extends Binding<NodeDef, Object3D> {
 		});
 	}
 
-	public update(): this {
+	update() {
 		const def = this.def;
 		const value = this.value;
 
@@ -51,11 +51,9 @@ export class NodeBinding extends Binding<NodeDef, Object3D> {
 
 		this.children.updateRefList(def.listChildren());
 		this.mesh.updateRef(def.getMesh());
-
-		return this.publishAll(); // TODO(perf)
 	}
 
-	public dispose() {
+	dispose() {
 		this.children.dispose();
 		this.mesh.dispose();
 		super.dispose();

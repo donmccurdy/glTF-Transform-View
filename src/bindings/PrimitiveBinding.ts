@@ -29,7 +29,7 @@ export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
 	protected indices = new RefObserver<AccessorDef, BufferAttribute>('indices', this._context);
 	protected attributes = new RefMapObserver<AccessorDef, BufferAttribute>('attributes', this._context);
 
-	public constructor(context: UpdateContext, def: PrimitiveDef) {
+	constructor(context: UpdateContext, def: PrimitiveDef) {
 		super(
 			context,
 			def,
@@ -60,7 +60,7 @@ export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
 		});
 	}
 
-	public update(): this {
+	update() {
 		const def = this.def;
 		let value = this.value;
 
@@ -84,8 +84,6 @@ export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
 			console.debug(`MaterialBinding::mode → ${value.type}`);
 			this.material.updateParams();
 		}
-
-		return this.publishAll(); // TODO(perf)
 	}
 
 	private static createValue(source: PrimitiveDef, geometry: BufferGeometry, material: Material, pool: ValuePool<MeshLike>): MeshLike {
@@ -109,7 +107,7 @@ export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
 		}
 	}
 
-	public dispose() {
+	dispose() {
 		this.material.dispose();
 		this.indices.dispose();
 		this.attributes.dispose();

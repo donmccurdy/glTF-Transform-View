@@ -5,7 +5,7 @@ import { Binding } from './Binding';
 import { ValuePool } from '../pools';
 
 export class AccessorBinding extends Binding<AccessorDef, BufferAttribute> {
-	public constructor(context: UpdateContext, def: AccessorDef) {
+	constructor(context: UpdateContext, def: AccessorDef) {
 		super(
 			context,
 			def,
@@ -22,7 +22,7 @@ export class AccessorBinding extends Binding<AccessorDef, BufferAttribute> {
 		));
 	}
 
-	public update(): this {
+	update() {
 		const def = this.def;
 		const value = this.value;
 
@@ -34,7 +34,5 @@ export class AccessorBinding extends Binding<AccessorDef, BufferAttribute> {
 		} else {
 			value.needsUpdate = true;
 		}
-
-		return this.publishAll(); // TODO(perf)
 	}
 }

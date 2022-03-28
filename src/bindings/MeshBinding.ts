@@ -10,7 +10,7 @@ export class MeshBinding extends Binding<MeshDef, Group> {
 	protected primitives = new RefListObserver<PrimitiveDef, MeshLike, Object3DParams>('primitives', this._context)
 		.setParamsFn(() => Object3DPool.createParams(this.def))
 
-	public constructor(context: UpdateContext, def: MeshDef) {
+	constructor(context: UpdateContext, def: MeshDef) {
 		super(context, def, context.meshPool.requestBase(new Group()), context.meshPool);
 
 		this.primitives.subscribe((nextPrims, prevPrims) => {
@@ -20,7 +20,7 @@ export class MeshBinding extends Binding<MeshDef, Group> {
 		});
 	}
 
-	public update(): this {
+	update() {
 		const def = this.def;
 		const value = this.value;
 
@@ -31,11 +31,9 @@ export class MeshBinding extends Binding<MeshDef, Group> {
 		}
 
 		this.primitives.updateRefList(def.listPrimitives());
-
-		return this.publishAll(); // TODO(perf)
 	}
 
-	public dispose() {
+	dispose() {
 		this.primitives.dispose();
 		super.dispose();
 	}

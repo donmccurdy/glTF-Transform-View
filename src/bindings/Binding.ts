@@ -23,7 +23,11 @@ export abstract class Binding <Def extends PropertyDef, Value, Params = EmptyPar
 		this.value = value;
 		this.pool = pool;
 
-		const onChange = () => this.update();
+		const onChange = () => {
+			// TODO(perf): Should change / next be separated?
+			this.update();
+			this.publishAll();
+		};
 		const onDispose = () => this.dispose();
 
 		def.addEventListener('change', onChange);
@@ -39,7 +43,7 @@ export abstract class Binding <Def extends PropertyDef, Value, Params = EmptyPar
 	 * Lifecycle.
 	 */
 
-	abstract update(): this;
+	abstract update(): void;
 
 	publishAll(): this {
 		for (const output of this._outputs) {

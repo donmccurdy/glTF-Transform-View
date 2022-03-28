@@ -7,7 +7,7 @@ import { RefListObserver } from '../observers';
 export class SceneBinding extends Binding<SceneDef, Group> {
 	protected children = new RefListObserver<NodeDef, Object3D>('children', this._context);
 
-	public constructor(context: UpdateContext, source: SceneDef) {
+	constructor(context: UpdateContext, source: SceneDef) {
 		super(context, source, context.scenePool.requestBase(new Group()), context.scenePool);
 		this.children.subscribe((nextChildren, prevChildren) => {
 			this.value.remove(...prevChildren!);
@@ -16,7 +16,7 @@ export class SceneBinding extends Binding<SceneDef, Group> {
 		});
 	}
 
-	public update(): this {
+	update() {
 		const source = this.def;
 		const target = this.value;
 
@@ -27,11 +27,9 @@ export class SceneBinding extends Binding<SceneDef, Group> {
 		}
 
 		this.children.updateRefList(source.listChildren());
-
-		return this.publishAll(); // TODO(perf)
 	}
 
-	public dispose() {
+	dispose() {
 		this.children.dispose();
 		super.dispose();
 	}

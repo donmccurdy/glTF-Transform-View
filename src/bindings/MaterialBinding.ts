@@ -16,9 +16,6 @@ enum ShadingModel {
 	PHYSICAL = 2,
 }
 
-// TODO(bug): When material type changes, texture bindings do not update. Likely affected:
-// - MaterialBinding
-// - PrimitiveBinding
 // TODO(bug): Missing change listeners on TextureInfo... delegate?
 
 export class MaterialBinding extends Binding<MaterialDef, Material> {
@@ -53,10 +50,13 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 	private readonly _textureUpdateFns: (() => void)[] = [];
 	private readonly _textureApplyFns: (() => void)[] = [];
 
-	public constructor(context: UpdateContext, def: MaterialDef) {
+	constructor(context: UpdateContext, def: MaterialDef) {
 		super(context, def, MaterialBinding.createValue(def, context.materialPool), context.materialPool);
 
-		this.extensions.subscribe(() => this.update());
+		this.extensions.subscribe(() => {
+			this.update();
+			this.publishAll();
+		});
 
 		this.bindTexture(['map'], this.baseColorTexture, () => def.getBaseColorTexture(), () => def.getBaseColorTextureInfo(), sRGBEncoding);
 		this.bindTexture(['emissiveMap'], this.emissiveTexture, () => def.getEmissiveTexture(), () => def.getEmissiveTextureInfo(), sRGBEncoding);
@@ -135,7 +135,7 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 		}
 	}
 
-	public update(): this {
+	update() {
 		const def = this.def;
 		let value = this.value;
 
@@ -166,8 +166,6 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 		}
 
 		for (const fn of this._textureUpdateFns) fn();
-
-		return this.publishAll(); // TODO(perf)
 	}
 
 	private _updateBasic(target: MeshBasicMaterial) {
@@ -333,7 +331,7 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 		}
 	}
 
-	public dispose() {
+	dispose() {
 		this.extensions.dispose();
 		for (const observer of this._textureObservers) {
 			observer.dispose();

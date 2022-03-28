@@ -13,9 +13,6 @@ export interface Output<Value> extends Subject<Value | null> {
 	detach(): void;
 }
 
-// TODO(impl): Where/how do change events get handled? Am I
-// crazy in thinking those can just propagate with .next(value)?
-
 // TODO(docs): The _only_ time an observer should call .next()
 // is after "forwarding" from Observer to ListObserver or
 // MapObserver, correct?
