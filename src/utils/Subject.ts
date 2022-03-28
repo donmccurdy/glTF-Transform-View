@@ -17,10 +17,11 @@ export class Subject<T> extends EventDispatcher {
 	}
 
 	public next(value: T) {
-		for (const listener of this._subscribers) {
-			listener(value, this.value);
-		}
+		const prevValue = this.value;
 		this.value = value;
+		for (const listener of this._subscribers) {
+			listener(this.value, prevValue);
+		}
 	}
 
 	public dispose() {
