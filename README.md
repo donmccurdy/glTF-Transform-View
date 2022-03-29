@@ -94,18 +94,19 @@ function animate () {
 
 ### Bindings
 
-| binding   | status | comments    |
-|-----------|--------|-------------|
-| Scene     | ✅      | Dynamic     |
-| Node      | ✅      | Dynamic     |
-| Mesh      | ✅      | Dynamic     |
-| Primitive | ✅      | Dynamic     |
-| Accessor  | ✅      | Dynamic     |
-| Material  | ✅      | Dynamic     |
-| Texture   | ✅      | Dynamic     |
-| Animation | ❌      | No bindings |
-| Camera    | ❌      | No bindings |
-| Light     | ❌      | No bindings |
+| binding     | status | comments    |
+|-------------|--------|-------------|
+| Scene       | ✅      | Dynamic     |
+| Node        | ✅      | Dynamic     |
+| Mesh        | ✅      | Dynamic     |
+| Primitive   | ✅      | Dynamic     |
+| Accessor    | ✅      | Dynamic     |
+| Material    | ✅      | Dynamic     |
+| Texture     | ✅      | Dynamic     |
+| TextureInfo | 🚧     | Static      |
+| Animation   | ❌      | No bindings |
+| Camera      | ❌      | No bindings |
+| Light       | ❌      | No bindings |
 
 **Legend:**
 
