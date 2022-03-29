@@ -1,6 +1,6 @@
 import test from 'tape';
 import { Document } from '@gltf-transform/core';
-import { GLTFRenderer } from '../dist/render.modern.js';
+import { DocumentView } from '../dist/view.modern.js';
 
 test('SceneBinding', t => {
 	const document = new Document();
@@ -11,8 +11,8 @@ test('SceneBinding', t => {
 		.addChild(document.createNode('Node3'));
 	nodeDef.addChild(document.createNode('Node4'));
 
-	const renderer = new GLTFRenderer(document);
-	const scene = renderer.render(sceneDef);
+	const documentView = new DocumentView(document);
+	const scene = documentView.view(sceneDef);
 
 	t.equals(scene.name, 'MyScene', 'scene → name');
 	sceneDef.setName('MySceneRenamed');

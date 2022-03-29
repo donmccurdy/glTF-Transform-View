@@ -52,13 +52,13 @@ export class TexturePool implements ValuePool<Texture, TextureParams> {
         return base;
     }
     releaseBase(base: Texture): void {
-        // base.dispose();
+        base.dispose();
     }
     requestVariant(base: Texture, params: TextureParams): Texture {
         return this._createVariant(base, params);
     }
     releaseVariant(variant: Texture): void {
-        // variant.dispose();
+        variant.dispose();
     }
     dispose(): void {
         throw new Error('Method not implemented.');

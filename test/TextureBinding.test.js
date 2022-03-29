@@ -1,6 +1,6 @@
 import test from 'tape';
 import { Document } from '@gltf-transform/core';
-import { GLTFRenderer } from '../dist/render.modern.js';
+import { DocumentView } from '../dist/view.modern.js';
 
 test('TextureBinding', t => {
 	const document = new Document();
@@ -8,8 +8,8 @@ test('TextureBinding', t => {
 		.setImage(new Uint8Array(0))
 		.setMimeType('image/png')
 		.setExtension({textureExtras: true});
-	const renderer = new GLTFRenderer(document);
-	const texture = renderer.render(textureDef);
+	const documentView = new DocumentView(document);
+	const texture = documentView.view(textureDef);
 	t.ok(texture, 'texture');
 	t.notOk(texture.flipY, 'texture → flipY');
 	t.end();

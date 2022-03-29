@@ -1,6 +1,6 @@
 import test from 'tape';
 import { Document } from '@gltf-transform/core';
-import { GLTFRenderer } from '../dist/render.modern.js';
+import { DocumentView } from '../dist/view.modern.js';
 
 test('MeshBinding', t => {
 	const document = new Document();
@@ -19,8 +19,8 @@ test('MeshBinding', t => {
 		.setName('MyMesh')
 		.addPrimitive(primDef)
 
-	const renderer = new GLTFRenderer(document);
-	const mesh = renderer.render(meshDef);
+	const documentView = new DocumentView(document);
+	const mesh = documentView.view(meshDef);
 
 	t.equals(mesh.name, 'MyMesh', 'mesh → name');
 

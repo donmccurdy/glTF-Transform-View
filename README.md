@@ -1,9 +1,9 @@
-# @gltf-transform/render
+# @gltf-transform/view
 
-[![Latest NPM release](https://img.shields.io/npm/v/@gltf-transform/render.svg)](https://www.npmjs.com/package/@gltf-transform/render)
-[![Minzipped size](https://badgen.net/bundlephobia/minzip/@gltf-transform/render)](https://bundlephobia.com/result?p=@gltf-transform/render)
+[![Latest NPM release](https://img.shields.io/npm/v/@gltf-transform/view.svg)](https://www.npmjs.com/package/@gltf-transform/view)
+[![Minzipped size](https://badgen.net/bundlephobia/minzip/@gltf-transform/view)](https://bundlephobia.com/result?p=@gltf-transform/view)
 [![License](https://img.shields.io/badge/license-MIT-007ec6.svg)](https://github.com/donmccurdy/glTF-Transform-Render/blob/main/LICENSE)
-[![Build Status](https://github.com/donmccurdy/glTF-Transform-Render/workflows/build/badge.svg?branch=main&event=push)](https://github.com/donmccurdy/glTF-Transform-Render/actions?query=workflow%3Abuild)
+[![Build Status](https://github.com/donmccurdy/glTF-Transform-View/workflows/build/badge.svg?branch=main&event=push)](https://github.com/donmccurdy/glTF-Transform-View/actions?query=workflow%3Abuild)
 
 > _**IN DEVELOPMENT:** This project is currently in development, and missing some functionality._
 
@@ -24,12 +24,12 @@ trip is lossy, and doesn't support all features of glTF. For a small set
 of closely-controlled assets, this might be a good workflow. But in
 general, it is error-prone.
 
-**`@gltf-transform/render` provides a tighter integration between a glTF
-Document and a three.js scene graph**, so that changes within the Document
-(e.g. to a [Material](https://gltf-transform.donmccurdy.com/classes/material.html)
-settings) are shown _instantly_ in the rendered result. In addition, any
-features that three.js doesn't support won't be lost — they just aren't
-rendered in the preview.
+**`@gltf-transform/view` provides a tighter integration between a glTF
+Document and a three.js scene**, so that changes within the Document
+(e.g. to a [Material](https://gltf-transform.donmccurdy.com/classes/material.html))
+are shown _instantly_ in the rendered result. In addition, any features
+that three.js doesn't support won't be lost — they just aren't rendered
+in the preview.
 
 > *NOTE: The fast edit/refresh loop requires some additional memory overhead, so this
 > project is not meant to replace THREE.GLTFLoader for one-time loading.*
@@ -39,7 +39,7 @@ rendered in the preview.
 Install:
 
 ```
-npm install --save @gltf-transform/render
+npm install --save @gltf-transform/view
 ```
 
 ## API
@@ -48,7 +48,7 @@ npm install --save @gltf-transform/render
 import { Scene, WebGLRenderer, PerspectiveCamera } from 'three';
 import { WebIO } from '@gltf-transform/core';
 import { KHRONOS_EXTENSIONS } from '@gltf-transform/extensions';
-import { GLTFRenderer } from '@gltf-transform/render';
+import { DocumentView } from '@gltf-transform/view';
 
 // Set up three.js scene.
 
@@ -60,12 +60,11 @@ const renderer = new WebGLRenderer();
 // Load glTF Document.
 const io = new WebIO().registerExtensions(KHRONOS_EXTENSIONS);
 const document = await io.read('./input.glb');
-const documentRenderer = new GLTFRenderer(document);
+const documentView = new DocumentView(document);
 
-// Add the GLTFRenderer's output to the scene (just once).
-const groupDef = document.getRoot().listScenes()[0];
-const group = documentRenderer.render(scene);
-scene.add(group);
+// Add glTF content to the scene (just once).
+const sceneDef = document.getRoot().listScenes()[0];
+scene.add(documentView.view(sceneDef));
 
 // Render.
 function animate () {
@@ -104,11 +103,11 @@ buttonEl.addEventListener('click', () => {
 
 ## Bugs / Limitations / To Do
 
-See https://github.com/donmccurdy/glTF-Transform-Render/issues/8.
+See https://github.com/donmccurdy/glTF-Transform-View/issues/8.
 
 ### Extensions Supported
 
-See https://github.com/donmccurdy/glTF-Transform-Render/issues/7.
+See https://github.com/donmccurdy/glTF-Transform-View/issues/7.
 
 ## Contributing
 

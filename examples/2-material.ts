@@ -1,7 +1,7 @@
 import { ACESFilmicToneMapping, AmbientLight, DirectionalLight, PMREMGenerator, PerspectiveCamera, Scene, UnsignedByteType, WebGLRenderer, sRGBEncoding, TorusKnotBufferGeometry } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { Document, Material } from '@gltf-transform/core';
-import { GLTFRenderer } from '../dist/render.modern.js';
+import { DocumentView } from '../dist/view.modern.js';
 import { createMaterialPane } from './material-pane';
 import { createStatsPane } from './stats-pane.js';
 import { Pane } from 'tweakpane';
@@ -72,9 +72,9 @@ const doc = (() => {
 	return doc;
 })();
 
-const modelRenderer = new GLTFRenderer(doc);
+const documentView = new DocumentView(doc);
 const modelDef = doc.getRoot().getDefaultScene() || doc.getRoot().listScenes()[0];
-const model = modelRenderer.render(modelDef);
+const model = documentView.view(modelDef);
 scene.add(model);
 
 //

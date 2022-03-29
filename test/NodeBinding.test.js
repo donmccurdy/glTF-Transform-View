@@ -1,6 +1,6 @@
 import test from 'tape';
 import { Document } from '@gltf-transform/core';
-import { GLTFRenderer } from '../dist/render.modern.js';
+import { DocumentView } from '../dist/view.modern.js';
 
 test('NodeBinding', t => {
 	const document = new Document();
@@ -10,8 +10,8 @@ test('NodeBinding', t => {
 		.setScale([0.5, 0.5, 0.5])
 		.addChild(document.createNode('Node2').setTranslation([5, 0, 0]));
 
-	const renderer = new GLTFRenderer(document);
-	const node1 = renderer.render(nodeDef1);
+	const documentView = new DocumentView(document);
+	const node1 = documentView.view(nodeDef1);
 
 	t.equals(node1.name, 'Node1', 'node1 → name');
 	t.equals(node1.children.length, 1, 'node1 → children');

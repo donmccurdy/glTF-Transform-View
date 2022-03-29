@@ -1,7 +1,7 @@
 import { ACESFilmicToneMapping, AmbientLight, DirectionalLight, PMREMGenerator, PerspectiveCamera, Scene, UnsignedByteType, WebGLRenderer, sRGBEncoding } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTF, Material, WebIO } from '@gltf-transform/core';
-import { GLTFRenderer, ImageProvider } from '../dist/render.modern.js';
+import { DocumentView, ImageProvider } from '../dist/view.modern.js';
 import {Pane} from 'tweakpane';
 import * as TweakpanePluginThumbnailList from 'tweakpane-plugin-thumbnail-list';
 import { createStatsPane } from './stats-pane.js';
@@ -52,7 +52,7 @@ window.addEventListener( 'resize', onWindowResize );
 //
 
 let material: Material;
-let modelRenderer: GLTFRenderer;
+let documentView: DocumentView;
 
 const pane = new Pane({title: 'DamagedHelmet.glb'});
 pane.registerPlugin(TweakpanePluginThumbnailList);
@@ -64,13 +64,13 @@ io.read('../assets/DamagedHelmet.glb').then(async (doc) => {
 	const imageProvider = new ImageProvider();
 	await imageProvider.update(doc.getRoot().listTextures());
 
-	console.time('GLTFRenderer::init');
-	modelRenderer = new GLTFRenderer(doc).setImageProvider(imageProvider);
-	console.timeEnd('GLTFRenderer::init');
+	console.time('DocumentView::init');
+	documentView = new DocumentView(doc).setImageProvider(imageProvider);
+	console.timeEnd('DocumentView::init');
 
 	window['doc'] = doc;
 	const modelDef = doc.getRoot().getDefaultScene() || doc.getRoot().listScenes()[0];
-	const model = window['model'] = modelRenderer.render(modelDef);
+	const model = window['model'] = documentView.view(modelDef);
 
 	scene.add(model);
 	animate();

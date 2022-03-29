@@ -3,7 +3,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { Document, WebIO } from '@gltf-transform/core';
 import { metalRough } from '@gltf-transform/functions';
-import { GLTFRenderer, DebugPool, setObjectPool, ImageProvider } from '../dist/render.modern.js';
+import { DocumentView, DebugPool, setObjectPool, ImageProvider } from '../dist/view.modern.js';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import { createEnvironment, createKTX2Loader } from './util.js';
 
@@ -27,7 +27,7 @@ const io = new WebIO().registerExtensions(ALL_EXTENSIONS);
 const loader = new GLTFLoader().setKTX2Loader(createKTX2Loader());
 
 const scene = new Scene();
-let modelRenderer: GLTFRenderer;
+let documentView: DocumentView;
 let modelBefore: Object3D;
 let modelAfter: Object3D;
 
@@ -67,10 +67,10 @@ document.body.addEventListener('gltf-document', async (event) => {
 
 	await checkExtensions(doc);
 
-	console.time('GLTFRenderer::init');
-	modelRenderer = new GLTFRenderer(doc).setImageProvider(imageProvider);
-	modelAfter = modelRenderer.render(modelDef);
-	console.timeEnd('GLTFRenderer::init');
+	console.time('DocumentView::init');
+	documentView = new DocumentView(doc).setImageProvider(imageProvider);
+	modelAfter = documentView.view(modelDef);
+	console.timeEnd('DocumentView::init');
 
 	console.time('WebIO::writeBinary');
 	const glb = await io.writeBinary(doc);
@@ -122,7 +122,7 @@ function disposeBefore(model: Object3D) {
 
 function disposeAfter(model: Object3D) {
 	scene.remove(model);
-	modelRenderer.dispose();
+	documentView.dispose();
 
 	const leaks = debugPool.list();
 	if (leaks.length > 0) {

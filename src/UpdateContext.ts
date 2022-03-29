@@ -136,7 +136,7 @@ export class UpdateContext {
 	// 		this.textureMap.listVariants(binding.value);
 	// 	}
 
-	// 	throw new Error(`GLTFRenderer: Lookup type "${def.propertyType}" not implemented.`);
+	// 	throw new Error(`DocumentView: Lookup type "${def.propertyType}" not implemented.`);
 	// }
 
 	public dispose(): void {
