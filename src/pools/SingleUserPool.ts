@@ -2,15 +2,13 @@ import { Property as PropertyDef, Mesh as MeshDef, Node as NodeDef, uuid, Primit
 import { Object3D } from 'three';
 import { ValuePool } from './Pool';
 
-// TODO(rename): SingleParentPool?
+export interface SingleUserParams {id: string}
 
-export interface Object3DParams {id: string}
-
-export class Object3DPool<T extends Object3D> implements ValuePool<T, Object3DParams> {
+export class SingleUserPool<T extends Object3D> implements ValuePool<T, SingleUserParams> {
     private static _parentIDs = new WeakMap<PropertyDef, string>();
 
     /** Generates a unique Object3D for every parent. */
-    static createParams(property: MeshDef | NodeDef): Object3DParams {
+    static createParams(property: MeshDef | NodeDef): SingleUserParams {
         const id = this._parentIDs.get(property) || uuid();
         this._parentIDs.set(property, id);
         return {id};
@@ -22,7 +20,7 @@ export class Object3DPool<T extends Object3D> implements ValuePool<T, Object3DPa
 
     releaseBase(base: T): void {}
 
-    requestVariant(base: T, params: Object3DParams): T {
+    requestVariant(base: T, params: SingleUserParams): T {
         return this._createVariant(base, params);
     }
 
@@ -35,7 +33,7 @@ export class Object3DPool<T extends Object3D> implements ValuePool<T, Object3DPa
         throw new Error('Method not implemented.');
     }
 
-    protected _createVariant(srcObject: T, _params: Object3DParams): T {
+    protected _createVariant(srcObject: T, _params: SingleUserParams): T {
 		return srcObject.clone();
 	}
 

@@ -4,11 +4,11 @@ import type { UpdateContext } from '../UpdateContext';
 import { Binding } from './Binding';
 import { RefListObserver } from '../observers';
 import { MeshLike } from '../constants';
-import { Object3DParams, Object3DPool } from '../pools';
+import { SingleUserParams, SingleUserPool } from '../pools';
 
 export class MeshBinding extends Binding<MeshDef, Group> {
-	protected primitives = new RefListObserver<PrimitiveDef, MeshLike, Object3DParams>('primitives', this._context)
-		.setParamsFn(() => Object3DPool.createParams(this.def))
+	protected primitives = new RefListObserver<PrimitiveDef, MeshLike, SingleUserParams>('primitives', this._context)
+		.setParamsFn(() => SingleUserPool.createParams(this.def))
 
 	constructor(context: UpdateContext, def: MeshDef) {
 		super(context, def, context.meshPool.requestBase(new Group()), context.meshPool);

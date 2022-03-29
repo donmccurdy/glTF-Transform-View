@@ -2,7 +2,7 @@ import { Accessor as AccessorDef, ExtensionProperty as ExtensionPropertyDef, Mat
 import { Object3D, BufferAttribute, Group, Mesh } from 'three';
 import { AccessorBinding, Binding, ExtensionBinding, MaterialBinding, MeshBinding, NodeBinding, PrimitiveBinding, SceneBinding, TextureBinding } from './bindings';
 import { DefaultImageProvider, ImageProvider, NullImageProvider } from './ImageProvider';
-import { MaterialPool, Object3DPool, Pool, TexturePool } from './pools';
+import { MaterialPool, SingleUserPool, Pool, TexturePool } from './pools';
 
 export class UpdateContext {
 	private _bindings = new Set<Binding<PropertyDef, any>>();
@@ -11,9 +11,9 @@ export class UpdateContext {
 	readonly accessorPool = new Pool<BufferAttribute>();
 	readonly extensionPool = new Pool<ExtensionPropertyDef>();
 	readonly materialPool = new MaterialPool();
-	readonly meshPool = new Object3DPool<Group>();
+	readonly meshPool = new SingleUserPool<Group>();
 	readonly nodePool = new Pool<Object3D>();
-	readonly primitivePool = new Object3DPool<Mesh>();
+	readonly primitivePool = new SingleUserPool<Mesh>();
 	readonly scenePool = new Pool<Group>();
 	readonly texturePool = new TexturePool();
 
