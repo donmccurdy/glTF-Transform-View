@@ -81,7 +81,6 @@ export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
 			this.pool.releaseBase(value);
 			// TODO(bug): Material temporarily invalid here over next three lines.
 			this.value = value = PrimitiveBinding.createValue(def, value.geometry, value.material as Material, this.pool);
-			console.debug(`MaterialBinding::mode → ${value.type}`);
 			this.material.updateParams();
 		}
 	}

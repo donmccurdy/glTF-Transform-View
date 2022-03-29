@@ -18,8 +18,8 @@ export class NodeBinding extends Binding<NodeDef, Object3D> {
 		super(context, def, context.nodePool.requestBase(new Object3D()), context.nodePool);
 
 		this.children.subscribe((nextChildren, prevChildren) => {
-			this.value.remove(...prevChildren!);
-			this.value.add(...nextChildren!);
+			if (prevChildren.length) this.value.remove(...prevChildren);
+			if (nextChildren.length) this.value.add(...nextChildren);
 			this.publishAll();
 		});
 		this.mesh.subscribe((nextMesh, prevMesh) => {

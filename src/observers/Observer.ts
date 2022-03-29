@@ -44,13 +44,11 @@ export class RefObserver<Def extends PropertyDef, Value, Params = EmptyParams> e
 	 */
 
 	setParamsFn(paramsFn: () => Params): this {
-		console.log('setParamsFn:' + this.name);
 		this._bindingParamsFn = paramsFn;
 		return this;
 	}
 
 	updateRef(def: Def | null) {
-		console.log('updateRef:' + this.name);
 		const binding = def ? this._context.bind(def) as Binding<Def, Value> : null;
 		if (binding === this.binding) return;
 

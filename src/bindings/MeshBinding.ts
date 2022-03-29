@@ -14,8 +14,8 @@ export class MeshBinding extends Binding<MeshDef, Group> {
 		super(context, def, context.meshPool.requestBase(new Group()), context.meshPool);
 
 		this.primitives.subscribe((nextPrims, prevPrims) => {
-			this.value.remove(...prevPrims!);
-			this.value.add(...nextPrims);
+			if (prevPrims.length) this.value.remove(...prevPrims);
+			if (nextPrims.length) this.value.add(...nextPrims);
 			this.publishAll();
 		});
 	}
@@ -23,8 +23,6 @@ export class MeshBinding extends Binding<MeshDef, Group> {
 	update() {
 		const def = this.def;
 		const value = this.value;
-
-		console.log('MeshBinding::update');
 
 		if (def.getName() !== value.name) {
 			value.name = def.getName();

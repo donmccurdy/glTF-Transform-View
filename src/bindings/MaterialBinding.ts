@@ -139,8 +139,6 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 		const def = this.def;
 		let value = this.value;
 
-		console.log('MaterialBinding::update');
-
 		this.extensions.updateRefList(def.listExtensions());
 
 		const shadingModel = getShadingModel(def);
@@ -151,7 +149,6 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 			this.value = MaterialBinding.createValue(def, this.pool);
 			value = this.value;
 			for (const fn of this._textureApplyFns) fn();
-			console.debug(`MaterialBinding::shadingModel → ${value.type}`);
 		}
 
 		// TODO(test): Write tests for the edge cases here, ensure that we
