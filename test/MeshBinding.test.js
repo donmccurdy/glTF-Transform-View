@@ -18,31 +18,22 @@ test('MeshBinding', t => {
 	const meshDef = document.createMesh()
 		.setName('MyMesh')
 		.addPrimitive(primDef)
-	const nodeDef = document.createNode()
-		.setName('MyNode')
-		.setMesh(meshDef);
-	const sceneDef = document.createScene('MyScene')
-		.addChild(nodeDef);
 
 	const renderer = new GLTFRenderer(document);
-	const scene = renderer.render(sceneDef);
+	const mesh = renderer.render(meshDef);
 
-	t.equals(scene.name, 'MyScene');
-	t.equals(scene.children[0].name, 'MyNode', 'scene → node');
-	t.equals(scene.children[0].children[0].name, 'MyMesh', 'scene → node → mesh');
-	t.equals(scene.children[0].children[0].children[0].type, 'Mesh', 'scene → node → mesh → prim');
+	t.equals(mesh.name, 'MyMesh', 'mesh → name');
 
 	meshDef.setName('MyMeshRenamed');
-	renderer.update(sceneDef);
-	t.equals(scene.children[0].children[0].name, 'MyMeshRenamed', 'rename mesh');
+	t.equals(mesh.name, 'MyMeshRenamed', 'mesh → name (2)');
+
+	t.equals(mesh.children[0].type, 'Mesh', 'mesh → prim (initial)');
 
 	meshDef.removePrimitive(primDef);
-	renderer.update(sceneDef);
-	t.equals(scene.children[0].children[0].children.length, 0, 'remove prim');
+	t.equals(mesh.children.length, 0, 'mesh → prim (remove)');
 
 	meshDef.addPrimitive(primDef);
-	renderer.update(sceneDef);
-	t.equals(scene.children[0].children[0].children.length, 1, 'add prim');
+	t.equals(mesh.children.length, 1, 'mesh → prim (add)');
 
 	t.end();
 });

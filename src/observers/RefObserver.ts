@@ -1,69 +1,85 @@
-import type { UpdateContext } from '../UpdateContext';
 import type { Property as PropertyDef } from '@gltf-transform/core';
-import { Observer } from './Observer';
-import { THREEObject, Subscription } from '../utils';
+import type { UpdateContext } from '../UpdateContext';
+import type { Binding } from '../bindings';
+import { Subject } from '../utils/Subject';
+import { EmptyParams } from '../pools';
 
-export class RefObserver<S extends PropertyDef, T extends THREEObject> extends Observer<T | null> {
-	protected _source: S | null = null;
-	protected _valueBase: T | null = null;
-	protected _unsubscribe: Subscription | null = null;
+/**
+ * Exposes a limited view of the RefObserver interface to objects
+ * using it as an output socket.
+ */
+export interface Output<Value> extends Subject<Value | null> {
+	detach(): void;
+}
 
-	constructor(public readonly name: string, protected _context: UpdateContext) {
+// TODO(docs): The _only_ time an observer should call .next()
+// is after "forwarding" from Observer to ListObserver or
+// MapObserver, correct?
+// ... any, .update(...) really.
+
+export class RefObserver<Def extends PropertyDef, Value, Params = EmptyParams> extends Subject<Value | null> implements Output<Value> {
+	readonly name: string;
+	binding: Binding<Def, Value> | null = null;
+	private _bindingParamsFn: () => Params = () => ({} as Params);
+
+	private readonly _context: UpdateContext;
+
+	constructor(name: string, context: UpdateContext,) {
 		super(null);
+		this.name = name;
+		this._context = context;
 	}
 
-	public update(source: S | null): void {
-		const context = this._context;
-		const binding = source ? context.bind(source) : null;
+	/**************************************************************************
+	 * Child interface. (Binding (Child))
+	 */
 
-		if (binding && context.deep) binding.updateOnce();
+	detach() {
+		this._clear();
+	}
 
-		if (this._source === source) {
-			if (this._map && this._valueBase && this.value) {
-				this._map.cache.updateVariant(this._valueBase, this.value, this._map.paramsFn());
-			}
-			return;
-		}
+	/**************************************************************************
+	 * Parent interface. (Binding (Parent), ListObserver, MapObserver)
+	 */
 
-		this.unsubscribe();
+	setParamsFn(paramsFn: () => Params): this {
+		this._bindingParamsFn = paramsFn;
+		return this;
+	}
 
-		this._source = source;
+	updateRef(def: Def | null) {
+		const binding = def ? this._context.bind(def) as Binding<Def, Value> : null;
+		if (binding === this.binding) return;
 
-		if (!source || !binding) {
-			this._disposeTarget();
+		this._clear();
+
+		if (binding) {
+			this.binding = binding;
+			this.binding.addOutput(this, this._bindingParamsFn);
+			this.binding.publish(this);
+		} else {
 			this.next(null);
-			return;
 		}
-
-		this._unsubscribe = binding.subscribe((target: T | null) => {
-			this._disposeTarget();
-
-			this._valueBase = target;
-			const valueDst = this._map && target
-				? this._map.cache.requestVariant(target, this._map.paramsFn()) as T
-				: target;
-
-			this.next(valueDst);
-		});
 	}
 
-	private _disposeTarget() {
-		if (this._map && this.value) {
-			this._map.cache.releaseVariant(this.value);
+	updateParams() {
+		if (this.binding) {
+			this.binding.updateOutput(this);
 		}
-		this._valueBase = null;
 	}
 
-	public dispose() {
-		if (this._unsubscribe) this._unsubscribe();
-		this._disposeTarget();
-		super.dispose();
+	dispose() {
+		this._clear();
 	}
 
-	protected unsubscribe() {
-		if (this._unsubscribe) {
-			this._unsubscribe();
-			this._unsubscribe = null;
+	/**************************************************************************
+	 * Internal.
+	 */
+
+	private _clear() {
+		if (this.binding) {
+			this.binding.removeOutput(this);
+			this.binding = null;
 		}
 	}
 }

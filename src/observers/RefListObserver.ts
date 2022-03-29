@@ -1,73 +1,110 @@
 import type { Property as PropertyDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
 import type { Binding } from '../bindings';
-import { Observer } from './Observer';
-import { THREEObject, Subscription } from '../utils';
+import { Subject } from '../utils/Subject';
+import { Subscription } from '../utils/EventDispatcher';
+import { EmptyParams } from '../pools';
+import { RefObserver } from './RefObserver';
 
-export interface ListUpdate<T> {
-	remove?: T,
-	add?: T,
-}
+export class RefListObserver<Def extends PropertyDef, Value, Params = EmptyParams> extends Subject<Value[]> {
+	readonly name: string;
 
-export class RefListObserver<S extends PropertyDef, T extends THREEObject> extends Observer<ListUpdate<T>> {
-	private _sources = new Set<S>();
-	private _unsubscribeMap = new Map<S, Subscription>();
+	protected readonly _context: UpdateContext;
 
-	constructor(public readonly name: string, private _context: UpdateContext) {
-		super({});
+	private readonly _observers: RefObserver<Def, Value>[] = [];
+	private readonly _subscriptions: Subscription[] = [];
+
+	constructor(name: string, context: UpdateContext) {
+		super([]);
+		this.name = name;
+		this._context = context;
 	}
 
-	public update(sources: S[]): void {
-		const context = this._context;
-		const nextSources = new Set(sources);
+	updateRefList(sources: Def[]) {
+		const added = new Set<Binding<Def, Value>>();
+		const removed = new Set<number>();
 
-		// Remove.
-		for (const prevSource of this._sources) {
-			if (nextSources.has(prevSource)) continue;
+		let needsUpdate = false;
 
-			this._sources.delete(prevSource);
-			this.unsubscribeSource(prevSource);
-			const prevRenderer = context.bind(prevSource) as Binding<S, T>;
-			this.next({remove: prevRenderer.value}); // Emit removed item.
-		}
+		for (let i = 0; i < sources.length || i < this._observers.length; i++) {
+			const source = sources[i];
+			const observer = this._observers[i];
 
-		// Add.
-		for (const nextSource of nextSources) {
-			if (this._sources.has(nextSource)) continue;
-
-			this._sources.add(nextSource);
-			this.subscribeSource(nextSource); // Emit added item.
-		}
-
-		// Update.
-		if (context.deep) {
-			for (const source of this._sources) {
-				context.bind(source).updateOnce();
+			if (!source) {
+				removed.add(i);
+				needsUpdate = true;
+			} else if (!observer) {
+				added.add(this._context.bind(source) as Binding<Def, Value>);
+				needsUpdate = true;
+			} else if (source !== observer.binding!.def) {
+				observer.updateRef(source);
+				needsUpdate = true;
 			}
 		}
-	}
 
-	public dispose() {
-		for (const [_, unsubscribe] of this._unsubscribeMap) {
-			unsubscribe();
+		for (let i = this._observers.length; i >= 0; i--) {
+			if (removed.has(i)) {
+				this._remove(i);
+			}
 		}
-		super.dispose();
+
+		for (const add of added) {
+			this._add(add);
+		}
+
+		if (needsUpdate) {
+			this._publish();
+		}
 	}
 
-	protected subscribeSource(source: S) {
-		const renderer = this._context.bind(source) as Binding<S, T>;
-		const unsubscribe = renderer.subscribe((next, prev) => {
-			const update = {} as ListUpdate<T>;
-			if (prev) update.remove = prev;
-			if (next) update.add = next;
-			if (next || prev) this.next(update);
-		});
-		this._unsubscribeMap.set(source, unsubscribe);
+	setParamsFn(paramsFn: () => Params): this {
+		for (const observer of this._observers) {
+			observer.setParamsFn(paramsFn);
+		}
+		return this;
 	}
 
-	protected unsubscribeSource(source: S) {
-		const unsubscribe = this._unsubscribeMap.get(source)!;
-		unsubscribe();
-		this._unsubscribeMap.delete(source);
+	updateParams() {
+		for (const observer of this._observers) {
+			observer.updateParams();
+		}
+	}
+
+	private _add(binding: Binding<Def, Value>) {
+		const observer = new RefObserver(this.name + '[]', this._context) as RefObserver<Def, Value>;
+		observer.updateRef(binding.def);
+		this._observers.push(observer);
+		this._subscriptions.push(observer.subscribe((next) => {
+			if (!next) {
+				this._remove(this._observers.indexOf(observer));
+			}
+			this._publish();
+		}));
+	}
+
+	private _remove(index: number) {
+		const observer = this._observers[index];
+		const unsub = this._subscriptions[index];
+
+		unsub();
+		observer.dispose();
+
+		this._observers.splice(index, 1);
+		this._subscriptions.splice(index, 1);
+	}
+
+	private _publish() {
+		this.next(this._observers.map((o) => o.value!));
+	}
+
+	dispose() {
+		for (const unsub of this._subscriptions) {
+			unsub();
+		}
+		for (const observer of this._observers) {
+			observer.dispose();
+		}
+		this._observers.length = 0;
+		this._subscriptions.length = 0;
 	}
 }

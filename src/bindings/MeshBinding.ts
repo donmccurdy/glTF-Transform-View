@@ -1,42 +1,37 @@
-import { Group, Object3D } from 'three';
+import { Group } from 'three';
 import { Mesh as MeshDef, Primitive as PrimitiveDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
-import { RefListObserver } from '../observers';
 import { Binding } from './Binding';
-import { pool } from '../ObjectPool';
-import { Object3DMap } from '../maps';
+import { RefListObserver } from '../observers';
+import { MeshLike } from '../constants';
+import { SingleUserParams, SingleUserPool } from '../pools';
 
 export class MeshBinding extends Binding<MeshDef, Group> {
-	protected primitives = new RefListObserver<PrimitiveDef, Object3D>('primitives', this._context)
-		.map(this._context.object3DMap, () => Object3DMap.createParams(this.source));
+	protected primitives = new RefListObserver<PrimitiveDef, MeshLike, SingleUserParams>('primitives', this._context)
+		.setParamsFn(() => SingleUserPool.createParams(this.def))
 
-	public constructor(context: UpdateContext, source: MeshDef) {
-		super(context, source, pool.request(new Group()));
+	constructor(context: UpdateContext, def: MeshDef) {
+		super(context, def, context.meshPool.requestBase(new Group()), context.meshPool);
 
-		this.primitives.subscribe((primitives) => {
-			if (primitives.remove) this.value.remove(primitives.remove);
-			if (primitives.add) this.value.add(primitives.add);
+		this.primitives.subscribe((nextPrims, prevPrims) => {
+			if (prevPrims.length) this.value.remove(...prevPrims);
+			if (nextPrims.length) this.value.add(...nextPrims);
+			this.publishAll();
 		});
 	}
 
-	public update(): this {
-		const source = this.source;
-		const target = this.value;
+	update() {
+		const def = this.def;
+		const value = this.value;
 
-		if (source.getName() !== target.name) {
-			target.name = source.getName();
+		if (def.getName() !== value.name) {
+			value.name = def.getName();
 		}
 
-		this.primitives.update(source.listPrimitives());
-
-		return this;
+		this.primitives.updateRefList(def.listPrimitives());
 	}
 
-	public disposeTarget(target: Group) {
-		pool.release(target);
-	}
-
-	public dispose() {
+	dispose() {
 		this.primitives.dispose();
 		super.dispose();
 	}

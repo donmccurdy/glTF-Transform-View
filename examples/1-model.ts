@@ -52,7 +52,6 @@ window.addEventListener( 'resize', onWindowResize );
 //
 
 let material: Material;
-let needsUpdate = false;
 let modelRenderer: GLTFRenderer;
 
 const pane = new Pane({title: 'DamagedHelmet.glb'});
@@ -79,8 +78,7 @@ io.read('../assets/DamagedHelmet.glb').then(async (doc) => {
 	// GUI.
 
 	material = doc.getRoot().listMaterials().pop();
-	const materialFolder = createMaterialPane(pane, doc, material);
-	materialFolder.on('change', () => (needsUpdate = true));
+	createMaterialPane(pane, doc, material);
 
 	const prim = doc.getRoot().listMeshes().pop().listPrimitives().pop();
 	const primFolder = pane.addFolder({title: 'Primitive'});
@@ -92,7 +90,6 @@ io.read('../assets/DamagedHelmet.glb').then(async (doc) => {
 		}
 	}).on('change', (ev) => {
 		prim.setMode(ev.value as GLTF.MeshPrimitiveMode);
-		modelRenderer.update(prim);
 	});
 });
 
@@ -100,15 +97,6 @@ io.read('../assets/DamagedHelmet.glb').then(async (doc) => {
 
 function animate() {
 	requestAnimationFrame(animate);
-
-	if (needsUpdate) {
-		console.time('GLTFRenderer::update');
-		modelRenderer.update(material);
-		console.timeEnd('GLTFRenderer::update');
-
-		needsUpdate = false;
-	}
-
 	render();
 	updateStats();
 }

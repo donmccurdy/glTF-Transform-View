@@ -1,5 +1,6 @@
 export * from './Binding';
 export * from './AccessorBinding';
+export * from './ExtensionBinding';
 export * from './MaterialBinding';
 export * from './MeshBinding';
 export * from './NodeBinding';

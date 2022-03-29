@@ -6,9 +6,11 @@ test('TextureBinding', t => {
 	const document = new Document();
 	const textureDef = document.createTexture()
 		.setImage(new Uint8Array(0))
-		.setMimeType('image/png');
+		.setMimeType('image/png')
+		.setExtension({textureExtras: true});
 	const renderer = new GLTFRenderer(document);
-	const textures = renderer.findTargets(textureDef);
-	t.equals(textures.length, 1, 'renders texture');
+	const texture = renderer.render(textureDef);
+	t.ok(texture, 'texture');
+	t.notOk(texture.flipY, 'texture → flipY');
 	t.end();
 });

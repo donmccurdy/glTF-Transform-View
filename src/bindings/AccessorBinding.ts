@@ -2,38 +2,37 @@ import { BufferAttribute } from 'three';
 import { Accessor as AccessorDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
 import { Binding } from './Binding';
-import { pool } from '../ObjectPool';
+import { ValuePool } from '../pools';
 
 export class AccessorBinding extends Binding<AccessorDef, BufferAttribute> {
-	public constructor(context: UpdateContext, source: AccessorDef) {
-		super(context, source, AccessorBinding.createTarget(source));
+	constructor(context: UpdateContext, def: AccessorDef) {
+		super(
+			context,
+			def,
+			AccessorBinding.createValue(def, context.accessorPool),
+			context.accessorPool,
+		);
 	}
 
-	private static createTarget(source: AccessorDef): BufferAttribute {
-		return pool.request(new BufferAttribute(
-			source.getArray()!,
-			source.getElementSize(),
-			source.getNormalized()
+	private static createValue(def: AccessorDef, pool: ValuePool<BufferAttribute>) {
+		return pool.requestBase(new BufferAttribute(
+			def.getArray()!,
+			def.getElementSize(),
+			def.getNormalized()
 		));
 	}
 
-	public update(): this {
-		const source = this.source;
-		const target = this.value;
+	update() {
+		const def = this.def;
+		const value = this.value;
 
-		if (source.getArray() !== target.array
-			|| source.getElementSize() !== target.itemSize
-			|| source.getNormalized() !== target.normalized) {
-			this.next(AccessorBinding.createTarget(source));
+		if (def.getArray() !== value.array
+			|| def.getElementSize() !== value.itemSize
+			|| def.getNormalized() !== value.normalized) {
+			this.pool.releaseBase(value);
+			this.value = AccessorBinding.createValue(def, this.pool);
 		} else {
-			// TODO(perf): Support update mask?
-			// target.needsUpdate = true;
+			value.needsUpdate = true;
 		}
-
-		return this;
-	}
-
-	public disposeTarget(target: BufferAttribute): void {
-		pool.release(target);
 	}
 }

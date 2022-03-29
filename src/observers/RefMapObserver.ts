@@ -1,78 +1,108 @@
 import type { Property as PropertyDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
 import type { Binding } from '../bindings';
-import { Observer } from './Observer';
-import { THREEObject, Subscription } from '../utils';
+import { Subject } from '../utils/Subject';
+import { Subscription } from '../utils/EventDispatcher';
+import { EmptyParams } from '../pools';
+import { RefObserver } from './RefObserver';
 
-export interface MapUpdate<K, V> {
-	key: K,
-	value: V | null,
-}
+export class RefMapObserver<Def extends PropertyDef, Value, Params = EmptyParams> extends Subject<Record<string, Value>> {
+	readonly name: string;
 
-export class RefMapObserver<S extends PropertyDef, T extends THREEObject> extends Observer<MapUpdate<string, T>> {
-	private _sources: {[key: string]: S} = {};
-	private _unsubscribeMap = new Map<S, Subscription>();
+	protected readonly _context: UpdateContext;
 
-	constructor(public readonly name: string, private _context: UpdateContext) {
-		super({key: '', value: null});
+	private readonly _observers: Record<string, RefObserver<Def, Value>> = {};
+	private readonly _subscriptions: Record<string, Subscription> = {};
+
+	constructor(name: string, context: UpdateContext) {
+		super({});
+		this.name = name;
+		this._context = context;
 	}
 
-	public update(keys: string[], sources: S[]): void {
-		const context = this._context;
+	updateRefMap(keys: string[], defs: Def[]) {
+		const nextKeys = new Set(keys);
+		const nextDefs = {} as Record<string, Def>;
+		for (let i = 0; i < keys.length; i++) nextDefs[keys[i]] = defs[i];
 
-		const nextSources: {[key: string]: S} = {};
-		for (let i = 0; i < keys.length; i++) nextSources[keys[i]] = sources[i];
+		let needsUpdate = false;
 
-		// Remove.
-		for (const key in this._sources) {
-			const prevSource = this._sources[key];
-			const nextSource = nextSources[key];
-			if (prevSource === nextSource) continue;
-
-			delete this._sources[key];
-			this.unsubscribeSource(prevSource);
-
-			if (nextSource) continue;
-			this.next({key, value: null}); // Emit removed item.
-		}
-
-		// Add.
-		for (const key in nextSources) {
-			const prevSource = this._sources[key];
-			const nextSource = nextSources[key];
-			if (prevSource === nextSource) continue;
-
-			this._sources[key] = nextSource;
-			this.subscribeSource(key, nextSource);
-
-			const nextRenderer = context.bind(nextSource) as Binding<S, T>;
-			this.next({key, value: nextRenderer.value}) // Emit added item.
-		}
-
-		// Update.
-		if (context.deep) {
-			for (const key in this._sources) {
-				context.bind(this._sources[key]).updateOnce();
+		for (const key in this._observers) {
+			if (!nextKeys.has(key)) {
+				this._remove(key);
+				needsUpdate = true;
 			}
 		}
-	}
 
-	public dispose() {
-		for (const [_, unsubscribe] of this._unsubscribeMap) {
-			unsubscribe();
+		for (const key of keys) {
+			const observer = this._observers[key];
+			if (!observer) {
+				this._add(key, this._context.bind(nextDefs[key]) as Binding<Def, Value>);
+				needsUpdate = true;
+			} else if (observer.binding!.def !== nextDefs[key]) {
+				observer.updateRef(nextDefs[key]);
+				needsUpdate = true;
+			}
 		}
-		super.dispose();
+
+		if (needsUpdate) {
+			this._publish();
+		}
 	}
 
-	protected subscribeSource(key: string, source: S) {
-		const renderer = this._context.bind(source) as Binding<S, T>;
-		const unsubscribe = renderer.subscribe((next) => this.next({key, value: next}));
-		this._unsubscribeMap.set(source, unsubscribe);
+	setParamsFn(paramsFn: () => Params): this {
+		for (const key in this._observers) {
+			const observer = this._observers[key];
+			observer.setParamsFn(paramsFn);
+		}
+		return this;
 	}
 
-	protected unsubscribeSource(source: S) {
-		const unsubscribe = this._unsubscribeMap.get(source)!;
-		unsubscribe();
-		this._unsubscribeMap.delete(source);
+	updateParams() {
+		for (const key in this._observers) {
+			const observer = this._observers[key];
+			observer.updateParams();
+		}
+	}
+
+	private _add(key: string, binding: Binding<Def, Value>) {
+		const observer = new RefObserver(this.name + `[${key}]`, this._context) as RefObserver<Def, Value>;
+		observer.updateRef(binding.def);
+
+		this._observers[key] = observer;
+		this._subscriptions[key] = observer.subscribe((next) => {
+			if (!next) {
+				this._remove(key);
+			}
+			this._publish();
+		});
+	}
+
+	private _remove(key: string) {
+		const observer = this._observers[key];
+		const unsub = this._subscriptions[key];
+
+		unsub();
+		observer.dispose();
+
+		delete this._subscriptions[key];
+		delete this._observers[key];
+	}
+
+	private _publish() {
+		const entries = Object.entries(this._observers)
+			.map(([key, observer]) => [key, observer.value]);
+		this.next(Object.fromEntries(entries));
+	}
+
+	dispose() {
+		for (const key in this._observers) {
+			const observer = this._observers[key];
+			const unsub = this._subscriptions[key];
+			unsub();
+			observer.dispose();
+			delete this._subscriptions[key];
+			delete this._observers[key];
+		}
 	}
 }

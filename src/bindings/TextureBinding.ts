@@ -2,34 +2,32 @@ import { Texture } from 'three';
 import { Texture as TextureDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
 import { Binding } from './Binding';
-import { pool } from '../ObjectPool';
 import { NULL_TEXTURE } from '../ImageProvider';
 
 export class TextureBinding extends Binding<TextureDef, Texture> {
 	private _image: ArrayBuffer | null = null;
 
-	public constructor(context: UpdateContext, source: TextureDef) {
-		super(context, source, pool.request(NULL_TEXTURE));
+	constructor(context: UpdateContext, source: TextureDef) {
+		super(context, source, context.texturePool.requestBase(NULL_TEXTURE), context.texturePool);
 	}
 
-	public update(): this {
-		const source = this.source;
+	update() {
+		const def = this.def;
+		const value = this.value;
 
-		const image = source.getImage() as ArrayBuffer;
-		if (image !== this._image) {
-			this._image = image;
-			this.disposeTarget(this.value);
-			this.next(pool.request(this._context.imageProvider.get(source)));
+		if (def.getName() !== value.name) {
+			value.name = def.getName();
 		}
 
-		return this;
+		const image = def.getImage() as ArrayBuffer;
+		if (image !== this._image) {
+			this._image = image;
+			this.pool.releaseBase(this.value);
+			this.value = this.pool.requestBase(this._context.imageProvider.get(def));
+		}
 	}
 
-	public disposeTarget(target: Texture): void {
-		pool.release(target);
-	}
-
-	public dispose() {
+	dispose() {
 		super.dispose();
 	}
 }

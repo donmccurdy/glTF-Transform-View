@@ -1,75 +1,82 @@
-import { Accessor as AccessorDef, Material as MaterialDef, Mesh as MeshDef, Node as NodeDef, Primitive as PrimitiveDef, Property as PropertyDef, PropertyType, Scene as SceneDef, Texture as TextureDef } from '@gltf-transform/core';
-import { Object3D, Material, Texture } from 'three';
-import { AccessorBinding, Binding, MaterialBinding, MeshBinding, NodeBinding, PrimitiveBinding, SceneBinding, TextureBinding } from './bindings';
-import { IImageProvider, ImageProvider, NullImageProvider } from './ImageProvider';
-import { MaterialMap, Object3DMap, TextureMap } from './maps';
+import { Accessor as AccessorDef, ExtensionProperty as ExtensionPropertyDef, Material as MaterialDef, Mesh as MeshDef, Node as NodeDef, Primitive as PrimitiveDef, Property as PropertyDef, PropertyType, Scene as SceneDef, Texture as TextureDef } from '@gltf-transform/core';
+import { Object3D, BufferAttribute, Group, Mesh } from 'three';
+import { AccessorBinding, Binding, ExtensionBinding, MaterialBinding, MeshBinding, NodeBinding, PrimitiveBinding, SceneBinding, TextureBinding } from './bindings';
+import { DefaultImageProvider, ImageProvider, NullImageProvider } from './ImageProvider';
+import { MaterialPool, SingleUserPool, Pool, TexturePool } from './pools';
 
 export class UpdateContext {
-	public updateID = 1;
-	public deep = true;
-
 	private _bindings = new Set<Binding<PropertyDef, any>>();
-	private _sourceBindings = new WeakMap<PropertyDef, Binding<PropertyDef, any>>();
+	private _defBindings = new WeakMap<PropertyDef, Binding<PropertyDef, any>>();
 
-	public textureMap = new TextureMap('TextureMap');
-	public materialMap = new MaterialMap('MaterialMap');
-	public object3DMap = new Object3DMap('Object3DMap');
+	readonly accessorPool = new Pool<BufferAttribute>();
+	readonly extensionPool = new Pool<ExtensionPropertyDef>();
+	readonly materialPool = new MaterialPool();
+	readonly meshPool = new SingleUserPool<Group>();
+	readonly nodePool = new Pool<Object3D>();
+	readonly primitivePool = new SingleUserPool<Mesh>();
+	readonly scenePool = new Pool<Group>();
+	readonly texturePool = new TexturePool();
 
-	public imageProvider: IImageProvider = new NullImageProvider();
+	public imageProvider: ImageProvider = new NullImageProvider();
 
-	public setImageProvider(provider: ImageProvider): void {
+	public setImageProvider(provider: DefaultImageProvider): void {
 		this.imageProvider = provider;
 	}
 
 	private _addBinding(binding: Binding<PropertyDef, any>): void {
-		const source = binding.source;
+		const source = binding.def;
 		this._bindings.add(binding);
-		this._sourceBindings.set(source, binding);
+		this._defBindings.set(source, binding);
 		source.addEventListener('dispose', () => {
 			this._bindings.delete(binding);
-			this._sourceBindings.delete(source);
+			this._defBindings.delete(source);
 		});
 	}
 
-	public bind(source: null): null;
-	public bind(source: AccessorDef): AccessorBinding;
-	public bind(source: MaterialDef): MaterialBinding;
-	public bind(source: MeshDef): MeshBinding;
-	public bind(source: NodeDef): NodeBinding;
-	public bind(source: PrimitiveDef): PrimitiveBinding;
-	public bind(source: SceneDef): SceneBinding;
-	public bind(source: PropertyDef): Binding<PropertyDef, any>;
-	public bind(source: PropertyDef | null): Binding<PropertyDef, any> | null {
-		if (!source) return null;
-		if (this._sourceBindings.has(source)) {
-			return this._sourceBindings.get(source)!;
+	public bind(def: null): null;
+	public bind(def: AccessorDef): AccessorBinding;
+	public bind(def: MaterialDef): MaterialBinding;
+	public bind(def: MeshDef): MeshBinding;
+	public bind(def: NodeDef): NodeBinding;
+	public bind(def: PrimitiveDef): PrimitiveBinding;
+	public bind(def: SceneDef): SceneBinding;
+	public bind(def: PropertyDef): Binding<PropertyDef, any>;
+	public bind(def: PropertyDef | null): Binding<PropertyDef, any> | null {
+		if (!def) return null;
+		if (this._defBindings.has(def)) {
+			return this._defBindings.get(def)!;
 		}
 
 		let binding: Binding<PropertyDef, any>;
-		switch (source.propertyType) {
+		switch (def.propertyType) {
 			case PropertyType.ACCESSOR:
-				binding = new AccessorBinding(this, source as AccessorDef);
+				binding = new AccessorBinding(this, def as AccessorDef);
 				break;
 			case PropertyType.MATERIAL:
-				binding = new MaterialBinding(this, source as MaterialDef);
+				binding = new MaterialBinding(this, def as MaterialDef);
 				break;
 			case PropertyType.MESH:
-				binding = new MeshBinding(this, source as MeshDef);
+				binding = new MeshBinding(this, def as MeshDef);
 				break;
 			case PropertyType.NODE:
-				binding = new NodeBinding(this, source as NodeDef);
+				binding = new NodeBinding(this, def as NodeDef);
 				break;
 			case PropertyType.PRIMITIVE:
-				binding = new PrimitiveBinding(this, source as PrimitiveDef);
+				binding = new PrimitiveBinding(this, def as PrimitiveDef);
 				break;
 			case PropertyType.SCENE:
-				binding = new SceneBinding(this, source as SceneDef);
+				binding = new SceneBinding(this, def as SceneDef);
 				break;
 			case PropertyType.TEXTURE:
-				binding = new TextureBinding(this, source as TextureDef);
+				binding = new TextureBinding(this, def as TextureDef);
 				break;
-			default:
-				throw new Error(`Unimplemented type: ${source.propertyType}`);
+			default: {
+				if (def instanceof ExtensionPropertyDef) {
+					binding = new ExtensionBinding(this, def as ExtensionPropertyDef);
+				} else {
+					throw new Error(`Unimplemented type: ${def.propertyType}`);
+				}
+			}
 		}
 
 		binding.update();
@@ -78,68 +85,71 @@ export class UpdateContext {
 	}
 
 	public weakBind(source: PropertyDef): Binding<PropertyDef, any> | null {
-		return this._sourceBindings.get(source) || null;
+		return this._defBindings.get(source) || null;
 	}
 
-	public startUpdate(deep = false) {
-		this.updateID++;
-		this.deep = deep;
-	}
-
-	public endUpdate() {
-		this.textureMap.flush();
-		this.materialMap.flush();
-		this.object3DMap.flush();
+	public gc() {
+		// TODO(cleanup)
+		// this.textureMap.flush();
+		// this.materialMap.flush();
+		// this.object3DMap.flush();
 	}
 
 	/**
 	 * Given a target object (currently any THREE.Object3D), finds and returns the source
 	 * glTF-Transform Property definition.
 	 */
-	public findSource(target: Object3D): PropertyDef | null {
-		if (target === null) return null;
+	// public findDef(target: Object3D): PropertyDef | null {
+	// 	if (target === null) return null;
 
-		const base = this.object3DMap.findBase(target) || target;
-		for (const binding of this._bindings) {
-			if (binding.value === target || binding.value === base) {
-				return binding.source;
-			}
-		}
+	// 	let base;
 
-		return null;
-	}
+	// 	if (base = this.primitivePool.findBase(target))
+	// 	const base = this.object3DMap.findBase(target) || target;
+	// 	for (const binding of this._bindings) {
+	// 		if (binding.value === target || binding.value === base) {
+	// 			return binding.def;
+	// 		}
+	// 	}
+
+	// 	return null;
+	// }
 
 	/**
 	 * Given a source object (currently anything rendered as THREE.Object3D), finds and returns
 	 * the list of output THREE.Object3D instances.
 	 */
-	public findTargets(source: TextureDef): Texture[]
-	public findTargets(source: MaterialDef): Material[]
-	public findTargets(source: SceneDef | NodeDef | MeshDef | PrimitiveDef): Object3D[]
-	public findTargets(source: SceneDef | NodeDef | MeshDef | PrimitiveDef | MaterialDef | TextureDef): (Object3D | Material | Texture)[] {
-		const binding = this._sourceBindings.get(source);
-		if (!binding) return [];
+	// public findValues(def: TextureDef): Texture[]
+	// public findValues(def: MaterialDef): Material[]
+	// public findValues(def: SceneDef | NodeDef | MeshDef | PrimitiveDef): Object3D[]
+	// public findValues(def: SceneDef | NodeDef | MeshDef | PrimitiveDef | MaterialDef | TextureDef): (Object3D | Material | Texture)[] {
+	// 	const binding = this._defBindings.get(def);
+	// 	if (!binding) return [];
 
-		if (source instanceof SceneDef || source instanceof NodeDef) {
-			return [binding.value];
-		} else if (source instanceof MeshDef || source instanceof PrimitiveDef) {
-			return this.object3DMap.listVariants(binding.value);
-		} else if (source instanceof MaterialDef) {
-			this.materialMap.listVariants(binding.value);
-		} else if (source instanceof TextureDef) {
-			this.textureMap.listVariants(binding.value);
-		}
+	// 	if (def instanceof SceneDef || def instanceof NodeDef) {
+	// 		return [binding.value];
+	// 	} else if (def instanceof MeshDef || def instanceof PrimitiveDef) {
+	// 		return this.object3DMap.listVariants(binding.value);
+	// 	} else if (def instanceof MaterialDef) {
+	// 		this.materialMap.listVariants(binding.value);
+	// 	} else if (def instanceof TextureDef) {
+	// 		this.textureMap.listVariants(binding.value);
+	// 	}
 
-		throw new Error(`GLTFRenderer: Lookup type "${source.propertyType}" not implemented.`);
-	}
+	// 	throw new Error(`GLTFRenderer: Lookup type "${def.propertyType}" not implemented.`);
+	// }
 
 	public dispose(): void {
 		for (const renderer of this._bindings) {
 			renderer.dispose();
 		}
-		this.textureMap.dispose();
-		this.materialMap.dispose();
-		this.object3DMap.dispose();
+		this.accessorPool.dispose();
+		this.materialPool.dispose();
+		this.meshPool.dispose();
+		this.nodePool.dispose();
+		this.primitivePool.dispose();
+		this.scenePool.dispose();
+		this.texturePool.dispose();
 		this._bindings.clear();
 	}
 }

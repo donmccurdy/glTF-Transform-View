@@ -1,39 +1,100 @@
 import { Property as PropertyDef } from '@gltf-transform/core';
+import { RefObserver, Output } from '../observers';
 import type { UpdateContext } from '../UpdateContext';
-import { Subject, Subscription } from '../utils';
+import type { Subscription } from '../utils/EventDispatcher';
+import { EmptyParams, ValuePool } from '../pools';
 
-export abstract class Binding <Source extends PropertyDef, Target> extends Subject<Target> {
-	public source: Source;
+// TODO(impl): Graph layouts are hard. Maybe just a spreadsheet debug view?
+
+export abstract class Binding <Def extends PropertyDef, Value, Params = EmptyParams> {
+	def: Def;
+	value: Value;
+	pool: ValuePool<Value, Params>;
 
 	protected _context: UpdateContext;
 	protected _lastUpdateID: number = -1;
-	protected _targetUnsubscribe: Subscription;
+	protected _subscriptions: Subscription[] = [];
+	protected _outputs = new Set<Output<Value>>();
+	protected _outputParamsFns = new Map<Output<Value>, () => Params>();
 
-	protected constructor(context: UpdateContext, source: Source, target: Target) {
-		super(target);
+	protected constructor(context: UpdateContext, def: Def, value: Value, pool: ValuePool<Value>) {
 		this._context = context;
-		this.source = source;
+		this.def = def;
+		this.value = value;
+		this.pool = pool;
 
-		this._targetUnsubscribe = this.subscribe((next, prev) => {
-			if (prev && prev !== next) this.disposeTarget(prev);
-		});
+		const onChange = () => {
+			// TODO(perf): Should change / next be separated?
+			this.update();
+			this.publishAll();
+		};
+		const onDispose = () => this.dispose();
+
+		def.addEventListener('change', onChange);
+		def.addEventListener('dispose', onDispose);
+
+		this._subscriptions.push(
+			() => def.removeEventListener('change', onChange),
+			() => def.removeEventListener('dispose', onDispose),
+		);
 	}
 
-	public abstract update(): this;
+	/**************************************************************************
+	 * Lifecycle.
+	 */
 
-	public updateOnce(): this {
-		if (this._context.deep && this._lastUpdateID < this._context.updateID) {
-			this._lastUpdateID = this._context.updateID;
-			this.update();
+	abstract update(): void;
+
+	publishAll(): this {
+		for (const output of this._outputs) {
+			this.publish(output);
 		}
 		return this;
 	}
 
-	public dispose(): void {
-		this._targetUnsubscribe();
-		if (this.value) this.disposeTarget(this.value);
-		super.dispose();
+	publish(output: Output<Value>): this {
+		if (output.value) {
+			this.pool.releaseVariant(output.value);
+		}
+		const paramsFn = this._outputParamsFns.get(output)!;
+		output.next(this.pool.requestVariant(this.value, paramsFn()));
+		return this;
 	}
 
-	public abstract disposeTarget(target: Target): void;
+	dispose(): void {
+		for (const unsub of this._subscriptions) unsub();
+		if (this.value) {
+			this.pool.releaseBase(this.value);
+		}
+
+		for (const output of this._outputs) {
+			const value = output.value;
+			output.detach();
+			output.next(null);
+			if (value) {
+				this.pool.releaseVariant(value);
+			}
+		}
+	}
+
+	/**************************************************************************
+	 * Output.
+	 */
+
+	addOutput(output: RefObserver<Def, Value>, paramsFn: () => Params): this {
+		this._outputs.add(output);
+		this._outputParamsFns.set(output, paramsFn);
+		// TODO(perf): ListObserver and MapObserver may advance many times during initialization.
+		return this.publish(output);
+	}
+
+	updateOutput(output: RefObserver<Def, Value>): this {
+		return this.publish(output);
+	}
+
+	removeOutput(output: RefObserver<Def, Value>): this {
+		this._outputs.delete(output);
+		this._outputParamsFns.delete(output);
+		return this; // TODO(test): No publish!
+	}
 }
