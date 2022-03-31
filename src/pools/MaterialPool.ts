@@ -1,6 +1,6 @@
 import { GLTF, Primitive as PrimitiveDef } from '@gltf-transform/core';
 import { LineBasicMaterial, Material, MeshBasicMaterial, MeshPhysicalMaterial, MeshStandardMaterial, PointsMaterial } from 'three';
-import type { ValuePool } from './Pool';
+import { Pool } from './Pool';
 
 export type SourceMaterial = MeshBasicMaterial | MeshStandardMaterial | MeshPhysicalMaterial;
 export type VariantMaterial = MeshBasicMaterial | MeshStandardMaterial | MeshPhysicalMaterial | LineBasicMaterial | PointsMaterial;
@@ -13,7 +13,7 @@ export interface MaterialParams {
 	useFlatShading: boolean,
 }
 
-export class MaterialPool implements ValuePool<Material, MaterialParams> {
+export class MaterialPool extends Pool<Material, MaterialParams> {
     static createParams(primitive: PrimitiveDef): MaterialParams {
 		return {
 			mode: primitive.getMode(),
@@ -24,24 +24,14 @@ export class MaterialPool implements ValuePool<Material, MaterialParams> {
 		}
 	}
 
-    requestBase(base: Material): Material {
-        return base;
-    }
-    releaseBase(base: Material): void {
-        // base.dispose();
-    }
     requestVariant(base: Material, params: MaterialParams): Material {
-        return this._createVariant(base as SourceMaterial, params);
+        return this._request(this._createVariant(base as SourceMaterial, params));
     }
-    releaseVariant(variant: Material): void {
-        // variant.dispose();
-    }
-    dispose(): void {
-        throw new Error('Method not implemented.');
-    }
-    debug(): void {
-        throw new Error('Method not implemented.');
-    }
+
+	protected _disposeValue(value: Material): void {
+		value.dispose();
+		super._disposeValue(value);
+	}
 
 	/** Creates a variant material for given source material and MaterialParams. */
 	protected _createVariant(srcMaterial: SourceMaterial, params: MaterialParams): VariantMaterial {

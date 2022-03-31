@@ -56,6 +56,10 @@ export class DocumentView {
 		throw new Error('DocumentView: source(...) supports only Object3D inputs.');
 	}
 
+	public stats(): Record<string, number> {
+		return this._context.stats();
+	}
+
 	public gc(): void {
 		this._context.gc();
 	}

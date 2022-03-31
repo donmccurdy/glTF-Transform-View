@@ -71,9 +71,7 @@ export abstract class Binding <Def extends PropertyDef, Value, Params = EmptyPar
 			const value = output.value;
 			output.detach();
 			output.next(null);
-			if (value) {
-				this.pool.releaseVariant(value);
-			}
+			if (value) this.pool.releaseVariant(value);
 		}
 	}
 
@@ -92,9 +90,13 @@ export abstract class Binding <Def extends PropertyDef, Value, Params = EmptyPar
 		return this.publish(output);
 	}
 
+	// TODO(docs): Need some clear docs on when this runs, relative to methods
+	// like output.detach() and output.dispose().
 	removeOutput(output: RefObserver<Def, Value>): this {
+		const value = output.value;
 		this._outputs.delete(output);
 		this._outputParamsFns.delete(output);
+		if (value) this.pool.releaseVariant(value);
 		return this; // TODO(test): No publish!
 	}
 }

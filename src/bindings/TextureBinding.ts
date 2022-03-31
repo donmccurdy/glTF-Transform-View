@@ -8,7 +8,7 @@ export class TextureBinding extends Binding<TextureDef, Texture> {
 	private _image: ArrayBuffer | null = null;
 
 	constructor(context: UpdateContext, source: TextureDef) {
-		super(context, source, context.texturePool.requestBase(NULL_TEXTURE), context.texturePool);
+		super(context, source, NULL_TEXTURE, context.texturePool);
 	}
 
 	update() {
@@ -22,7 +22,9 @@ export class TextureBinding extends Binding<TextureDef, Texture> {
 		const image = def.getImage() as ArrayBuffer;
 		if (image !== this._image) {
 			this._image = image;
-			this.pool.releaseBase(this.value);
+			if (this.value !== NULL_TEXTURE) {
+				this.pool.releaseBase(this.value);
+			}
 			this.value = this.pool.requestBase(this._context.imageProvider.get(def));
 		}
 	}

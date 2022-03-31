@@ -8,14 +8,14 @@ export class UpdateContext {
 	private _bindings = new Set<Binding<PropertyDef, any>>();
 	private _defBindings = new WeakMap<PropertyDef, Binding<PropertyDef, any>>();
 
-	readonly accessorPool = new Pool<BufferAttribute>();
-	readonly extensionPool = new Pool<ExtensionPropertyDef>();
-	readonly materialPool = new MaterialPool();
-	readonly meshPool = new SingleUserPool<Group>();
-	readonly nodePool = new Pool<Object3D>();
-	readonly primitivePool = new SingleUserPool<Mesh>();
-	readonly scenePool = new Pool<Group>();
-	readonly texturePool = new TexturePool();
+	readonly accessorPool = new Pool<BufferAttribute>('accessors');
+	readonly extensionPool = new Pool<ExtensionPropertyDef>('extensions');
+	readonly materialPool = new MaterialPool('materials');
+	readonly meshPool = new SingleUserPool<Group>('meshes');
+	readonly nodePool = new Pool<Object3D>('nodes');
+	readonly primitivePool = new SingleUserPool<Mesh>('primitives');
+	readonly scenePool = new Pool<Group>('scenes');
+	readonly texturePool = new TexturePool('textures');
 
 	public imageProvider: ImageProvider = new NullImageProvider();
 
@@ -88,11 +88,28 @@ export class UpdateContext {
 		return this._defBindings.get(source) || null;
 	}
 
+	public stats() {
+		return {
+			accessors: this.accessorPool.size(),
+			extensions: this.extensionPool.size(),
+			materials: this.materialPool.size(),
+			meshes: this.meshPool.size(),
+			nodes: this.nodePool.size(),
+			primitives: this.primitivePool.size(),
+			scenes: this.scenePool.size(),
+			textures: this.texturePool.size(),
+		};
+	}
+
 	public gc() {
-		// TODO(cleanup)
-		// this.textureMap.flush();
-		// this.materialMap.flush();
-		// this.object3DMap.flush();
+		this.accessorPool.gc();
+		this.extensionPool.gc();
+		this.materialPool.gc();
+		this.meshPool.gc();
+		this.nodePool.gc();
+		this.primitivePool.gc();
+		this.scenePool.gc();
+		this.texturePool.gc();
 	}
 
 	/**

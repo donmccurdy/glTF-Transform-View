@@ -107,6 +107,7 @@ export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
 	}
 
 	dispose() {
+		this.value.geometry.dispose();
 		this.material.dispose();
 		this.indices.dispose();
 		this.attributes.dispose();

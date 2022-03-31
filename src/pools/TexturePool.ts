@@ -1,7 +1,7 @@
 import { TextureInfo, vec2 } from '@gltf-transform/core';
 import { ClampToEdgeWrapping, LinearFilter, LinearMipmapLinearFilter, LinearMipmapNearestFilter, MirroredRepeatWrapping, NearestFilter, NearestMipmapLinearFilter, NearestMipmapNearestFilter, RepeatWrapping, Texture, TextureEncoding, TextureFilter, Wrapping } from 'three';
 import type { Transform } from '@gltf-transform/extensions';
-import { ValuePool } from './Pool';
+import { Pool } from './Pool';
 
 const WEBGL_FILTERS: Record<number, TextureFilter> = {
 	9728: NearestFilter,
@@ -31,9 +31,7 @@ export interface TextureParams {
 
 const _VEC2 = {ZERO: [0, 0] as vec2, ONE: [1, 1] as vec2};
 
-// TODO(bug): Texture count continually increases ...
-
-export class TexturePool implements ValuePool<Texture, TextureParams> {
+export class TexturePool extends Pool<Texture, TextureParams> {
     static createParams(textureInfo: TextureInfo, encoding: TextureEncoding): TextureParams {
 		const transform = textureInfo.getExtension<Transform>('KHR_texture_transform');
 		return {
@@ -48,24 +46,14 @@ export class TexturePool implements ValuePool<Texture, TextureParams> {
 		};
 	}
 
-    requestBase(base: Texture): Texture {
-        return base;
-    }
-    releaseBase(base: Texture): void {
-        base.dispose();
-    }
     requestVariant(base: Texture, params: TextureParams): Texture {
-        return this._createVariant(base, params);
+        return this._request(this._createVariant(base, params));
     }
-    releaseVariant(variant: Texture): void {
-        variant.dispose();
-    }
-    dispose(): void {
-        throw new Error('Method not implemented.');
-    }
-    debug(): void {
-        throw new Error('Method not implemented.');
-    }
+
+	protected _disposeValue(value: Texture): void {
+		value.dispose();
+		super._disposeValue(value);
+	}
 
 	protected _createVariant(srcTexture: Texture, params: TextureParams): Texture {
 		return this._updateVariant(srcTexture, srcTexture.clone(), params);
