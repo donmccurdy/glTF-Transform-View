@@ -1,14 +1,11 @@
-import { ACESFilmicToneMapping, AmbientLight, DirectionalLight, PMREMGenerator, PerspectiveCamera, Scene, UnsignedByteType, WebGLRenderer, sRGBEncoding, Object3D, Mesh, Material, Box3, Vector3, REVISION } from 'three';
+import { ACESFilmicToneMapping, AmbientLight, DirectionalLight, PerspectiveCamera, Scene, WebGLRenderer, sRGBEncoding, Object3D, Mesh, Material, Box3, Vector3 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { Document, WebIO } from '@gltf-transform/core';
 import { metalRough } from '@gltf-transform/functions';
-import { DocumentView, DebugPool, setObjectPool, ImageProvider } from '../dist/view.modern.js';
+import { DocumentView, ImageProvider } from '../dist/view.modern.js';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import { createEnvironment, createKTX2Loader } from './util.js';
-
-const debugPool = new DebugPool();
-setObjectPool(debugPool);
 
 const imageProvider = new ImageProvider();
 
@@ -88,7 +85,7 @@ document.body.addEventListener('gltf-document', async (event) => {
 	controls.update();
 	render();
 
-	console.debug('debugPool::afterLoad', [...debugPool.list()]);
+	console.table(documentView.stats());
 });
 
 //
@@ -123,13 +120,7 @@ function disposeBefore(model: Object3D) {
 function disposeAfter(model: Object3D) {
 	scene.remove(model);
 	documentView.dispose();
-
-	const leaks = debugPool.list();
-	if (leaks.length > 0) {
-		console.warn('debugPool::LEAK', [...leaks]);
-	} else {
-		console.debug('debugPool::OK');
-	}
+	console.table(documentView.stats());
 }
 
 function frameContent(object: Object3D, offset: 1 | -1) {

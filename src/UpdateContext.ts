@@ -156,6 +156,7 @@ export class UpdateContext {
 	// 	throw new Error(`DocumentView: Lookup type "${def.propertyType}" not implemented.`);
 	// }
 
+	// TODO(bug): Infinite loop on dispose().
 	public dispose(): void {
 		for (const renderer of this._bindings) {
 			renderer.dispose();
