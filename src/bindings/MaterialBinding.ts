@@ -108,11 +108,7 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 		}
 
 		this._textureObservers.push(observer);
-
-		this._textureUpdateFns.push(() => {
-			observer.updateRef(textureFn());
-		})
-
+		this._textureUpdateFns.push(() => observer.updateRef(textureFn()));
 		this._textureApplyFns.push(() => applyTextureFn(observer.value));
 
 		return observer.subscribe((texture) => {
@@ -272,6 +268,7 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 		// KHR_materials_sheen
 		const sheen = source.getExtension<Sheen>('KHR_materials_sheen');
 		if (sheen) {
+			target.sheen = 1;
 			const sourceSheenColor = sheen.getSheenColorFactor();
 			if (!eq(sourceSheenColor, target.sheenColor!.toArray(_vec3))) {
 				target.sheenColor!.fromArray(sourceSheenColor);
@@ -280,7 +277,7 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 				target.sheenRoughness = sheen.getSheenRoughnessFactor();
 			}
 		} else {
-			target.sheenColor!.setRGB(0, 0, 0);
+			target.sheen = 0;
 		}
 
 		// KHR_materials_specular
