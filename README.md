@@ -80,26 +80,24 @@ buttonEl.addEventListener('click', () => {
 
 ### Bindings
 
-| binding       | status | comments    |
-|---------------|--------|-------------|
-| Scene         | ✅      | Dynamic     |
-| Node          | ✅      | Dynamic     |
-| Mesh          | ✅      | Dynamic     |
-| Primitive     | ✅      | Dynamic     |
-| Accessor      | ✅      | Dynamic     |
-| Material      | ✅      | Dynamic     |
-| Texture       | ✅      | Dynamic     |
-| TextureInfo   | 🚧     | Static      |
-| Morph Targets | ❌      | No bindings |
-| Animation     | ❌      | No bindings |
-| Camera        | ❌      | No bindings |
-| Light         | ❌      | No bindings |
-
-**Legend:**
-
 - ✅&nbsp;&nbsp;Renders and updates
 - 🚧&nbsp;&nbsp;Static render, no updates
 - ❌&nbsp;&nbsp;Not rendered
+
+| binding       | status |
+|---------------|--------|
+| Scene         | ✅      |
+| Node          | ✅      |
+| Mesh          | ✅      |
+| Primitive     | ✅      |
+| Accessor      | ✅      |
+| Material      | ✅      |
+| Texture       | ✅      |
+| TextureInfo   | 🚧     |
+| Morph Targets | ❌      |
+| Animation     | ❌      |
+| Camera        | ❌      |
+| Light         | ❌      |
 
 ### Extensions Supported
 
