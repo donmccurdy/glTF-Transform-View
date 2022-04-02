@@ -91,6 +91,11 @@ io.read('../assets/DamagedHelmet.glb').then(async (doc) => {
 	}).on('change', (ev) => {
 		prim.setMode(ev.value as GLTF.MeshPrimitiveMode);
 	});
+
+	pane.addButton({title: 'stats'}).on('click', () => {
+		documentView.gc();
+		console.table(documentView.stats());
+	})
 });
 
 //
