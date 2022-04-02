@@ -24,7 +24,6 @@ export abstract class Binding <Def extends PropertyDef, Value, Params = EmptyPar
 		this.pool = pool;
 
 		const onChange = () => {
-			// TODO(perf): Should change / next be separated?
 			this.update();
 			this.publishAll();
 		};
@@ -43,9 +42,13 @@ export abstract class Binding <Def extends PropertyDef, Value, Params = EmptyPar
 	 * Lifecycle.
 	 */
 
+	// TODO(perf): Many publishes during an update (e.g. Material). Consider batching.
 	abstract update(): void;
 
 	publishAll(): this {
+		// Prevent publishing updates during disposal.
+		if (this._context.isDisposed()) return this;
+
 		for (const output of this._outputs) {
 			this.publish(output);
 		}
@@ -53,6 +56,9 @@ export abstract class Binding <Def extends PropertyDef, Value, Params = EmptyPar
 	}
 
 	publish(output: Output<Value>): this {
+		// Prevent publishing updates during disposal.
+		if (this._context.isDisposed()) return this;
+
 		if (output.value) {
 			this.pool.releaseVariant(output.value);
 		}
@@ -82,7 +88,7 @@ export abstract class Binding <Def extends PropertyDef, Value, Params = EmptyPar
 	addOutput(output: RefObserver<Def, Value>, paramsFn: () => Params): this {
 		this._outputs.add(output);
 		this._outputParamsFns.set(output, paramsFn);
-		// TODO(perf): ListObserver and MapObserver may advance many times during initialization.
+		// TODO(perf): ListObserver and MapObserver advance many times during initialization. Consider batching.
 		return this.publish(output);
 	}
 

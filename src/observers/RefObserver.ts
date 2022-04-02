@@ -38,6 +38,13 @@ export class RefObserver<Def extends PropertyDef, Value, Params = EmptyParams> e
 		this._clear();
 	}
 
+	next(value: Value | null) {
+		// Prevent publishing updates during disposal.
+		if (!this._context.isDisposed()) {
+			super.next(value);
+		}
+	}
+
 	/**************************************************************************
 	 * Parent interface. (Binding (Parent), ListObserver, MapObserver)
 	 */

@@ -5,6 +5,7 @@ import { DefaultImageProvider, ImageProvider, NullImageProvider } from './ImageP
 import { MaterialPool, SingleUserPool, Pool, TexturePool } from './pools';
 
 export class UpdateContext {
+	private _disposed = false;
 	private _bindings = new Set<Binding<PropertyDef, any>>();
 	private _defBindings = new WeakMap<PropertyDef, Binding<PropertyDef, any>>();
 
@@ -43,9 +44,7 @@ export class UpdateContext {
 	public bind(def: PropertyDef): Binding<PropertyDef, any>;
 	public bind(def: PropertyDef | null): Binding<PropertyDef, any> | null {
 		if (!def) return null;
-		if (this._defBindings.has(def)) {
-			return this._defBindings.get(def)!;
-		}
+		if (this._defBindings.has(def)) return this._defBindings.get(def)!;
 
 		let binding: Binding<PropertyDef, any>;
 		switch (def.propertyType) {
@@ -156,11 +155,18 @@ export class UpdateContext {
 	// 	throw new Error(`DocumentView: Lookup type "${def.propertyType}" not implemented.`);
 	// }
 
-	// TODO(bug): Infinite loop on dispose().
+	public isDisposed(): boolean {
+		return this._disposed;
+	}
+
 	public dispose(): void {
-		for (const renderer of this._bindings) {
-			renderer.dispose();
-		}
+		// First, to prevent updates during disposal.
+		this._disposed = true;
+
+		for (const binding of this._bindings) binding.dispose();
+		this._bindings.clear();
+
+		// Last, to clean up anything left after disposal.
 		this.accessorPool.dispose();
 		this.materialPool.dispose();
 		this.meshPool.dispose();
@@ -168,6 +174,5 @@ export class UpdateContext {
 		this.primitivePool.dispose();
 		this.scenePool.dispose();
 		this.texturePool.dispose();
-		this._bindings.clear();
 	}
 }
