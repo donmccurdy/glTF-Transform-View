@@ -22,6 +22,7 @@ test('TextureBinding', t => {
 	t.equals(map.encoding, sRGBEncoding, 'sRGB');
 	t.equals(roughnessMap.encoding, LinearEncoding, 'Linear-sRGB');
 	t.equals(metalnessMap.encoding, LinearEncoding, 'Linear-sRGB');
+	t.ok(map.source === metalnessMap.source, 'map.source === metalnessMap.source');
 	t.ok(metalnessMap === roughnessMap, 'metalnessMap === roughnessMap');
 	t.notOk(texture.flipY || map.flipY || roughnessMap.flipY || metalnessMap.flipY, 'flipY=false');
 

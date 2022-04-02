@@ -1,6 +1,7 @@
 import test from 'tape';
 import { Document, Primitive as PrimitiveDef } from '@gltf-transform/core';
 import { DocumentView } from '../dist/view.modern.js';
+import { MaterialsClearcoat, MaterialsUnlit } from '@gltf-transform/extensions';
 
 test('MaterialBinding', t => {
 	const document = new Document();
@@ -18,8 +19,8 @@ test('MaterialBinding', t => {
 	const nodeDef = document.createNode('Node').setMesh(meshDef);
 	const sceneDef = document.createScene('Scene').addChild(nodeDef);
 
-	const renderer = new DocumentView(document);
-	const scene = renderer.view(sceneDef);
+	const documentView = new DocumentView(document);
+	const scene = documentView.view(sceneDef);
 	let mesh = scene.children[0].children[0].children[0];
 	let material = mesh.material;
 
@@ -34,6 +35,35 @@ test('MaterialBinding', t => {
 
 	t.notOk(material.map, 'material.map → null');
 	t.ok(material.emissiveMap, 'material.emissiveMap → ok');
+	t.end();
+});
+
+test('MaterialBinding | extensions', t => {
+	const document = new Document();
+	const unlitExtension = document.createExtension(MaterialsUnlit);
+	const clearcoatExtension = document.createExtension(MaterialsClearcoat);
+
+	const materialDef = document.createMaterial('Material')
+	const documentView = new DocumentView(document);
+	let material = documentView.view(materialDef);
+
+	t.equals(material.type, 'MeshStandardMaterial', 'MeshStandardMaterial');
+
+	materialDef.setExtension('KHR_materials_unlit', unlitExtension.createUnlit());
+	material = documentView.view(materialDef);
+
+	t.equals(material.type, 'MeshBasicMaterial', 'MeshBasicMaterial');
+
+	materialDef.setExtension('KHR_materials_unlit', null);
+	material = documentView.view(materialDef);
+
+	t.equals(material.type, 'MeshStandardMaterial', 'MeshStandardMaterial');
+
+	materialDef.setExtension('KHR_materials_clearcoat', clearcoatExtension.createClearcoat());
+	material = documentView.view(materialDef);
+
+	t.equals(material.type, 'MeshPhysicalMaterial', 'MeshPhysicalMaterial');
+
 	t.end();
 });
 
@@ -98,6 +128,41 @@ test('MaterialBinding | dispose', t => {
 
 	t.equals(disposed.size, 3, 'dispose count (3/3)');
 	t.ok(disposed.has(pointsMaterial), 'dispose LineBasicMaterial');
+
+	t.end();
+});
+
+test('MaterialBinding | texture memory', t => {
+	const document = new Document();
+	const clearcoatExtension = document.createExtension(MaterialsClearcoat);
+	const texDef1 = document.createTexture('Tex1')
+		.setMimeType('image/png')
+		.setImage(new Uint8Array(0));
+	const texDef2 = document.createTexture('Tex2')
+		.setMimeType('image/png')
+		.setImage(new Uint8Array(0));
+	const materialDef = document.createMaterial('Material')
+		.setBaseColorTexture(texDef1)
+		.setEmissiveTexture(texDef2);
+
+	const documentView = new DocumentView(document);
+	let material = documentView.view(materialDef);
+	const {map, emissiveMap} = material;
+
+	t.equals(material.type, 'MeshStandardMaterial', 'original material');
+	t.ok(map.source === emissiveMap.source, 'map.source === emissiveMap.source');
+
+	let baseVersion = map.version;
+	t.equals(map.version, baseVersion, 'map.version');
+	t.equals(emissiveMap.version, baseVersion, 'emissiveMap.version');
+
+	materialDef.setExtension('KHR_materials_clearcoat', clearcoatExtension.createClearcoat());
+	material = documentView.view(materialDef);
+
+	t.equals(material.type, 'MeshPhysicalMaterial', 'new material');
+	t.ok(map.source === emissiveMap.source, 'map.source === emissiveMap.source');
+	t.equals(map.version, baseVersion, 'map.version');
+	t.equals(emissiveMap.version, baseVersion, 'emissiveMap.version');
 
 	t.end();
 });
