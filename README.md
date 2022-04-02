@@ -7,32 +7,25 @@
 
 > _**IN DEVELOPMENT:** This project is currently in development, and missing some functionality._
 
-Syncs a glTF-Transform [Document](https://gltf-transform.donmccurdy.com/classes/document.html)
-with a [three.js](https://threejs.org/) scene graph, keeping three.js updated
-over time as changes are made to the Document. After changes are complete,
-export the exact glTF document — losslessly — with the
-[glTF-Transform NodeIO / WebIO](https://gltf-transform.donmccurdy.com/classes/core.platformio.html)
-tools.
-
-## Motivation
-
-While three.js can render glTF 2.0 files out of the box with
-[THREE.GLTFLoader](https://threejs.org/docs/index.html#examples/en/loaders/GLTFLoader),
-and export them with [THREE.GLTFLoader](https://threejs.org/docs/index.html#examples/en/loaders/GLTFLoader),
-this approach has an important limitation: the GLTFExporter → GLTFLoader
-trip is lossy, and doesn't support all features of glTF. For a small set
-of closely-controlled assets, this might be a good workflow. But in
-general, it is error-prone.
-
-**`@gltf-transform/view` provides a tighter integration between a glTF
-Document and a three.js scene**, so that changes within the Document
-(e.g. to a [Material](https://gltf-transform.donmccurdy.com/classes/material.html))
-are shown _instantly_ in the rendered result. In addition, any features
-that three.js doesn't support won't be lost — they just aren't rendered
+View glTF-Transform [Scene](https://gltf-transform.donmccurdy.com/classes/scene.html),
+[Node](https://gltf-transform.donmccurdy.com/classes/node.html),
+[Mesh](https://gltf-transform.donmccurdy.com/classes/mesh.html),
+[Material](https://gltf-transform.donmccurdy.com/classes/material.html),
+[Texture](https://gltf-transform.donmccurdy.com/classes/material.html),
+or other resources as [three.js](https://threejs.org/) objects,
+keeping the three.js objects updated automatically as changes are made to the glTF-Transform
+[Document](https://gltf-transform.donmccurdy.com/classes/document.html). Combined with
+glTF-Transform's [WebIO](https://gltf-transform.donmccurdy.com/classes/core.platformio.html),
+`@gltf-transform/view` provides a lossless workflow to load, view, edit, and export glTF assets,
+particularly useful in editor-like applications on the web. Changes within a Document are reflected
+in three.js immediately, and any features three.js doesn't support won't be lost — they just aren't rendered
 in the preview.
 
-> *NOTE: The fast edit/refresh loop requires some additional memory overhead, so this
-> project is not meant to replace THREE.GLTFLoader for one-time loading.*
+> **NOTE:** While three.js can load glTF 2.0 models with [THREE.GLTFLoader](https://threejs.org/docs/index.html#examples/en/loaders/GLTFLoader)
+> and export them with [THREE.GLTFExporter](https://threejs.org/docs/index.html#examples/en/loaders/GLTFExporter),
+> the GLTFExporter step is lossy, and not a robust workflow for editing. On the other hand, the
+> fast edit/refresh loop provided by `@gltf-transform/view` requires some additional memory overhead,
+> and so this project is not meant to replace THREE.GLTFLoader for general-purpose loading.*
 
 ## Quickstart
 
@@ -79,31 +72,34 @@ buttonEl.addEventListener('click', () => {
 });
 ```
 
+> **NOTE:** Each DocumentView instance maintains reference counts and disposes of three.js WebGL
+> resources (textures, geometry, materials) when the underlying glTF Transform properties are
+> disposed. Unused resources are *not* disposed immediately, in case they might be used again later.
+> To manually dispose of unused resources — e.g. to free up GPU memory — call  `documentView.gc()`.
+> Resources will be re-allocated automatically if they are used again.
+
 ### Bindings
 
-| binding     | status | comments    |
-|-------------|--------|-------------|
-| Scene       | ✅      | Dynamic     |
-| Node        | ✅      | Dynamic     |
-| Mesh        | ✅      | Dynamic     |
-| Primitive   | ✅      | Dynamic     |
-| Accessor    | ✅      | Dynamic     |
-| Material    | ✅      | Dynamic     |
-| Texture     | ✅      | Dynamic     |
-| TextureInfo | 🚧     | Static      |
-| Animation   | ❌      | No bindings |
-| Camera      | ❌      | No bindings |
-| Light       | ❌      | No bindings |
+| binding       | status | comments    |
+|---------------|--------|-------------|
+| Scene         | ✅      | Dynamic     |
+| Node          | ✅      | Dynamic     |
+| Mesh          | ✅      | Dynamic     |
+| Primitive     | ✅      | Dynamic     |
+| Accessor      | ✅      | Dynamic     |
+| Material      | ✅      | Dynamic     |
+| Texture       | ✅      | Dynamic     |
+| TextureInfo   | 🚧     | Static      |
+| Morph Targets | ❌      | No bindings |
+| Animation     | ❌      | No bindings |
+| Camera        | ❌      | No bindings |
+| Light         | ❌      | No bindings |
 
 **Legend:**
 
 - ✅&nbsp;&nbsp;Renders and updates
 - 🚧&nbsp;&nbsp;Static render, no updates
 - ❌&nbsp;&nbsp;Not rendered
-
-## Bugs / Limitations / To Do
-
-See https://github.com/donmccurdy/glTF-Transform-View/issues/8.
 
 ### Extensions Supported
 
