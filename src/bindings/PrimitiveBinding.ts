@@ -80,7 +80,7 @@ export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
 		if (def.getMode() !== getObject3DMode(value)) {
 			this.pool.releaseBase(value);
 			// TODO(bug): Material temporarily invalid here over next three lines.
-			this.value = value = PrimitiveBinding.createValue(def, value.geometry, value.material as Material, this.pool);
+			this.value = value = PrimitiveBinding.createValue(def, value.geometry, value.material, this.pool);
 			this.material.updateParams();
 		}
 	}

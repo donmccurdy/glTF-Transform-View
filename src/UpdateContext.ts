@@ -1,6 +1,7 @@
 import { Accessor as AccessorDef, ExtensionProperty as ExtensionPropertyDef, Material as MaterialDef, Mesh as MeshDef, Node as NodeDef, Primitive as PrimitiveDef, Property as PropertyDef, PropertyType, Scene as SceneDef, Texture as TextureDef } from '@gltf-transform/core';
 import { Object3D, BufferAttribute, Group, Mesh } from 'three';
 import { AccessorBinding, Binding, ExtensionBinding, MaterialBinding, MeshBinding, NodeBinding, PrimitiveBinding, SceneBinding, TextureBinding } from './bindings';
+import { MeshLike } from './constants';
 import { DefaultImageProvider, ImageProvider, NullImageProvider } from './ImageProvider';
 import { MaterialPool, SingleUserPool, Pool, TexturePool } from './pools';
 
@@ -14,7 +15,7 @@ export class UpdateContext {
 	readonly materialPool = new MaterialPool('materials');
 	readonly meshPool = new SingleUserPool<Group>('meshes');
 	readonly nodePool = new Pool<Object3D>('nodes');
-	readonly primitivePool = new SingleUserPool<Mesh>('primitives');
+	readonly primitivePool = new SingleUserPool<MeshLike>('primitives');
 	readonly scenePool = new Pool<Group>('scenes');
 	readonly texturePool = new TexturePool('textures');
 
