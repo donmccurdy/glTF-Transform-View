@@ -26,6 +26,8 @@ export class RefListObserver<Def extends PropertyDef, Value, Params = EmptyParam
 
 		let needsUpdate = false;
 
+		// TODO(perf): Is this an many next()s as it looks like? Maybe
+		// only when an early index is removed from a longer list?
 		for (let i = 0; i < defs.length || i < this._observers.length; i++) {
 			const def = defs[i];
 			const observer = this._observers[i];
