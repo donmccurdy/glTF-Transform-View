@@ -1,4 +1,3 @@
-export * from './EventDispatcher';
 export * from './Observable';
 
 export function eq(a: number[], b: number[]): boolean {

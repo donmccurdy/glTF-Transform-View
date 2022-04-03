@@ -31,6 +31,12 @@ export interface ImageProvider {
 	clear(): void;
 }
 
+export class NullImageProvider implements ImageProvider {
+	async update(textureDefs: TextureDef[]): Promise<void> {}
+	get(texture: TextureDef): Texture { return NULL_TEXTURE; }
+	clear(): void {}
+}
+
 export class DefaultImageProvider implements ImageProvider {
 	private _cache = new Map<ArrayBuffer, Texture|CompressedTexture>();
 	private _ktx2Loader = createKTX2Loader();
@@ -93,10 +99,4 @@ export class DefaultImageProvider implements ImageProvider {
 		URL.revokeObjectURL(imageURL);
 		return texture;
 	}
-}
-
-export class NullImageProvider implements ImageProvider {
-	async update(textureDefs: TextureDef[]): Promise<void> {}
-	get(texture: TextureDef): Texture { return NULL_TEXTURE; }
-	clear(): void {}
 }
