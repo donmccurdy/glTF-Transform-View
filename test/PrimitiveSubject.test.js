@@ -2,7 +2,7 @@ import test from 'tape';
 import { Document, Primitive as PrimitiveDef } from '@gltf-transform/core';
 import { DocumentView } from '../dist/view.modern.js';
 
-test('PrimitiveBinding', t => {
+test('PrimitiveSubject', t => {
     const document = new Document();
     const position = document.createAccessor()
     .setType('VEC3')

@@ -3,7 +3,7 @@ import { ExtensionProperty as ExtensionPropertyDef, Material as MaterialDef, Tex
 import type { Clearcoat, IOR, Sheen, Specular, Transmission, Volume } from '@gltf-transform/extensions';
 import type { UpdateContext } from '../UpdateContext';
 import { eq } from '../utils';
-import { Binding } from './Binding';
+import { Subject } from './Subject';
 import { RefListObserver, RefObserver } from '../observers';
 import { Subscription } from '../utils/EventDispatcher';
 import { TextureParams, TexturePool, ValuePool } from '../pools';
@@ -18,7 +18,7 @@ enum ShadingModel {
 
 // TODO(bug): Missing change listeners on TextureInfo... delegate?
 
-export class MaterialBinding extends Binding<MaterialDef, Material> {
+export class MaterialSubject extends Subject<MaterialDef, Material> {
 	protected readonly extensions = new RefListObserver<ExtensionPropertyDef, ExtensionPropertyDef>('extensions', this._context);
 
 	protected readonly baseColorTexture = new RefObserver<TextureDef, Texture, TextureParams>('baseColorTexture', this._context);
@@ -51,7 +51,7 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 	private readonly _textureApplyFns: (() => void)[] = [];
 
 	constructor(context: UpdateContext, def: MaterialDef) {
-		super(context, def, MaterialBinding.createValue(def, context.materialPool), context.materialPool);
+		super(context, def, MaterialSubject.createValue(def, context.materialPool), context.materialPool);
 
 		this.extensions.subscribe(() => {
 			this.update();
@@ -142,7 +142,7 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 			|| shadingModel === ShadingModel.STANDARD && value.type !== 'MeshStandardMaterial'
 			|| shadingModel === ShadingModel.PHYSICAL && value.type !== 'MeshPhysicalMaterial') {
 			this.pool.releaseBase(this.value);
-			this.value = MaterialBinding.createValue(def, this.pool);
+			this.value = MaterialSubject.createValue(def, this.pool);
 			value = this.value;
 			for (const fn of this._textureApplyFns) fn();
 		}

@@ -1,10 +1,10 @@
 import { Texture } from 'three';
 import { Texture as TextureDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
-import { Binding } from './Binding';
+import { Subject } from './Subject';
 import { NULL_TEXTURE } from '../ImageProvider';
 
-export class TextureBinding extends Binding<TextureDef, Texture> {
+export class TextureSubject extends Subject<TextureDef, Texture> {
 	private _image: ArrayBuffer | null = null;
 
 	constructor(context: UpdateContext, def: TextureDef) {

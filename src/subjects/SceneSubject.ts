@@ -1,10 +1,10 @@
 import { Group, Object3D } from 'three';
 import type { Node as NodeDef, Scene as SceneDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
-import { Binding } from './Binding';
+import { Subject } from './Subject';
 import { RefListObserver } from '../observers';
 
-export class SceneBinding extends Binding<SceneDef, Group> {
+export class SceneSubject extends Subject<SceneDef, Group> {
 	protected children = new RefListObserver<NodeDef, Object3D>('children', this._context);
 
 	constructor(context: UpdateContext, def: SceneDef) {

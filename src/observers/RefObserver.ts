@@ -1,27 +1,27 @@
 import type { Property as PropertyDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
-import type { Binding } from '../bindings';
-import { Subject } from '../utils/Subject';
+import type { Subject } from '../subjects';
+import { Observable } from '../utils';
 import { EmptyParams } from '../pools';
 
 /**
  * Exposes a limited view of the RefObserver interface to objects
  * using it as an output socket.
  */
-export interface Output<Value> extends Subject<Value | null> {
+export interface Output<Value> extends Observable<Value | null> {
 	detach(): void;
 }
 
 /**
- * Represents a connection between one Binding's output and another
- * Binding's input. RefObserver should let the Binding call .next(),
+ * Represents a connection between one Subject's output and another
+ * Subject's input. RefObserver should let the Subject call .next(),
  * generally avoiding calling .next() itself. The RefObserver is a passive pipe.
  */
-export class RefObserver<Def extends PropertyDef, Value, Params = EmptyParams> extends Subject<Value | null> implements Output<Value> {
+export class RefObserver<Def extends PropertyDef, Value, Params = EmptyParams> extends Observable<Value | null> implements Output<Value> {
 	readonly name: string;
 
-	private _binding: Binding<Def, Value> | null = null;
-	private _bindingParamsFn: () => Params = () => ({} as Params);
+	private _subject: Subject<Def, Value> | null = null;
+	private _subjectParamsFn: () => Params = () => ({} as Params);
 
 	private readonly _context: UpdateContext;
 
@@ -32,7 +32,7 @@ export class RefObserver<Def extends PropertyDef, Value, Params = EmptyParams> e
 	}
 
 	/**************************************************************************
-	 * Child interface. (Binding (Child))
+	 * Child interface. (Subject (Child))
 	 */
 
 	detach() {
@@ -47,42 +47,42 @@ export class RefObserver<Def extends PropertyDef, Value, Params = EmptyParams> e
 	}
 
 	/**************************************************************************
-	 * Parent interface. (Binding (Parent), ListObserver, MapObserver)
+	 * Parent interface. (Subject (Parent), ListObserver, MapObserver)
 	 */
 
 	setParamsFn(paramsFn: () => Params): this {
-		this._bindingParamsFn = paramsFn;
+		this._subjectParamsFn = paramsFn;
 		return this;
 	}
 
 	getDef(): Def | null {
-		return this._binding ? this._binding.def : null;
+		return this._subject ? this._subject.def : null;
 	}
 
 	updateDef(def: Def | null) {
-		const binding = def ? this._context.bind(def) as Binding<Def, Value> : null;
-		if (binding === this._binding) return;
+		const subject = def ? this._context.bind(def) as Subject<Def, Value> : null;
+		if (subject === this._subject) return;
 
 		this._clear();
 
-		if (binding) {
-			this._binding = binding;
-			this._binding.addOutput(this, this._bindingParamsFn);
-			this._binding.publish(this);
+		if (subject) {
+			this._subject = subject;
+			this._subject.addOutput(this, this._subjectParamsFn);
+			this._subject.publish(this);
 		} else {
-			// In most cases RefObserver should let the Binding call .next() itself,
-			// but this is the exception since the binding is gone.
+			// In most cases RefObserver should let the Subject call .next() itself,
+			// but this is the exception since the Subject is gone.
 			this.next(null);
 		}
 	}
 
 	/**
-	 * Forces the observed Binding to re-evaluate the output. For use when
+	 * Forces the observed Subject to re-evaluate the output. For use when
 	 * output parameters are likely to have changed.
 	 */
 	invalidate() {
-		if (this._binding) {
-			this._binding.publish(this);
+		if (this._subject) {
+			this._subject.publish(this);
 		}
 	}
 
@@ -95,9 +95,9 @@ export class RefObserver<Def extends PropertyDef, Value, Params = EmptyParams> e
 	 */
 
 	private _clear() {
-		if (this._binding) {
-			this._binding.removeOutput(this);
-			this._binding = null;
+		if (this._subject) {
+			this._subject.removeOutput(this);
+			this._subject = null;
 		}
 	}
 }

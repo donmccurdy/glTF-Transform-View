@@ -1,7 +1,7 @@
 import { BufferAttribute, BufferGeometry, Line, LineLoop, LineSegments, Material, Mesh, MeshStandardMaterial, Points, SkinnedMesh } from 'three';
 import { Accessor as AccessorDef, GLTF, Material as MaterialDef, Primitive as PrimitiveDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
-import { Binding } from './Binding';
+import { Subject } from './Subject';
 import { RefMapObserver, RefObserver } from '../observers';
 import { MeshLike } from '../constants';
 import { MaterialParams, MaterialPool, ValuePool } from '../pools';
@@ -23,7 +23,7 @@ function semanticToAttributeName(semantic: string): string {
 	}
 }
 
-export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
+export class PrimitiveSubject extends Subject<PrimitiveDef, MeshLike> {
 	protected material = new RefObserver<MaterialDef, Material, MaterialParams>('material', this._context)
 		.setParamsFn(() => MaterialPool.createParams(this.def));
 	protected indices = new RefObserver<AccessorDef, BufferAttribute>('indices', this._context);
@@ -33,7 +33,7 @@ export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
 		super(
 			context,
 			def,
-			PrimitiveBinding.createValue(def, new BufferGeometry(), DEFAULT_MATERIAL, context.primitivePool),
+			PrimitiveSubject.createValue(def, new BufferGeometry(), DEFAULT_MATERIAL, context.primitivePool),
 			context.primitivePool,
 		);
 
@@ -80,7 +80,7 @@ export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
 		if (def.getMode() !== getObject3DMode(value)) {
 			this.pool.releaseBase(value);
 			// TODO(bug): Material temporarily invalid here over next three lines.
-			this.value = value = PrimitiveBinding.createValue(def, value.geometry, value.material, this.pool);
+			this.value = value = PrimitiveSubject.createValue(def, value.geometry, value.material, this.pool);
 			this.material.invalidate();
 		}
 	}

@@ -1,5 +1,5 @@
 export * from './EventDispatcher';
-export * from './Subject';
+export * from './Observable';
 
 export function eq(a: number[], b: number[]): boolean {
     if (a.length !== b.length) return false;

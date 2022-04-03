@@ -1,12 +1,11 @@
 import type { Property as PropertyDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
-import type { Binding } from '../bindings';
-import { Subject } from '../utils/Subject';
-import { Subscription } from '../utils/EventDispatcher';
+import type { Subject } from '../subjects';
+import { Observable, Subscription } from '../utils';
 import { EmptyParams } from '../pools';
 import { RefObserver } from './RefObserver';
 
-export class RefListObserver<Def extends PropertyDef, Value, Params = EmptyParams> extends Subject<Value[]> {
+export class RefListObserver<Def extends PropertyDef, Value, Params = EmptyParams> extends Observable<Value[]> {
 	readonly name: string;
 
 	protected readonly _context: UpdateContext;
@@ -21,7 +20,7 @@ export class RefListObserver<Def extends PropertyDef, Value, Params = EmptyParam
 	}
 
 	updateDefList(defs: Def[]) {
-		const added = new Set<Binding<Def, Value>>();
+		const added = new Set<Subject<Def, Value>>();
 		const removed = new Set<number>();
 
 		let needsUpdate = false;
@@ -36,7 +35,7 @@ export class RefListObserver<Def extends PropertyDef, Value, Params = EmptyParam
 				removed.add(i);
 				needsUpdate = true;
 			} else if (!observer) {
-				added.add(this._context.bind(def) as Binding<Def, Value>);
+				added.add(this._context.bind(def) as Subject<Def, Value>);
 				needsUpdate = true;
 			} else if (def !== observer.getDef()) {
 				observer.updateDef(def);
@@ -66,9 +65,9 @@ export class RefListObserver<Def extends PropertyDef, Value, Params = EmptyParam
 		return this;
 	}
 
-	private _add(binding: Binding<Def, Value>) {
+	private _add(subject: Subject<Def, Value>) {
 		const observer = new RefObserver(this.name + '[]', this._context) as RefObserver<Def, Value>;
-		observer.updateDef(binding.def);
+		observer.updateDef(subject.def);
 		this._observers.push(observer);
 		this._subscriptions.push(observer.subscribe((next) => {
 			if (!next) {

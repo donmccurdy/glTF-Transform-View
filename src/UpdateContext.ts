@@ -1,13 +1,13 @@
 import { Accessor as AccessorDef, ExtensionProperty as ExtensionPropertyDef, Material as MaterialDef, Mesh as MeshDef, Node as NodeDef, Primitive as PrimitiveDef, Property as PropertyDef, PropertyType, Scene as SceneDef, Texture as TextureDef } from '@gltf-transform/core';
-import { Object3D, BufferAttribute, Group, Mesh } from 'three';
-import { AccessorBinding, Binding, ExtensionBinding, MaterialBinding, MeshBinding, NodeBinding, PrimitiveBinding, SceneBinding, TextureBinding } from './bindings';
+import { Object3D, BufferAttribute, Group, Mesh, Texture, Material } from 'three';
+import { AccessorSubject, Subject, ExtensionSubject, MaterialSubject, MeshSubject, NodeSubject, PrimitiveSubject, SceneSubject, TextureSubject } from './subjects';
 import { MeshLike } from './constants';
 import { DefaultImageProvider, ImageProvider, NullImageProvider } from './ImageProvider';
 import { MaterialPool, SingleUserPool, Pool, TexturePool } from './pools';
 
 export class UpdateContext {
 	private _disposed = false;
-	private _bindings = new Map<PropertyDef, Binding<PropertyDef, any>>();
+	private _subjects = new Map<PropertyDef, Subject<PropertyDef, any>>();
 
 	readonly accessorPool = new Pool<BufferAttribute>('accessors');
 	readonly extensionPool = new Pool<ExtensionPropertyDef>('extensions');
@@ -24,65 +24,65 @@ export class UpdateContext {
 		this.imageProvider = provider;
 	}
 
-	private _addBinding(binding: Binding<PropertyDef, any>): void {
-		const def = binding.def;
-		this._bindings.set(def, binding);
+	private _addSubject(subject: Subject<PropertyDef, any>): void {
+		const def = subject.def;
+		this._subjects.set(def, subject);
 		def.addEventListener('dispose', () => {
-			this._bindings.delete(def);
+			this._subjects.delete(def);
 		});
 	}
 
 	bind(def: null): null;
-	bind(def: AccessorDef): AccessorBinding;
-	bind(def: MaterialDef): MaterialBinding;
-	bind(def: MeshDef): MeshBinding;
-	bind(def: NodeDef): NodeBinding;
-	bind(def: PrimitiveDef): PrimitiveBinding;
-	bind(def: SceneDef): SceneBinding;
-	bind(def: PropertyDef): Binding<PropertyDef, any>;
-	bind(def: PropertyDef | null): Binding<PropertyDef, any> | null {
+	bind(def: AccessorDef): AccessorSubject;
+	bind(def: MaterialDef): MaterialSubject;
+	bind(def: MeshDef): MeshSubject;
+	bind(def: NodeDef): NodeSubject;
+	bind(def: PrimitiveDef): PrimitiveSubject;
+	bind(def: SceneDef): SceneSubject;
+	bind(def: PropertyDef): Subject<PropertyDef, any>;
+	bind(def: PropertyDef | null): Subject<PropertyDef, any> | null {
 		if (!def) return null;
-		if (this._bindings.has(def)) return this._bindings.get(def)!;
+		if (this._subjects.has(def)) return this._subjects.get(def)!;
 
-		let binding: Binding<PropertyDef, any>;
+		let subject: Subject<PropertyDef, any>;
 		switch (def.propertyType) {
 			case PropertyType.ACCESSOR:
-				binding = new AccessorBinding(this, def as AccessorDef);
+				subject = new AccessorSubject(this, def as AccessorDef);
 				break;
 			case PropertyType.MATERIAL:
-				binding = new MaterialBinding(this, def as MaterialDef);
+				subject = new MaterialSubject(this, def as MaterialDef);
 				break;
 			case PropertyType.MESH:
-				binding = new MeshBinding(this, def as MeshDef);
+				subject = new MeshSubject(this, def as MeshDef);
 				break;
 			case PropertyType.NODE:
-				binding = new NodeBinding(this, def as NodeDef);
+				subject = new NodeSubject(this, def as NodeDef);
 				break;
 			case PropertyType.PRIMITIVE:
-				binding = new PrimitiveBinding(this, def as PrimitiveDef);
+				subject = new PrimitiveSubject(this, def as PrimitiveDef);
 				break;
 			case PropertyType.SCENE:
-				binding = new SceneBinding(this, def as SceneDef);
+				subject = new SceneSubject(this, def as SceneDef);
 				break;
 			case PropertyType.TEXTURE:
-				binding = new TextureBinding(this, def as TextureDef);
+				subject = new TextureSubject(this, def as TextureDef);
 				break;
 			default: {
 				if (def instanceof ExtensionPropertyDef) {
-					binding = new ExtensionBinding(this, def as ExtensionPropertyDef);
+					subject = new ExtensionSubject(this, def as ExtensionPropertyDef);
 				} else {
 					throw new Error(`Unimplemented type: ${def.propertyType}`);
 				}
 			}
 		}
 
-		binding.update();
-		this._addBinding(binding);
-		return binding;
+		subject.update();
+		this._addSubject(subject);
+		return subject;
 	}
 
-	weakBind(def: PropertyDef): Binding<PropertyDef, any> | null {
-		return this._bindings.get(def) || null;
+	weakBind(def: PropertyDef): Subject<PropertyDef, any> | null {
+		return this._subjects.get(def) || null;
 	}
 
 	stats() {
@@ -113,45 +113,20 @@ export class UpdateContext {
 	 * Given a target object (currently any THREE.Object3D), finds and returns the source
 	 * glTF-Transform Property definition.
 	 */
-	// findDef(target: Object3D): PropertyDef | null {
-	// 	if (target === null) return null;
-
-	// 	let base;
-
-	// 	if (base = this.primitivePool.findBase(target))
-	// 	const base = this.object3DMap.findBase(target) || target;
-	// 	for (const binding of this._bindings) {
-	// 		if (binding.value === target || binding.value === base) {
-	// 			return binding.def;
-	// 		}
-	// 	}
-
-	// 	return null;
-	// }
+	findDef(target: unknown): PropertyDef | null {
+		throw new Error('Not implemented');
+	}
 
 	/**
 	 * Given a source object (currently anything rendered as THREE.Object3D), finds and returns
 	 * the list of output THREE.Object3D instances.
 	 */
-	// findValues(def: TextureDef): Texture[]
-	// findValues(def: MaterialDef): Material[]
-	// findValues(def: SceneDef | NodeDef | MeshDef | PrimitiveDef): Object3D[]
-	// findValues(def: SceneDef | NodeDef | MeshDef | PrimitiveDef | MaterialDef | TextureDef): (Object3D | Material | Texture)[] {
-	// 	const binding = this._defBindings.get(def);
-	// 	if (!binding) return [];
-
-	// 	if (def instanceof SceneDef || def instanceof NodeDef) {
-	// 		return [binding.value];
-	// 	} else if (def instanceof MeshDef || def instanceof PrimitiveDef) {
-	// 		return this.object3DMap.listVariants(binding.value);
-	// 	} else if (def instanceof MaterialDef) {
-	// 		this.materialMap.listVariants(binding.value);
-	// 	} else if (def instanceof TextureDef) {
-	// 		this.textureMap.listVariants(binding.value);
-	// 	}
-
-	// 	throw new Error(`DocumentView: Lookup type "${def.propertyType}" not implemented.`);
-	// }
+	findValues(def: TextureDef): Texture[]
+	findValues(def: MaterialDef): Material[]
+	findValues(def: SceneDef | NodeDef | MeshDef | PrimitiveDef): Object3D[]
+	findValues(def: SceneDef | NodeDef | MeshDef | PrimitiveDef | MaterialDef | TextureDef): (Object3D | Material | Texture)[] {
+		throw new Error('Not implemented');
+	}
 
 	isDisposed(): boolean {
 		return this._disposed;
@@ -161,9 +136,8 @@ export class UpdateContext {
 		// First, to prevent updates during disposal.
 		this._disposed = true;
 
-
-		for (const [_, binding] of this._bindings) binding.dispose();
-		this._bindings.clear();
+		for (const [_, subject] of this._subjects) subject.dispose();
+		this._subjects.clear();
 
 		// Last, to clean up anything left after disposal.
 		this.accessorPool.dispose();

@@ -1,12 +1,12 @@
 import { Property as PropertyDef } from '@gltf-transform/core';
-import { RefObserver, Output } from '../observers';
+import { Output } from '../observers';
 import type { UpdateContext } from '../UpdateContext';
 import type { Subscription } from '../utils/EventDispatcher';
 import { EmptyParams, ValuePool } from '../pools';
 
 // TODO(impl): Graph layouts are hard. Maybe just a spreadsheet debug view?
 
-export abstract class Binding <Def extends PropertyDef, Value, Params = EmptyParams> {
+export abstract class Subject<Def extends PropertyDef, Value, Params = EmptyParams> {
 	def: Def;
 	value: Value;
 	pool: ValuePool<Value, Params>;

@@ -2,7 +2,7 @@ import test from 'tape';
 import { Document } from '@gltf-transform/core';
 import { DocumentView } from '../dist/view.modern.js';
 
-test('NodeBinding', t => {
+test('NodeSubject', t => {
 	const document = new Document();
 	const nodeDef1 = document.createNode('Node1')
 		.setTranslation([0, 2, 0])

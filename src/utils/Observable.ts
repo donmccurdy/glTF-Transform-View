@@ -1,6 +1,6 @@
 import { EventDispatcher, Subscription } from "./EventDispatcher";
 
-export class Subject<T> extends EventDispatcher {
+export class Observable<T> extends EventDispatcher {
 	public value: T;
 	private _subscribers: ((next: T, prev: T) => void)[] = [];
 

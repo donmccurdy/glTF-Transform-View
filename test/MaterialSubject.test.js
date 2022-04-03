@@ -3,7 +3,7 @@ import { Document, Primitive as PrimitiveDef } from '@gltf-transform/core';
 import { DocumentView } from '../dist/view.modern.js';
 import { MaterialsClearcoat, MaterialsUnlit } from '@gltf-transform/extensions';
 
-test('MaterialBinding', t => {
+test('MaterialSubject', t => {
 	const document = new Document();
 	const texDef1 = document.createTexture('Tex1')
 		.setMimeType('image/png')
@@ -38,7 +38,7 @@ test('MaterialBinding', t => {
 	t.end();
 });
 
-test('MaterialBinding | extensions', t => {
+test('MaterialSubject | extensions', t => {
 	const document = new Document();
 	const unlitExtension = document.createExtension(MaterialsUnlit);
 	const clearcoatExtension = document.createExtension(MaterialsClearcoat);
@@ -67,7 +67,7 @@ test('MaterialBinding | extensions', t => {
 	t.end();
 });
 
-test('MaterialBinding | dispose', t => {
+test('MaterialSubject | dispose', t => {
 	const document = new Document();
 	const texDef1 = document.createTexture('Tex1')
 		.setMimeType('image/png')
@@ -132,7 +132,7 @@ test('MaterialBinding | dispose', t => {
 	t.end();
 });
 
-test('MaterialBinding | texture memory', t => {
+test('MaterialSubject | texture memory', t => {
 	const document = new Document();
 	const clearcoatExtension = document.createExtension(MaterialsClearcoat);
 	const texDef1 = document.createTexture('Tex1')

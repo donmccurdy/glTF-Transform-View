@@ -2,7 +2,7 @@ import test from 'tape';
 import { Document } from '@gltf-transform/core';
 import { DocumentView } from '../dist/view.modern.js';
 
-test('MeshBinding', t => {
+test('MeshSubject', t => {
 	const document = new Document();
 	const position = document.createAccessor()
 		.setType('VEC3')
