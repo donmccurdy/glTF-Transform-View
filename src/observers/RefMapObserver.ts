@@ -1,7 +1,7 @@
 import type { Property as PropertyDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
 import type { Subject } from '../subjects';
-import type { Subscription } from '../utils';
+import type { Subscription } from '../constants';
 import { Observable } from '../utils';
 import { EmptyParams } from '../pools';
 import { RefObserver } from './RefObserver';

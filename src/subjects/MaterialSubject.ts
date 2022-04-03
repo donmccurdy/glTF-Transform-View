@@ -5,7 +5,7 @@ import type { UpdateContext } from '../UpdateContext';
 import { eq } from '../utils';
 import { Subject } from './Subject';
 import { RefListObserver, RefObserver } from '../observers';
-import { Subscription } from '../utils/EventDispatcher';
+import { Subscription } from '../constants';
 import { TextureParams, TexturePool, ValuePool } from '../pools';
 
 const _vec3: vec3 = [0, 0, 0];

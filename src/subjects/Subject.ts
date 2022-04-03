@@ -1,7 +1,7 @@
 import { Property as PropertyDef } from '@gltf-transform/core';
 import { Output } from '../observers';
 import type { UpdateContext } from '../UpdateContext';
-import type { Subscription } from '../utils/EventDispatcher';
+import type { Subscription } from '../constants';
 import { EmptyParams, ValuePool } from '../pools';
 
 // TODO(feat): Graph layouts are hard. Maybe just a spreadsheet debug view?
