@@ -75,7 +75,7 @@ Unused resources are *not* disposed immediately, in case they might be used agai
 manually dispose of unused resources — e.g. to free up GPU memory — call  `documentView.gc()`.
 Resources will be re-allocated automatically if they are used again.
 
-### Bindings
+### Feature support
 
 - ✅&nbsp;&nbsp;Renders and updates
 - 🚧&nbsp;&nbsp;Static render, no updates
@@ -96,22 +96,8 @@ Resources will be re-allocated automatically if they are used again.
 | Camera        | ❌      |
 | Light         | ❌      |
 
-### Extensions supported
-
-See [glTF-Transform-View#7](https://github.com/donmccurdy/glTF-Transform-View/issues/7).
+For supported extensions, see [glTF-Transform-View#7](https://github.com/donmccurdy/glTF-Transform-View/issues/7).
 
 ## Contributing
 
-```shell
-# Install dependencies.
-yarn
-
-# Build source, watch for changes.
-yarn watch
-
-# Build source, watch for changes, and run examples.
-yarn dev
-
-# Run tests.
-yarn test
-```
+See [CONTRIBUTING.md](./CONTRIBUTING.md).
