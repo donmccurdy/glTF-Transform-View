@@ -7,8 +7,8 @@ import { NULL_TEXTURE } from '../ImageProvider';
 export class TextureBinding extends Binding<TextureDef, Texture> {
 	private _image: ArrayBuffer | null = null;
 
-	constructor(context: UpdateContext, source: TextureDef) {
-		super(context, source, NULL_TEXTURE, context.texturePool);
+	constructor(context: UpdateContext, def: TextureDef) {
+		super(context, def, NULL_TEXTURE, context.texturePool);
 	}
 
 	update() {

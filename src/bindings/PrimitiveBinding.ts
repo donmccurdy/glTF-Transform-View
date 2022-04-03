@@ -73,9 +73,9 @@ export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
 		//  (2) Material params must update before material.
 		//  (3) Mode can safely come last, but that's non-obvious.
 
-		this.indices.updateRef(def.getIndices());
+		this.indices.updateDef(def.getIndices());
 		this.attributes.updateRefMap(def.listSemantics(), def.listAttributes());
-		this.material.updateRef(def.getMaterial());
+		this.material.updateDef(def.getMaterial());
 
 		if (def.getMode() !== getObject3DMode(value)) {
 			this.pool.releaseBase(value);
@@ -85,8 +85,8 @@ export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
 		}
 	}
 
-	private static createValue(source: PrimitiveDef, geometry: BufferGeometry, material: Material, pool: ValuePool<MeshLike>): MeshLike {
-		switch (source.getMode()) {
+	private static createValue(def: PrimitiveDef, geometry: BufferGeometry, material: Material, pool: ValuePool<MeshLike>): MeshLike {
+		switch (def.getMode()) {
 			case PrimitiveDef.Mode.TRIANGLES:
 			case PrimitiveDef.Mode.TRIANGLE_FAN:
 			case PrimitiveDef.Mode.TRIANGLE_STRIP:
@@ -102,7 +102,7 @@ export class PrimitiveBinding extends Binding<PrimitiveDef, MeshLike> {
 			case PrimitiveDef.Mode.POINTS:
 				return pool.requestBase(new Points(geometry, material));
 			default:
-				throw new Error(`Unexpected primitive mode: ${source.getMode()}`);
+				throw new Error(`Unexpected primitive mode: ${def.getMode()}`);
 		}
 	}
 

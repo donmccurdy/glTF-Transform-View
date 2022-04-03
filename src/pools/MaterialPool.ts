@@ -2,7 +2,7 @@ import { GLTF, Primitive as PrimitiveDef } from '@gltf-transform/core';
 import { LineBasicMaterial, Material, MeshBasicMaterial, MeshPhysicalMaterial, MeshStandardMaterial, PointsMaterial } from 'three';
 import { Pool } from './Pool';
 
-export type SourceMaterial = MeshBasicMaterial | MeshStandardMaterial | MeshPhysicalMaterial;
+export type BaseMaterial = MeshBasicMaterial | MeshStandardMaterial | MeshPhysicalMaterial;
 export type VariantMaterial = MeshBasicMaterial | MeshStandardMaterial | MeshPhysicalMaterial | LineBasicMaterial | PointsMaterial;
 
 export interface MaterialParams {
@@ -25,7 +25,7 @@ export class MaterialPool extends Pool<Material, MaterialParams> {
 	}
 
     requestVariant(base: Material, params: MaterialParams): Material {
-        return this._request(this._createVariant(base as SourceMaterial, params));
+        return this._request(this._createVariant(base as BaseMaterial, params));
     }
 
 	protected _disposeValue(value: Material): void {
@@ -34,7 +34,7 @@ export class MaterialPool extends Pool<Material, MaterialParams> {
 	}
 
 	/** Creates a variant material for given source material and MaterialParams. */
-	protected _createVariant(srcMaterial: SourceMaterial, params: MaterialParams): VariantMaterial {
+	protected _createVariant(srcMaterial: BaseMaterial, params: MaterialParams): VariantMaterial {
 		switch (params.mode) {
 			case PrimitiveDef.Mode.TRIANGLES:
 			case PrimitiveDef.Mode.TRIANGLE_FAN:
@@ -57,7 +57,7 @@ export class MaterialPool extends Pool<Material, MaterialParams> {
 	 * NOTICE: Changes to MaterialParams should _NOT_ be applied with this method.
 	 * Instead, create a new variant and dispose the old if unused.
 	 */
-	protected _updateVariant(srcMaterial: SourceMaterial, dstMaterial: VariantMaterial, params: MaterialParams): VariantMaterial {
+	protected _updateVariant(srcMaterial: BaseMaterial, dstMaterial: VariantMaterial, params: MaterialParams): VariantMaterial {
 		if (srcMaterial.type === dstMaterial.type) {
 			dstMaterial.copy(srcMaterial);
 		} else if (dstMaterial instanceof LineBasicMaterial) {

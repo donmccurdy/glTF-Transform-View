@@ -54,7 +54,11 @@ export class RefObserver<Def extends PropertyDef, Value, Params = EmptyParams> e
 		return this;
 	}
 
-	updateRef(def: Def | null) {
+	getDef(): Def | null {
+		return this.binding ? this.binding.def : null;
+	}
+
+	updateDef(def: Def | null) {
 		const binding = def ? this._context.bind(def) as Binding<Def, Value> : null;
 		if (binding === this.binding) return;
 

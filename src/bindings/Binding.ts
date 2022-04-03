@@ -82,9 +82,12 @@ export abstract class Binding <Def extends PropertyDef, Value, Params = EmptyPar
 	}
 
 	/**************************************************************************
-	 * Output.
+	 * Output API — Used by RefObserver.ts
 	 */
 
+	/**
+	 * Adds
+	 */
 	addOutput(output: RefObserver<Def, Value>, paramsFn: () => Params): this {
 		this._outputs.add(output);
 		this._outputParamsFns.set(output, paramsFn);
@@ -103,6 +106,6 @@ export abstract class Binding <Def extends PropertyDef, Value, Params = EmptyPar
 		this._outputs.delete(output);
 		this._outputParamsFns.delete(output);
 		if (value) this.pool.releaseVariant(value);
-		return this; // TODO(test): No publish!
+		return this; // No publish — called by RefObserver.
 	}
 }

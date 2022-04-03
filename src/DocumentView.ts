@@ -23,8 +23,8 @@ export class DocumentView {
 	 * For a given glTF-Transform Scene definition, returns an Object3D root note. Successive calls
 	 * with the same input will yield the same output Object3D instance.
 	 */
-	public view(source: SceneDef): Object3D {
-		return this._context.bind(source).value;
+	public view(def: SceneDef): Object3D {
+		return this._context.bind(def).value;
 	}
 
 	/** For a given source glTF-Transform Property definition, returns a list of rendered three.js objects. */

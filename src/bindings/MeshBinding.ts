@@ -2,12 +2,12 @@ import { Group } from 'three';
 import { Mesh as MeshDef, Primitive as PrimitiveDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
 import { Binding } from './Binding';
-import { RefListObserver } from '../observers';
+import { DefListObserver } from '../observers';
 import { MeshLike } from '../constants';
 import { SingleUserParams, SingleUserPool } from '../pools';
 
 export class MeshBinding extends Binding<MeshDef, Group> {
-	protected primitives = new RefListObserver<PrimitiveDef, MeshLike, SingleUserParams>('primitives', this._context)
+	protected primitives = new DefListObserver<PrimitiveDef, MeshLike, SingleUserParams>('primitives', this._context)
 		.setParamsFn(() => SingleUserPool.createParams(this.def))
 
 	constructor(context: UpdateContext, def: MeshDef) {
@@ -28,7 +28,7 @@ export class MeshBinding extends Binding<MeshDef, Group> {
 			value.name = def.getName();
 		}
 
-		this.primitives.updateRefList(def.listPrimitives());
+		this.primitives.updateDefList(def.listPrimitives());
 	}
 
 	dispose() {

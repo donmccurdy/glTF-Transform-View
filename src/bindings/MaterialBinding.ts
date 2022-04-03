@@ -4,7 +4,7 @@ import type { Clearcoat, IOR, Sheen, Specular, Transmission, Volume } from '@glt
 import type { UpdateContext } from '../UpdateContext';
 import { eq } from '../utils';
 import { Binding } from './Binding';
-import { RefListObserver, RefObserver } from '../observers';
+import { DefListObserver, RefObserver } from '../observers';
 import { Subscription } from '../utils/EventDispatcher';
 import { TextureParams, TexturePool, ValuePool } from '../pools';
 
@@ -19,7 +19,7 @@ enum ShadingModel {
 // TODO(bug): Missing change listeners on TextureInfo... delegate?
 
 export class MaterialBinding extends Binding<MaterialDef, Material> {
-	protected readonly extensions = new RefListObserver<ExtensionPropertyDef, ExtensionPropertyDef>('extensions', this._context);
+	protected readonly extensions = new DefListObserver<ExtensionPropertyDef, ExtensionPropertyDef>('extensions', this._context);
 
 	protected readonly baseColorTexture = new RefObserver<TextureDef, Texture, TextureParams>('baseColorTexture', this._context);
 	protected readonly emissiveTexture = new RefObserver<TextureDef, Texture, TextureParams>('emissiveTexture', this._context);
@@ -108,7 +108,7 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 		}
 
 		this._textureObservers.push(observer);
-		this._textureUpdateFns.push(() => observer.updateRef(textureFn()));
+		this._textureUpdateFns.push(() => observer.updateDef(textureFn()));
 		this._textureApplyFns.push(() => applyTextureFn(observer.value));
 
 		return observer.subscribe((texture) => {
@@ -135,7 +135,7 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 		const def = this.def;
 		let value = this.value;
 
-		this.extensions.updateRefList(def.listExtensions());
+		this.extensions.updateDefList(def.listExtensions());
 
 		const shadingModel = getShadingModel(def);
 		if (shadingModel === ShadingModel.UNLIT && value.type !== 'MeshBasicMaterial'
@@ -162,17 +162,17 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 	}
 
 	private _updateBasic(target: MeshBasicMaterial) {
-		const source = this.def;
+		const def = this.def;
 
-		if (source.getName() !== target.name) {
-			target.name = source.getName();
+		if (def.getName() !== target.name) {
+			target.name = def.getName();
 		}
 
-		if (source.getDoubleSided() !== (target.side === DoubleSide)) {
-			target.side = source.getDoubleSided() ? DoubleSide : FrontSide;
+		if (def.getDoubleSided() !== (target.side === DoubleSide)) {
+			target.side = def.getDoubleSided() ? DoubleSide : FrontSide;
 		}
 
-		switch (source.getAlphaMode()) {
+		switch (def.getAlphaMode()) {
 			case 'OPAQUE':
 				target.transparent = false;
 				target.depthWrite = true;
@@ -186,59 +186,59 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 			case 'MASK':
 				target.transparent = false;
 				target.depthWrite = true;
-				target.alphaTest = source.getAlphaCutoff();
+				target.alphaTest = def.getAlphaCutoff();
 				break;
 		}
 
-		const sourceAlpha = source.getAlpha();
-		if (sourceAlpha !== target.opacity) {
-			target.opacity = sourceAlpha;
+		const alpha = def.getAlpha();
+		if (alpha !== target.opacity) {
+			target.opacity = alpha;
 		}
 
-		const sourceBaseColor = source.getBaseColorFactor().slice(0, 3);
-		if (!eq(sourceBaseColor, target.color.toArray(_vec3))) {
-			target.color.fromArray(sourceBaseColor);
+		const baseColor = def.getBaseColorFactor().slice(0, 3);
+		if (!eq(baseColor, target.color.toArray(_vec3))) {
+			target.color.fromArray(baseColor);
 		}
 	}
 
 	private _updateStandard(target: MeshStandardMaterial) {
-		const source = this.def;
+		const def = this.def;
 
-		const sourceEmissive = source.getEmissiveFactor();
-		if (!eq(sourceEmissive, target.emissive.toArray(_vec3))) {
-			target.emissive.fromArray(sourceEmissive);
+		const emissive = def.getEmissiveFactor();
+		if (!eq(emissive, target.emissive.toArray(_vec3))) {
+			target.emissive.fromArray(emissive);
 		}
 
-		const sourceRoughness = source.getRoughnessFactor();
-		if (sourceRoughness !== target.roughness) {
-			target.roughness = sourceRoughness;
+		const roughness = def.getRoughnessFactor();
+		if (roughness !== target.roughness) {
+			target.roughness = roughness;
 		}
 
-		const sourceMetalness = source.getMetallicFactor();
-		if (sourceMetalness !== target.metalness) {
-			target.metalness = sourceMetalness;
+		const metalness = def.getMetallicFactor();
+		if (metalness !== target.metalness) {
+			target.metalness = metalness;
 		}
 
-		const sourceOcclusionStrength = source.getOcclusionStrength();
-		if (sourceOcclusionStrength !== target.aoMapIntensity) {
-			target.aoMapIntensity = sourceOcclusionStrength;
+		const occlusionStrength = def.getOcclusionStrength();
+		if (occlusionStrength !== target.aoMapIntensity) {
+			target.aoMapIntensity = occlusionStrength;
 		}
 
-		const sourceNormalScale = source.getNormalScale();
-		if (sourceNormalScale !== target.normalScale.x) {
-			target.normalScale.setScalar(sourceNormalScale);
+		const normalScale = def.getNormalScale();
+		if (normalScale !== target.normalScale.x) {
+			target.normalScale.setScalar(normalScale);
 		}
 	}
 
 	private _updatePhysical(target: MeshPhysicalMaterial) {
-		const source = this.def;
+		const def = this.def;
 
 		if (!(target instanceof MeshPhysicalMaterial)) {
 			return;
 		}
 
 		// KHR_materials_clearcoat
-		const clearcoat = source.getExtension<Clearcoat>('KHR_materials_clearcoat');
+		const clearcoat = def.getExtension<Clearcoat>('KHR_materials_clearcoat');
 		if (clearcoat) {
 			if (clearcoat.getClearcoatFactor() !== target.clearcoat) {
 				if (target.clearcoat === 0) target.needsUpdate = true;
@@ -256,7 +256,7 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 		}
 
 		// KHR_materials_ior
-		const ior = source.getExtension<IOR>('KHR_materials_ior');
+		const ior = def.getExtension<IOR>('KHR_materials_ior');
 		if (ior) {
 			if (ior.getIOR() !== target.ior) {
 				target.ior = ior.getIOR();
@@ -266,12 +266,12 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 		}
 
 		// KHR_materials_sheen
-		const sheen = source.getExtension<Sheen>('KHR_materials_sheen');
+		const sheen = def.getExtension<Sheen>('KHR_materials_sheen');
 		if (sheen) {
 			target.sheen = 1;
-			const sourceSheenColor = sheen.getSheenColorFactor();
-			if (!eq(sourceSheenColor, target.sheenColor!.toArray(_vec3))) {
-				target.sheenColor!.fromArray(sourceSheenColor);
+			const sheenColor = sheen.getSheenColorFactor();
+			if (!eq(sheenColor, target.sheenColor!.toArray(_vec3))) {
+				target.sheenColor!.fromArray(sheenColor);
 			}
 			if (sheen.getSheenRoughnessFactor() !== target.sheenRoughness) {
 				target.sheenRoughness = sheen.getSheenRoughnessFactor();
@@ -281,14 +281,14 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 		}
 
 		// KHR_materials_specular
-		const specular = source.getExtension<Specular>('KHR_materials_specular');
+		const specular = def.getExtension<Specular>('KHR_materials_specular');
 		if (specular) {
 			if (specular.getSpecularFactor() !== target.specularIntensity) {
 				target.specularIntensity = specular.getSpecularFactor();
 			}
-			const sourceSpecularColor = specular.getSpecularColorFactor();
-			if (!eq(sourceSpecularColor, target.specularColor.toArray(_vec3))) {
-				target.specularColor.fromArray(sourceSpecularColor);
+			const specularColor = specular.getSpecularColorFactor();
+			if (!eq(specularColor, target.specularColor.toArray(_vec3))) {
+				target.specularColor.fromArray(specularColor);
 			}
 		} else {
 			target.specularIntensity = 1.0;
@@ -296,7 +296,7 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 		}
 
 		// KHR_materials_transmission
-		const transmission = source.getExtension<Transmission>('KHR_materials_transmission');
+		const transmission = def.getExtension<Transmission>('KHR_materials_transmission');
 		if (transmission) {
 			if (transmission.getTransmissionFactor() !== target.transmission) {
 				if (target.transmission === 0) target.needsUpdate = true;
@@ -307,7 +307,7 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 		}
 
 		// KHR_materials_volume
-		const volume = source.getExtension<Volume>('KHR_materials_volume');
+		const volume = def.getExtension<Volume>('KHR_materials_volume');
 		if (volume) {
 			if (volume.getThicknessFactor() !== target.thickness) {
 				if (target.thickness === 0) target.needsUpdate = true;
@@ -316,9 +316,9 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 			if (volume.getAttenuationDistance() !== target.attenuationDistance) {
 				target.attenuationDistance = volume.getAttenuationDistance();
 			}
-			const sourceAttenuationColor = volume.getAttenuationColor();
-			if (!eq(sourceAttenuationColor, target.attenuationColor.toArray(_vec3))) {
-				target.attenuationColor.fromArray(sourceAttenuationColor);
+			const attenuationColor = volume.getAttenuationColor();
+			if (!eq(attenuationColor, target.attenuationColor.toArray(_vec3))) {
+				target.attenuationColor.fromArray(attenuationColor);
 			}
 		} else {
 			target.thickness = 0;
@@ -334,13 +334,13 @@ export class MaterialBinding extends Binding<MaterialDef, Material> {
 	}
 }
 
-function getShadingModel(source: MaterialDef): ShadingModel {
-	for (const extension of source.listExtensions()) {
+function getShadingModel(def: MaterialDef): ShadingModel {
+	for (const extension of def.listExtensions()) {
 		if (extension.extensionName === 'KHR_materials_unlit') {
 			return ShadingModel.UNLIT;
 		}
 	}
-	for (const extension of source.listExtensions()) {
+	for (const extension of def.listExtensions()) {
 		switch (extension.extensionName) {
 			case 'KHR_materials_unlit':
 			case 'KHR_materials_clearcoat':

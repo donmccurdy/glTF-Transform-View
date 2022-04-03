@@ -7,8 +7,7 @@ import { MaterialPool, SingleUserPool, Pool, TexturePool } from './pools';
 
 export class UpdateContext {
 	private _disposed = false;
-	private _bindings = new Set<Binding<PropertyDef, any>>();
-	private _defBindings = new WeakMap<PropertyDef, Binding<PropertyDef, any>>();
+	private _bindings = new Map<PropertyDef, Binding<PropertyDef, any>>();
 
 	readonly accessorPool = new Pool<BufferAttribute>('accessors');
 	readonly extensionPool = new Pool<ExtensionPropertyDef>('extensions');
@@ -21,31 +20,29 @@ export class UpdateContext {
 
 	public imageProvider: ImageProvider = new NullImageProvider();
 
-	public setImageProvider(provider: DefaultImageProvider): void {
+	setImageProvider(provider: DefaultImageProvider): void {
 		this.imageProvider = provider;
 	}
 
 	private _addBinding(binding: Binding<PropertyDef, any>): void {
-		const source = binding.def;
-		this._bindings.add(binding);
-		this._defBindings.set(source, binding);
-		source.addEventListener('dispose', () => {
-			this._bindings.delete(binding);
-			this._defBindings.delete(source);
+		const def = binding.def;
+		this._bindings.set(def, binding);
+		def.addEventListener('dispose', () => {
+			this._bindings.delete(def);
 		});
 	}
 
-	public bind(def: null): null;
-	public bind(def: AccessorDef): AccessorBinding;
-	public bind(def: MaterialDef): MaterialBinding;
-	public bind(def: MeshDef): MeshBinding;
-	public bind(def: NodeDef): NodeBinding;
-	public bind(def: PrimitiveDef): PrimitiveBinding;
-	public bind(def: SceneDef): SceneBinding;
-	public bind(def: PropertyDef): Binding<PropertyDef, any>;
-	public bind(def: PropertyDef | null): Binding<PropertyDef, any> | null {
+	bind(def: null): null;
+	bind(def: AccessorDef): AccessorBinding;
+	bind(def: MaterialDef): MaterialBinding;
+	bind(def: MeshDef): MeshBinding;
+	bind(def: NodeDef): NodeBinding;
+	bind(def: PrimitiveDef): PrimitiveBinding;
+	bind(def: SceneDef): SceneBinding;
+	bind(def: PropertyDef): Binding<PropertyDef, any>;
+	bind(def: PropertyDef | null): Binding<PropertyDef, any> | null {
 		if (!def) return null;
-		if (this._defBindings.has(def)) return this._defBindings.get(def)!;
+		if (this._bindings.has(def)) return this._bindings.get(def)!;
 
 		let binding: Binding<PropertyDef, any>;
 		switch (def.propertyType) {
@@ -84,11 +81,11 @@ export class UpdateContext {
 		return binding;
 	}
 
-	public weakBind(source: PropertyDef): Binding<PropertyDef, any> | null {
-		return this._defBindings.get(source) || null;
+	weakBind(def: PropertyDef): Binding<PropertyDef, any> | null {
+		return this._bindings.get(def) || null;
 	}
 
-	public stats() {
+	stats() {
 		return {
 			accessors: this.accessorPool.size(),
 			extensions: this.extensionPool.size(),
@@ -101,7 +98,7 @@ export class UpdateContext {
 		};
 	}
 
-	public gc() {
+	gc() {
 		this.accessorPool.gc();
 		this.extensionPool.gc();
 		this.materialPool.gc();
@@ -116,7 +113,7 @@ export class UpdateContext {
 	 * Given a target object (currently any THREE.Object3D), finds and returns the source
 	 * glTF-Transform Property definition.
 	 */
-	// public findDef(target: Object3D): PropertyDef | null {
+	// findDef(target: Object3D): PropertyDef | null {
 	// 	if (target === null) return null;
 
 	// 	let base;
@@ -136,10 +133,10 @@ export class UpdateContext {
 	 * Given a source object (currently anything rendered as THREE.Object3D), finds and returns
 	 * the list of output THREE.Object3D instances.
 	 */
-	// public findValues(def: TextureDef): Texture[]
-	// public findValues(def: MaterialDef): Material[]
-	// public findValues(def: SceneDef | NodeDef | MeshDef | PrimitiveDef): Object3D[]
-	// public findValues(def: SceneDef | NodeDef | MeshDef | PrimitiveDef | MaterialDef | TextureDef): (Object3D | Material | Texture)[] {
+	// findValues(def: TextureDef): Texture[]
+	// findValues(def: MaterialDef): Material[]
+	// findValues(def: SceneDef | NodeDef | MeshDef | PrimitiveDef): Object3D[]
+	// findValues(def: SceneDef | NodeDef | MeshDef | PrimitiveDef | MaterialDef | TextureDef): (Object3D | Material | Texture)[] {
 	// 	const binding = this._defBindings.get(def);
 	// 	if (!binding) return [];
 
@@ -156,15 +153,16 @@ export class UpdateContext {
 	// 	throw new Error(`DocumentView: Lookup type "${def.propertyType}" not implemented.`);
 	// }
 
-	public isDisposed(): boolean {
+	isDisposed(): boolean {
 		return this._disposed;
 	}
 
-	public dispose(): void {
+	dispose(): void {
 		// First, to prevent updates during disposal.
 		this._disposed = true;
 
-		for (const binding of this._bindings) binding.dispose();
+
+		for (const [_, binding] of this._bindings) binding.dispose();
 		this._bindings.clear();
 
 		// Last, to clean up anything left after disposal.

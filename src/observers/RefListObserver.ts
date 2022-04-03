@@ -20,24 +20,24 @@ export class RefListObserver<Def extends PropertyDef, Value, Params = EmptyParam
 		this._context = context;
 	}
 
-	updateRefList(sources: Def[]) {
+	updateDefList(defs: Def[]) {
 		const added = new Set<Binding<Def, Value>>();
 		const removed = new Set<number>();
 
 		let needsUpdate = false;
 
-		for (let i = 0; i < sources.length || i < this._observers.length; i++) {
-			const source = sources[i];
+		for (let i = 0; i < defs.length || i < this._observers.length; i++) {
+			const def = defs[i];
 			const observer = this._observers[i];
 
-			if (!source) {
+			if (!def) {
 				removed.add(i);
 				needsUpdate = true;
 			} else if (!observer) {
-				added.add(this._context.bind(source) as Binding<Def, Value>);
+				added.add(this._context.bind(def) as Binding<Def, Value>);
 				needsUpdate = true;
-			} else if (source !== observer.binding!.def) {
-				observer.updateRef(source);
+			} else if (def !== observer.getDef()) {
+				observer.updateDef(def);
 				needsUpdate = true;
 			}
 		}
@@ -72,7 +72,7 @@ export class RefListObserver<Def extends PropertyDef, Value, Params = EmptyParam
 
 	private _add(binding: Binding<Def, Value>) {
 		const observer = new RefObserver(this.name + '[]', this._context) as RefObserver<Def, Value>;
-		observer.updateRef(binding.def);
+		observer.updateDef(binding.def);
 		this._observers.push(observer);
 		this._subscriptions.push(observer.subscribe((next) => {
 			if (!next) {
