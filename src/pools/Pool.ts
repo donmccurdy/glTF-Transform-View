@@ -12,6 +12,13 @@ export interface ValuePool<Value, Params = EmptyParams> {
 	dispose(): void;
 }
 
+/**
+ * Pool of (optionally reusable) resources and resource variations.
+ *
+ * As Subjects publish many variations of the same values to Observers, it's important to
+ * allocate those variations efficiently, reuse instances where possible, and clean up unused
+ * instances. That bookkeeping is assigned to Pools (not a Reactive concept).
+ */
 export class Pool<Value, Params = EmptyParams> implements ValuePool<Value, Params> {
 	readonly name: string;
 

@@ -16,7 +16,7 @@ enum ShadingModel {
 	PHYSICAL = 2,
 }
 
-// TODO(bug): Missing change listeners on TextureInfo... delegate?
+// TODO(feat): Missing change listeners on TextureInfo... delegate?
 
 export class MaterialSubject extends Subject<MaterialDef, Material> {
 	protected readonly extensions = new RefListObserver<ExtensionPropertyDef, ExtensionPropertyDef>('extensions', this._context);
@@ -108,7 +108,7 @@ export class MaterialSubject extends Subject<MaterialDef, Material> {
 		}
 
 		this._textureObservers.push(observer);
-		this._textureUpdateFns.push(() => observer.updateDef(textureFn()));
+		this._textureUpdateFns.push(() => observer.update(textureFn()));
 		this._textureApplyFns.push(() => applyTextureFn(observer.value));
 
 		return observer.subscribe((texture) => {
@@ -135,7 +135,7 @@ export class MaterialSubject extends Subject<MaterialDef, Material> {
 		const def = this.def;
 		let value = this.value;
 
-		this.extensions.updateDefList(def.listExtensions());
+		this.extensions.update(def.listExtensions());
 
 		const shadingModel = getShadingModel(def);
 		if (shadingModel === ShadingModel.UNLIT && value.type !== 'MeshBasicMaterial'
@@ -147,8 +147,6 @@ export class MaterialSubject extends Subject<MaterialDef, Material> {
 			for (const fn of this._textureApplyFns) fn();
 		}
 
-		// TODO(test): Write tests for the edge cases here, ensure that we
-		// don't get properties on a material from the wrong shading model.
 		switch (shadingModel) {
 			case ShadingModel.PHYSICAL:
 				this._updatePhysical(value as MeshPhysicalMaterial); // falls through ⬇

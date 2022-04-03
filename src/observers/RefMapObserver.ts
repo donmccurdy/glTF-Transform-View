@@ -20,7 +20,7 @@ export class RefMapObserver<Def extends PropertyDef, Value, Params = EmptyParams
 		this._context = context;
 	}
 
-	updateRefMap(keys: string[], defs: Def[]) {
+	update(keys: string[], defs: Def[]) {
 		const nextKeys = new Set(keys);
 		const nextDefs = {} as Record<string, Def>;
 		for (let i = 0; i < keys.length; i++) nextDefs[keys[i]] = defs[i];
@@ -40,7 +40,7 @@ export class RefMapObserver<Def extends PropertyDef, Value, Params = EmptyParams
 				this._add(key, this._context.bind(nextDefs[key]) as Subject<Def, Value>);
 				needsUpdate = true;
 			} else if (observer.getDef() !== nextDefs[key]) {
-				observer.updateDef(nextDefs[key]);
+				observer.update(nextDefs[key]);
 				needsUpdate = true;
 			}
 		}
@@ -60,7 +60,7 @@ export class RefMapObserver<Def extends PropertyDef, Value, Params = EmptyParams
 
 	private _add(key: string, subject: Subject<Def, Value>) {
 		const observer = new RefObserver(this.name + `[${key}]`, this._context) as RefObserver<Def, Value>;
-		observer.updateDef(subject.def);
+		observer.update(subject.def);
 
 		this._observers[key] = observer;
 		this._subscriptions[key] = observer.subscribe((next) => {

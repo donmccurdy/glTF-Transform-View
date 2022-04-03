@@ -4,8 +4,18 @@ import type { UpdateContext } from '../UpdateContext';
 import type { Subscription } from '../utils/EventDispatcher';
 import { EmptyParams, ValuePool } from '../pools';
 
-// TODO(impl): Graph layouts are hard. Maybe just a spreadsheet debug view?
+// TODO(feat): Graph layouts are hard. Maybe just a spreadsheet debug view?
 
+/**
+ * Implementation of BehaviorSubject pattern, emitting three.js objects when changes
+ * occur in glTF definitions.
+ *
+ * Each glTF definition (e.g. `Material`) is bound to a single Subject (e.g. `MaterialSubject`).
+ * The Subject is responsible for receiving change events published by the definition, generating a
+ * derived three.js object (e.g. `THREE.Material`), and publishing the new value to all Observers. More
+ * precisely, this is a [*BehaviorSubject*](https://reactivex.io/documentation/subject.html), which holds
+ * a single current value at any given time.
+ */
 export abstract class Subject<Def extends PropertyDef, Value, Params = EmptyParams> {
 	def: Def;
 	value: Value;

@@ -19,7 +19,7 @@ export class RefListObserver<Def extends PropertyDef, Value, Params = EmptyParam
 		this._context = context;
 	}
 
-	updateDefList(defs: Def[]) {
+	update(defs: Def[]) {
 		const added = new Set<Subject<Def, Value>>();
 		const removed = new Set<number>();
 
@@ -38,7 +38,7 @@ export class RefListObserver<Def extends PropertyDef, Value, Params = EmptyParam
 				added.add(this._context.bind(def) as Subject<Def, Value>);
 				needsUpdate = true;
 			} else if (def !== observer.getDef()) {
-				observer.updateDef(def);
+				observer.update(def);
 				needsUpdate = true;
 			}
 		}
@@ -67,7 +67,7 @@ export class RefListObserver<Def extends PropertyDef, Value, Params = EmptyParam
 
 	private _add(subject: Subject<Def, Value>) {
 		const observer = new RefObserver(this.name + '[]', this._context) as RefObserver<Def, Value>;
-		observer.updateDef(subject.def);
+		observer.update(subject.def);
 		this._observers.push(observer);
 		this._subscriptions.push(observer.subscribe((next) => {
 			if (!next) {

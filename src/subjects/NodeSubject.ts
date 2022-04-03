@@ -49,8 +49,8 @@ export class NodeSubject extends Subject<NodeDef, Object3D> {
 			value.scale.fromArray(def.getScale());
 		}
 
-		this.children.updateDefList(def.listChildren());
-		this.mesh.updateDef(def.getMesh());
+		this.children.update(def.listChildren());
+		this.mesh.update(def.getMesh());
 	}
 
 	dispose() {

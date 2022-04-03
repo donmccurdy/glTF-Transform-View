@@ -28,7 +28,7 @@ export class MeshSubject extends Subject<MeshDef, Group> {
 			value.name = def.getName();
 		}
 
-		this.primitives.updateDefList(def.listPrimitives());
+		this.primitives.update(def.listPrimitives());
 	}
 
 	dispose() {

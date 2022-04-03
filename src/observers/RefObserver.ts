@@ -13,9 +13,17 @@ export interface Output<Value> extends Observable<Value | null> {
 }
 
 /**
- * Represents a connection between one Subject's output and another
- * Subject's input. RefObserver should let the Subject call .next(),
- * generally avoiding calling .next() itself. The RefObserver is a passive pipe.
+ * Observable connecting one Subject's output to another Subject's input.
+ *
+ * An Observer is subscribed to the values published by a particular Subject, and
+ * passes those events along to a parent — usually another Subject. For example, a MaterialSubject
+ * subscribes to updates from a TextureSubject using an Observer. Observers are parameterized:
+ * for example, a single Texture may be used by many Materials, with different offset/scale/encoding
+ * parameters in each. The TextureSubject treats each of these Observers as a different "output", and
+ * uses the parameters associated with the Observer to publish the appropriate value.
+ *
+ * RefObserver should let the Subject call .next(), generally avoiding calling .next() itself. The
+ * RefObserver is a passive pipe.
  */
 export class RefObserver<Def extends PropertyDef, Value, Params = EmptyParams> extends Observable<Value | null> implements Output<Value> {
 	readonly name: string;
@@ -59,7 +67,7 @@ export class RefObserver<Def extends PropertyDef, Value, Params = EmptyParams> e
 		return this._subject ? this._subject.def : null;
 	}
 
-	updateDef(def: Def | null) {
+	update(def: Def | null) {
 		const subject = def ? this._context.bind(def) as Subject<Def, Value> : null;
 		if (subject === this._subject) return;
 

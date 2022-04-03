@@ -73,13 +73,12 @@ export class PrimitiveSubject extends Subject<PrimitiveDef, MeshLike> {
 		//  (2) Material params must update before material.
 		//  (3) Mode can safely come last, but that's non-obvious.
 
-		this.indices.updateDef(def.getIndices());
-		this.attributes.updateRefMap(def.listSemantics(), def.listAttributes());
-		this.material.updateDef(def.getMaterial());
+		this.indices.update(def.getIndices());
+		this.attributes.update(def.listSemantics(), def.listAttributes());
+		this.material.update(def.getMaterial());
 
 		if (def.getMode() !== getObject3DMode(value)) {
 			this.pool.releaseBase(value);
-			// TODO(bug): Material temporarily invalid here over next three lines.
 			this.value = value = PrimitiveSubject.createValue(def, value.geometry, value.material, this.pool);
 			this.material.invalidate();
 		}

@@ -24,7 +24,7 @@ export class SceneSubject extends Subject<SceneDef, Group> {
 			target.name = def.getName();
 		}
 
-		this.children.updateDefList(def.listChildren());
+		this.children.update(def.listChildren());
 	}
 
 	dispose() {
