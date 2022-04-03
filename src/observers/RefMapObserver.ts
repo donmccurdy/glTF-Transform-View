@@ -39,7 +39,7 @@ export class RefMapObserver<Def extends PropertyDef, Value, Params = EmptyParams
 			if (!observer) {
 				this._add(key, this._context.bind(nextDefs[key]) as Binding<Def, Value>);
 				needsUpdate = true;
-			} else if (observer.binding!.def !== nextDefs[key]) {
+			} else if (observer.getDef() !== nextDefs[key]) {
 				observer.updateDef(nextDefs[key]);
 				needsUpdate = true;
 			}
@@ -56,13 +56,6 @@ export class RefMapObserver<Def extends PropertyDef, Value, Params = EmptyParams
 			observer.setParamsFn(paramsFn);
 		}
 		return this;
-	}
-
-	updateParams() {
-		for (const key in this._observers) {
-			const observer = this._observers[key];
-			observer.updateParams();
-		}
 	}
 
 	private _add(key: string, binding: Binding<Def, Value>) {

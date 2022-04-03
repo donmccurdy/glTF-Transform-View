@@ -12,14 +12,15 @@ export interface Output<Value> extends Subject<Value | null> {
 	detach(): void;
 }
 
-// TODO(docs): The _only_ time an observer should call .next()
-// is after "forwarding" from Observer to ListObserver or
-// MapObserver, correct?
-// ... any, .update(...) really.
-
+/**
+ * Represents a connection between one Binding's output and another
+ * Binding's input. RefObserver should let the Binding call .next(),
+ * generally avoiding calling .next() itself. The RefObserver is a passive pipe.
+ */
 export class RefObserver<Def extends PropertyDef, Value, Params = EmptyParams> extends Subject<Value | null> implements Output<Value> {
 	readonly name: string;
-	binding: Binding<Def, Value> | null = null;
+
+	private _binding: Binding<Def, Value> | null = null;
 	private _bindingParamsFn: () => Params = () => ({} as Params);
 
 	private readonly _context: UpdateContext;
@@ -55,27 +56,33 @@ export class RefObserver<Def extends PropertyDef, Value, Params = EmptyParams> e
 	}
 
 	getDef(): Def | null {
-		return this.binding ? this.binding.def : null;
+		return this._binding ? this._binding.def : null;
 	}
 
 	updateDef(def: Def | null) {
 		const binding = def ? this._context.bind(def) as Binding<Def, Value> : null;
-		if (binding === this.binding) return;
+		if (binding === this._binding) return;
 
 		this._clear();
 
 		if (binding) {
-			this.binding = binding;
-			this.binding.addOutput(this, this._bindingParamsFn);
-			this.binding.publish(this);
+			this._binding = binding;
+			this._binding.addOutput(this, this._bindingParamsFn);
+			this._binding.publish(this);
 		} else {
+			// In most cases RefObserver should let the Binding call .next() itself,
+			// but this is the exception since the binding is gone.
 			this.next(null);
 		}
 	}
 
-	updateParams() {
-		if (this.binding) {
-			this.binding.updateOutput(this);
+	/**
+	 * Forces the observed Binding to re-evaluate the output. For use when
+	 * output parameters are likely to have changed.
+	 */
+	invalidate() {
+		if (this._binding) {
+			this._binding.publish(this);
 		}
 	}
 
@@ -88,9 +95,9 @@ export class RefObserver<Def extends PropertyDef, Value, Params = EmptyParams> e
 	 */
 
 	private _clear() {
-		if (this.binding) {
-			this.binding.removeOutput(this);
-			this.binding = null;
+		if (this._binding) {
+			this._binding.removeOutput(this);
+			this._binding = null;
 		}
 	}
 }

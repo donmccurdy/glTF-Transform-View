@@ -64,12 +64,6 @@ export class RefListObserver<Def extends PropertyDef, Value, Params = EmptyParam
 		return this;
 	}
 
-	updateParams() {
-		for (const observer of this._observers) {
-			observer.updateParams();
-		}
-	}
-
 	private _add(binding: Binding<Def, Value>) {
 		const observer = new RefObserver(this.name + '[]', this._context) as RefObserver<Def, Value>;
 		observer.updateDef(binding.def);

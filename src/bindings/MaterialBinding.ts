@@ -4,7 +4,7 @@ import type { Clearcoat, IOR, Sheen, Specular, Transmission, Volume } from '@glt
 import type { UpdateContext } from '../UpdateContext';
 import { eq } from '../utils';
 import { Binding } from './Binding';
-import { DefListObserver, RefObserver } from '../observers';
+import { RefListObserver, RefObserver } from '../observers';
 import { Subscription } from '../utils/EventDispatcher';
 import { TextureParams, TexturePool, ValuePool } from '../pools';
 
@@ -19,7 +19,7 @@ enum ShadingModel {
 // TODO(bug): Missing change listeners on TextureInfo... delegate?
 
 export class MaterialBinding extends Binding<MaterialDef, Material> {
-	protected readonly extensions = new DefListObserver<ExtensionPropertyDef, ExtensionPropertyDef>('extensions', this._context);
+	protected readonly extensions = new RefListObserver<ExtensionPropertyDef, ExtensionPropertyDef>('extensions', this._context);
 
 	protected readonly baseColorTexture = new RefObserver<TextureDef, Texture, TextureParams>('baseColorTexture', this._context);
 	protected readonly emissiveTexture = new RefObserver<TextureDef, Texture, TextureParams>('emissiveTexture', this._context);

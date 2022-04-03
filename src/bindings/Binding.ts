@@ -12,7 +12,6 @@ export abstract class Binding <Def extends PropertyDef, Value, Params = EmptyPar
 	pool: ValuePool<Value, Params>;
 
 	protected _context: UpdateContext;
-	protected _lastUpdateID: number = -1;
 	protected _subscriptions: Subscription[] = [];
 	protected _outputs = new Set<Output<Value>>();
 	protected _outputParamsFns = new Map<Output<Value>, () => Params>();
@@ -86,26 +85,22 @@ export abstract class Binding <Def extends PropertyDef, Value, Params = EmptyPar
 	 */
 
 	/**
-	 * Adds
+	 * Adds an output, which will receive future published values.
+	 * _Only for use of RefObserver.ts._
 	 */
-	addOutput(output: RefObserver<Def, Value>, paramsFn: () => Params): this {
+	addOutput(output: Output<Value>, paramsFn: () => Params) {
 		this._outputs.add(output);
 		this._outputParamsFns.set(output, paramsFn);
-		// TODO(perf): ListObserver and MapObserver advance many times during initialization. Consider batching.
-		return this.publish(output);
 	}
 
-	updateOutput(output: RefObserver<Def, Value>): this {
-		return this.publish(output);
-	}
-
-	// TODO(docs): Need some clear docs on when this runs, relative to methods
-	// like output.detach() and output.dispose().
-	removeOutput(output: RefObserver<Def, Value>): this {
+	/**
+	 * Removes an output, which will no longer receive published values.
+	 * _Only for use of RefObserver.ts._
+	 */
+	removeOutput(output: Output<Value>) {
 		const value = output.value;
 		this._outputs.delete(output);
 		this._outputParamsFns.delete(output);
 		if (value) this.pool.releaseVariant(value);
-		return this; // No publish — called by RefObserver.
 	}
 }
