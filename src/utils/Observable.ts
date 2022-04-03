@@ -1,30 +1,31 @@
-import { EventDispatcher, Subscription } from "./EventDispatcher";
+import { Subscription } from '../constants';
 
-export class Observable<T> extends EventDispatcher {
-	public value: T;
-	private _subscribers: ((next: T, prev: T) => void)[] = [];
+export class Observable<Value> {
+	public value: Value;
+	private _subscriber: ((next: Value, prev: Value) => void) | null = null;
 
-	constructor(value: T) {
-		super();
+	constructor(value: Value) {
 		this.value = value;
 	}
 
-	public subscribe(listener: (next: T, prev: T) => void): Subscription {
-		this._subscribers.push(listener);
-		return () => {
-            this._subscribers.splice(this._subscribers.indexOf(listener), 1);
-        };
+	public subscribe(subscriber: (next: Value, prev: Value) => void): Subscription {
+		if (this._subscriber) {
+			throw new Error('Observable: Limit one subscriber per Observable.');
+		}
+
+		this._subscriber = subscriber;
+		return () => (this._subscriber = null);
 	}
 
-	public next(value: T) {
+	public next(value: Value) {
 		const prevValue = this.value;
 		this.value = value;
-		for (const listener of this._subscribers) {
-			listener(this.value, prevValue);
+		if (this._subscriber) {
+			this._subscriber(this.value, prevValue);
 		}
 	}
 
 	public dispose() {
-		this._subscribers.length = 0;
+		this._subscriber = null;
 	}
 }
