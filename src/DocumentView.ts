@@ -1,7 +1,8 @@
-import { Group, Line, LineLoop, LineSegments, Material, Mesh, Object3D, Points, Texture } from 'three';
-import { Document, Scene as SceneDef, Node as NodeDef, Material as MaterialDef, Mesh as MeshDef, Primitive as PrimitiveDef, Texture as TextureDef } from '@gltf-transform/core';
+import { Group, Material, Object3D, Texture } from 'three';
+import { Document, Scene as SceneDef, Node as NodeDef, Material as MaterialDef, Mesh as MeshDef, Primitive as PrimitiveDef, Property as PropertyDef, Texture as TextureDef } from '@gltf-transform/core';
 import { UpdateContext } from './UpdateContext';
 import { DefaultImageProvider } from './ImageProvider';
+import { MeshLike } from './constants';
 
 /**
  * Constructs a three.js subtree from a glTF-Transform Document, and maintains a
@@ -23,37 +24,28 @@ export class DocumentView {
 	 * For a given glTF-Transform Scene definition, returns an Object3D root note. Successive calls
 	 * with the same input will yield the same output Object3D instance.
 	 */
-	public view(def: SceneDef): Object3D {
-		return this._context.bind(def).value;
+	public view(def: SceneDef): Group {
+		const value = this._context.bind(def).value as Group;
+		this._context.recordOutputValue(def, value);
+		return value;
 	}
 
 	/** For a given source glTF-Transform Property definition, returns a list of rendered three.js objects. */
-	public viewAll(source: MaterialDef): Material[];
-	public viewAll(source: TextureDef): Texture[];
-	public viewAll(source: PrimitiveDef): (Mesh | Points | Line | LineLoop | LineSegments)[];
-	public viewAll(source: SceneDef | NodeDef | MeshDef): Object3D[];
-	public viewAll(source: SceneDef | NodeDef | MeshDef | PrimitiveDef | MaterialDef | TextureDef): (Mesh | Points | Line | LineLoop | LineSegments | Group | Object3D | Material | Texture)[] {
-		if (source instanceof SceneDef
-			|| source instanceof NodeDef
-			|| source instanceof MeshDef
-			|| source instanceof PrimitiveDef
-			|| source instanceof MaterialDef
-			|| source instanceof TextureDef) {
-			throw new Error('Not implemented');
-			// return this._context.findValues(source as any);
-		}
-		throw new Error('DocumentView: viewAll(...) supports only Scene, Node, Mesh, Primitive, and Material inputs.');
+	public listViews(source: TextureDef): Texture[];
+	public listViews(source: MaterialDef): Material[];
+	public listViews(source: PrimitiveDef): MeshLike[];
+	public listViews(source: SceneDef | NodeDef | MeshDef): Object3D[];
+	public listViews(source: PropertyDef): object[] {
+		return this._context.findValues(source as any);
 	}
 
 	/** For a given Object3D target, finds the source glTF-Transform Property definition. */
-	public source(view: Mesh): PrimitiveDef | null
-	public source(view: Object3D): NodeDef | SceneDef | MeshDef | null
-	public source(view: Mesh | Group | Object3D): PrimitiveDef | MeshDef | NodeDef | SceneDef | null {
-		if (view instanceof Object3D) {
-			throw new Error('Not implemented');
-			// return this._context.findDef(view) as PrimitiveDef | MeshDef | NodeDef | SceneDef;
-		}
-		throw new Error('DocumentView: source(...) supports only Object3D inputs.');
+	public getProperty(view: Texture): TextureDef | null
+	public getProperty(view: Material): MaterialDef | null
+	public getProperty(view: MeshLike): PrimitiveDef | null
+	public getProperty(view: Object3D): MeshDef | NodeDef | SceneDef | null
+	public getProperty(view: object): PropertyDef | null {
+		return this._context.findDef(view as any);
 	}
 
 	public stats(): Record<string, number> {

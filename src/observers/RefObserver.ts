@@ -24,6 +24,8 @@ export interface Output<Value> extends Observable<Value | null> {
  *
  * RefObserver should let the Subject call .next(), generally avoiding calling .next() itself. The
  * RefObserver is a passive pipe.
+ *
+ * @internal
  */
 export class RefObserver<Def extends PropertyDef, Value, Params = EmptyParams> extends Observable<Value | null> implements Output<Value> {
 	readonly name: string;
@@ -51,6 +53,14 @@ export class RefObserver<Def extends PropertyDef, Value, Params = EmptyParams> e
 		// Prevent publishing updates during disposal.
 		if (!this._context.isDisposed()) {
 			super.next(value);
+
+			// Record for lookups.
+			if (this._subject && value) {
+				this._context.recordOutputValue(
+					this._subject.def,
+					value as unknown as object
+				);
+			}
 		}
 	}
 

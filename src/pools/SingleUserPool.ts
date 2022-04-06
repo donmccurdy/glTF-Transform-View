@@ -4,6 +4,7 @@ import { Pool } from './Pool';
 
 export interface SingleUserParams {id: string}
 
+/** @internal */
 export class SingleUserPool<T extends Object3D> extends Pool<T, SingleUserParams> {
     private static _parentIDs = new WeakMap<PropertyDef, string>();
 

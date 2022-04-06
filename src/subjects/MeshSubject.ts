@@ -6,6 +6,7 @@ import { RefListObserver } from '../observers';
 import { MeshLike } from '../constants';
 import { SingleUserParams, SingleUserPool } from '../pools';
 
+/** @internal */
 export class MeshSubject extends Subject<MeshDef, Group> {
 	protected primitives = new RefListObserver<PrimitiveDef, MeshLike, SingleUserParams>('primitives', this._context)
 		.setParamsFn(() => SingleUserPool.createParams(this.def))

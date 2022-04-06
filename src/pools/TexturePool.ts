@@ -31,6 +31,7 @@ export interface TextureParams {
 
 const _VEC2 = {ZERO: [0, 0] as vec2, ONE: [1, 1] as vec2};
 
+/** @internal */
 export class TexturePool extends Pool<Texture, TextureParams> {
     static createParams(textureInfo: TextureInfo, encoding: TextureEncoding): TextureParams {
 		const transform = textureInfo.getExtension<Transform>('KHR_texture_transform');

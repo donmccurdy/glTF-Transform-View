@@ -23,6 +23,7 @@ function semanticToAttributeName(semantic: string): string {
 	}
 }
 
+/** @internal */
 export class PrimitiveSubject extends Subject<PrimitiveDef, MeshLike> {
 	protected material = new RefObserver<MaterialDef, Material, MaterialParams>('material', this._context)
 		.setParamsFn(() => MaterialPool.createParams(this.def));

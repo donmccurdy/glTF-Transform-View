@@ -6,6 +6,7 @@ import { Observable } from '../utils';
 import { EmptyParams } from '../pools';
 import { RefObserver } from './RefObserver';
 
+/** @internal */
 export class RefListObserver<Def extends PropertyDef, Value, Params = EmptyParams> extends Observable<Value[]> {
 	readonly name: string;
 

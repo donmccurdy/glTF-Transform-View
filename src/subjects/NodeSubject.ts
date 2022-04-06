@@ -9,6 +9,7 @@ import { SingleUserPool } from '../pools';
 const _vec3: vec3 = [0, 0, 0];
 const _vec4: vec4 = [0, 0, 0, 0];
 
+/** @internal */
 export class NodeSubject extends Subject<NodeDef, Object3D> {
 	protected children = new RefListObserver<NodeDef, Object3D>('children', this._context);
 	protected mesh = new RefObserver<MeshDef, Group>('mesh', this._context)

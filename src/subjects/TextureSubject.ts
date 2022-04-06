@@ -4,6 +4,7 @@ import type { UpdateContext } from '../UpdateContext';
 import { Subject } from './Subject';
 import { NULL_TEXTURE } from '../ImageProvider';
 
+/** @internal */
 export class TextureSubject extends Subject<TextureDef, Texture> {
 	private _image: ArrayBuffer | null = null;
 

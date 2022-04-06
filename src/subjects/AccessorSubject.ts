@@ -4,6 +4,7 @@ import type { UpdateContext } from '../UpdateContext';
 import { Subject } from './Subject';
 import { ValuePool } from '../pools';
 
+/** @internal */
 export class AccessorSubject extends Subject<AccessorDef, BufferAttribute> {
 	constructor(context: UpdateContext, def: AccessorDef) {
 		super(

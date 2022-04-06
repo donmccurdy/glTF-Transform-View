@@ -1,13 +1,17 @@
-import { Accessor as AccessorDef, ExtensionProperty as ExtensionPropertyDef, Material as MaterialDef, Mesh as MeshDef, Node as NodeDef, Primitive as PrimitiveDef, Property as PropertyDef, PropertyType, Scene as SceneDef, Texture as TextureDef } from '@gltf-transform/core';
-import { Object3D, BufferAttribute, Group, Mesh, Texture, Material } from 'three';
+import { PropertyType, ExtensionProperty as ExtensionPropertyDef } from '@gltf-transform/core';
+import type { Accessor as AccessorDef, Material as MaterialDef, Mesh as MeshDef, Node as NodeDef, Primitive as PrimitiveDef, Property as PropertyDef, Scene as SceneDef, Texture as TextureDef } from '@gltf-transform/core';
+import type { Object3D, BufferAttribute, Group, Texture, Material } from 'three';
 import { AccessorSubject, Subject, ExtensionSubject, MaterialSubject, MeshSubject, NodeSubject, PrimitiveSubject, SceneSubject, TextureSubject } from './subjects';
-import { MeshLike } from './constants';
+import type { MeshLike } from './constants';
 import { DefaultImageProvider, ImageProvider, NullImageProvider } from './ImageProvider';
 import { MaterialPool, SingleUserPool, Pool, TexturePool } from './pools';
 
+/** @internal */
 export class UpdateContext {
 	private _disposed = false;
 	private _subjects = new Map<PropertyDef, Subject<PropertyDef, any>>();
+	private _outputValues = new WeakMap<PropertyDef, Set<object>>();
+	private _outputValuesInverse = new WeakMap<object, PropertyDef>();
 
 	readonly accessorPool = new Pool<BufferAttribute>('accessors');
 	readonly extensionPool = new Pool<ExtensionPropertyDef>('extensions');
@@ -81,8 +85,11 @@ export class UpdateContext {
 		return subject;
 	}
 
-	weakBind(def: PropertyDef): Subject<PropertyDef, any> | null {
-		return this._subjects.get(def) || null;
+	recordOutputValue(def: PropertyDef, value: object) {
+		const outputValues = this._outputValues.get(def) || new Set();
+		outputValues.add(value);
+		this._outputValues.set(def, outputValues);
+		this._outputValuesInverse.set(value, def);
 	}
 
 	stats() {
@@ -113,19 +120,24 @@ export class UpdateContext {
 	 * Given a target object (currently any THREE.Object3D), finds and returns the source
 	 * glTF-Transform Property definition.
 	 */
-	findDef(target: unknown): PropertyDef | null {
-		throw new Error('Not implemented');
+	findDef(target: Texture): TextureDef | null
+	findDef(target: Material): MaterialDef | null
+	findDef(target: MeshLike): PrimitiveDef | null
+	findDef(target: Object3D): SceneDef | NodeDef | MeshDef | null
+	findDef(target: object): PropertyDef | null {
+		return this._outputValuesInverse.get(target) || null;
 	}
 
 	/**
 	 * Given a source object (currently anything rendered as THREE.Object3D), finds and returns
 	 * the list of output THREE.Object3D instances.
 	 */
-	findValues(def: TextureDef): Texture[]
-	findValues(def: MaterialDef): Material[]
-	findValues(def: SceneDef | NodeDef | MeshDef | PrimitiveDef): Object3D[]
-	findValues(def: SceneDef | NodeDef | MeshDef | PrimitiveDef | MaterialDef | TextureDef): (Object3D | Material | Texture)[] {
-		throw new Error('Not implemented');
+	findValues(def: TextureDef): Texture[];
+	findValues(def: MaterialDef): Material[];
+	findValues(def: PrimitiveDef): MeshLike[];
+	findValues(def: SceneDef | NodeDef | MeshDef): Object3D[];
+	findValues(def: PropertyDef): object[] {
+		return Array.from(this._outputValues.get(def) || []);
 	}
 
 	isDisposed(): boolean {

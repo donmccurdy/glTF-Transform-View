@@ -18,6 +18,7 @@ enum ShadingModel {
 
 // TODO(feat): Missing change listeners on TextureInfo... delegate?
 
+/** @internal */
 export class MaterialSubject extends Subject<MaterialDef, Material> {
 	protected readonly extensions = new RefListObserver<ExtensionPropertyDef, ExtensionPropertyDef>('extensions', this._context);
 

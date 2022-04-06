@@ -13,6 +13,7 @@ export interface MaterialParams {
 	useFlatShading: boolean,
 }
 
+/** @internal */
 export class MaterialPool extends Pool<Material, MaterialParams> {
     static createParams(primitive: PrimitiveDef): MaterialParams {
 		return {

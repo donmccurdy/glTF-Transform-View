@@ -15,6 +15,8 @@ import { EmptyParams, ValuePool } from '../pools';
  * derived three.js object (e.g. `THREE.Material`), and publishing the new value to all Observers. More
  * precisely, this is a [*BehaviorSubject*](https://reactivex.io/documentation/subject.html), which holds
  * a single current value at any given time.
+ *
+ * @internal
  */
 export abstract class Subject<Def extends PropertyDef, Value, Params = EmptyParams> {
 	def: Def;

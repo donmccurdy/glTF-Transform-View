@@ -4,6 +4,7 @@ import type { UpdateContext } from '../UpdateContext';
 import { Subject } from './Subject';
 import { RefListObserver } from '../observers';
 
+/** @internal */
 export class SceneSubject extends Subject<SceneDef, Group> {
 	protected children = new RefListObserver<NodeDef, Object3D>('children', this._context);
 
