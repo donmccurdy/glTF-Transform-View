@@ -19,9 +19,9 @@ in the preview.
 
 > **NOTICE:** three.js can load glTF 2.0 files with [THREE.GLTFLoader](https://threejs.org/docs/index.html#examples/en/loaders/GLTFLoader)
 > and export them with [THREE.GLTFExporter](https://threejs.org/docs/index.html#examples/en/loaders/GLTFExporter),
-> the GLTFExporter step is lossy and slow. In comparison, the fast edit/refresh loop provided by
->  `@gltf-transform/view` requires some additional memory overhead, and so this project is not
-> meant to replace THREE.GLTFLoader for one-time resource loading.
+> but the GLTFExporter step is lossy and expensive. In comparison, the edit/refresh loop provided by
+> `@gltf-transform/view` is very fast but requires some additional memory overhead when loading, 
+> and so this project is not meant to replace THREE.GLTFLoader for one-time resource loading.
 
 ## Quickstart
 
