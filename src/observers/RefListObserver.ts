@@ -95,13 +95,9 @@ export class RefListObserver<Def extends PropertyDef, Value, Params = EmptyParam
 	}
 
 	dispose() {
-		for (const unsub of this._subscriptions) {
-			unsub();
-		}
-		for (const observer of this._observers) {
-			observer.dispose();
-		}
-		this._observers.length = 0;
+		for (const unsub of this._subscriptions) unsub();
+		for (const observer of this._observers) observer.dispose();
 		this._subscriptions.length = 0;
+		this._observers.length = 0;
 	}
 }

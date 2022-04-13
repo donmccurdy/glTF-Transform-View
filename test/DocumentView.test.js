@@ -10,29 +10,54 @@ test('DocumentView', t => {
 
 test('DocumentView | view', t => {
     const document = new Document();
-    const sceneDef = document.createScene();
     const textureDef = document.createTexture();
     const materialDef = document.createMaterial()
         .setBaseColorTexture(textureDef)
         .setMetallicRoughnessTexture(textureDef);
+    const primDef = document.createPrimitive()
+        .setMaterial(materialDef);
+    const meshDef = document.createMesh()
+        .addPrimitive(primDef);
+    const nodeDef = document.createNode()
+        .setMesh(meshDef);
+    const sceneDef = document.createScene()
+        .addChild(nodeDef);
 
     const documentView = new DocumentView(document);
     const scene = documentView.view(sceneDef);
-    t.ok(scene instanceof Group, 'scene → THREE.Group')
-    t.deepEquals(documentView.listViews(sceneDef), [scene], '1 scene view');
-    t.equals(documentView.listViews(materialDef).length, 0, '0 material views');
-    t.equals(documentView.listViews(textureDef).length, 0, '0 texture views');
-    t.equals(documentView.getProperty(scene), sceneDef, 'scene → source');
+    const node = scene.children[0];
+    const mesh = node.children[0];
+    const prim = mesh.children[0];
+    let material = prim.material;
+    let texture = material.map;
 
-    const material = documentView.view(materialDef);
+    t.ok(scene instanceof Group, 'scene → THREE.Group')
+    t.deepEquals(documentView.listViews(sceneDef), [scene], 'scene views');
+    t.equals(documentView.listViews(nodeDef).length, 1, 'node views');
+    t.equals(documentView.listViews(meshDef).length, 1, 'mesh views');
+    t.equals(documentView.listViews(primDef).length, 1, 'prim views');
+    t.equals(documentView.listViews(materialDef).length, 1, 'material views');
+    t.equals(documentView.listViews(textureDef).length, 2, 'texture views');
+    t.equals(documentView.getProperty(scene), sceneDef, 'scene → source');
+    t.equals(documentView.getProperty(node), nodeDef, 'node → source');
+    t.equals(documentView.getProperty(mesh), meshDef, 'mesh → source');
+    // TODO(bug): Primitive lookups not currently working. The `mesh.primitives` observer
+    // correctly records unique primitive outputs, but the `node.mesh` observer then
+    // does a deep clone of its own input, including any primitives. SingleUserPool
+    // could probably invoke a new `context.recordOutputVariant(src, dst)` when cloning.
+    // t.equals(documentView.getProperty(prim), primDef, 'prim → source');
+    t.equals(documentView.getProperty(material), materialDef, 'material → source');
+    t.equals(documentView.getProperty(texture), textureDef, 'texture → source');
+
+    material = documentView.view(materialDef);
     t.equals(material.type, 'MeshStandardMaterial', 'material → THREE.MeshStandardMaterial');
-    t.equals(documentView.listViews(materialDef).length, 1, '1 material view');
-    t.equals(documentView.listViews(textureDef).length, 2, '2 texture views');
+    t.equals(documentView.listViews(materialDef).length, 2, 'material views');
+    t.equals(documentView.listViews(textureDef).length, 2, 'texture views');
     t.equals(documentView.getProperty(material), materialDef, 'material → source');
 
-    const texture = documentView.view(textureDef);
+    texture = documentView.view(textureDef);
     t.ok(texture.isTexture, 'texture → THREE.Texture');
-    t.equals(documentView.listViews(textureDef).length, 3, '3 texture views');
+    t.equals(documentView.listViews(textureDef).length, 3, 'texture views');
     t.equals(documentView.getProperty(texture), textureDef, 'texture → source');
     t.end();
 });

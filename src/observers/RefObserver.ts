@@ -51,16 +51,16 @@ export class RefObserver<Def extends PropertyDef, Value, Params = EmptyParams> e
 
 	next(value: Value | null) {
 		// Prevent publishing updates during disposal.
-		if (!this._context.isDisposed()) {
-			super.next(value);
+		if (this._context.isDisposed()) return;
 
-			// Record for lookups.
-			if (this._subject && value) {
-				this._context.recordOutputValue(
-					this._subject.def,
-					value as unknown as object
-				);
-			}
+		super.next(value);
+
+		// Record for lookups.
+		if (this._subject && value) {
+			this._context.recordOutputValue(
+				this._subject.def,
+				value as unknown as object
+			);
 		}
 	}
 
