@@ -9,4 +9,4 @@ export type MeshLike = Mesh<BufferGeometry, Material>
 	| LineSegments<BufferGeometry, Material>
 	| LineLoop<BufferGeometry, Material>;
 
-export interface THREEObject { name: string; };
+export interface THREEObject { name: string; type: string; };

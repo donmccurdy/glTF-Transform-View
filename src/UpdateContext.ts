@@ -2,7 +2,7 @@ import { PropertyType, ExtensionProperty as ExtensionPropertyDef } from '@gltf-t
 import type { Accessor as AccessorDef, Material as MaterialDef, Mesh as MeshDef, Node as NodeDef, Primitive as PrimitiveDef, Property as PropertyDef, Scene as SceneDef, Texture as TextureDef } from '@gltf-transform/core';
 import type { Object3D, BufferAttribute, Group, Texture, Material } from 'three';
 import { AccessorSubject, Subject, ExtensionSubject, MaterialSubject, MeshSubject, NodeSubject, PrimitiveSubject, SceneSubject, TextureSubject } from './subjects';
-import type { MeshLike } from './constants';
+import type { MeshLike, THREEObject } from './constants';
 import { DefaultImageProvider, ImageProvider, NullImageProvider } from './ImageProvider';
 import { MaterialPool, SingleUserPool, Pool, TexturePool } from './pools';
 
@@ -13,14 +13,14 @@ export class UpdateContext {
 	private _outputValues = new WeakMap<PropertyDef, Set<object>>();
 	private _outputValuesInverse = new WeakMap<object, PropertyDef>();
 
-	readonly accessorPool = new Pool<BufferAttribute>('accessors');
-	readonly extensionPool = new Pool<ExtensionPropertyDef>('extensions');
-	readonly materialPool = new MaterialPool('materials');
-	readonly meshPool = new SingleUserPool<Group>('meshes');
-	readonly nodePool = new Pool<Object3D>('nodes');
-	readonly primitivePool = new SingleUserPool<MeshLike>('primitives');
-	readonly scenePool = new Pool<Group>('scenes');
-	readonly texturePool = new TexturePool('textures');
+	readonly accessorPool = new Pool<BufferAttribute>('accessors', this);
+	readonly extensionPool = new Pool<ExtensionPropertyDef>('extensions', this);
+	readonly materialPool = new MaterialPool('materials', this);
+	readonly meshPool = new SingleUserPool<Group>('meshes', this);
+	readonly nodePool = new Pool<Object3D>('nodes', this);
+	readonly primitivePool = new SingleUserPool<MeshLike>('primitives', this);
+	readonly scenePool = new Pool<Group>('scenes', this);
+	readonly texturePool = new TexturePool('textures', this);
 
 	public imageProvider: ImageProvider = new NullImageProvider();
 
@@ -85,11 +85,20 @@ export class UpdateContext {
 		return subject;
 	}
 
-	recordOutputValue(def: PropertyDef, value: object) {
+	recordOutputValue(def: PropertyDef, value: THREEObject) {
 		const outputValues = this._outputValues.get(def) || new Set();
 		outputValues.add(value);
 		this._outputValues.set(def, outputValues);
 		this._outputValuesInverse.set(value, def);
+	}
+
+	recordOutputVariant(base: THREEObject, variant: THREEObject) {
+		const def = this._outputValuesInverse.get(base);
+		if (def) {
+			this.recordOutputValue(def, variant);
+		} else {
+			console.warn(`Missing definition for output of type "${base.type}}"`);
+		}
 	}
 
 	stats() {

@@ -1,3 +1,5 @@
+import type { UpdateContext } from "../UpdateContext";
+
 export type EmptyParams = {} | null | undefined;
 
 export interface ValuePool<Value, Params = EmptyParams> {
@@ -23,11 +25,13 @@ export interface ValuePool<Value, Params = EmptyParams> {
  */
 export class Pool<Value, Params = EmptyParams> implements ValuePool<Value, Params> {
 	readonly name: string;
+	readonly context: UpdateContext;
 
 	protected _users = new Map<Value, number>();
 
-	constructor(name: string) {
+	constructor(name: string, context: UpdateContext) {
 		this.name = name;
+		this.context = context;
 	}
 
 	protected _request(value: Value): Value {
