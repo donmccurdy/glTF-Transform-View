@@ -3,6 +3,7 @@ import type { UpdateContext } from '../UpdateContext';
 import type { Subject } from '../subjects';
 import { Observable } from '../utils';
 import { EmptyParams } from '../pools';
+import { THREEObject } from '../constants';
 
 /**
  * Exposes a limited view of the RefObserver interface to objects
@@ -54,14 +55,6 @@ export class RefObserver<Def extends PropertyDef, Value, Params = EmptyParams> e
 		if (this._context.isDisposed()) return;
 
 		super.next(value);
-
-		// Record for lookups.
-		if (this._subject && value) {
-			this._context.recordOutputValue(
-				this._subject.def,
-				value as unknown as object
-			);
-		}
 	}
 
 	/**************************************************************************

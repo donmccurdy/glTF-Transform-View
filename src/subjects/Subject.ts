@@ -1,10 +1,8 @@
 import { Property as PropertyDef } from '@gltf-transform/core';
 import { Output } from '../observers';
 import type { UpdateContext } from '../UpdateContext';
-import type { Subscription } from '../constants';
+import type { Subscription, THREEObject } from '../constants';
 import { EmptyParams, ValuePool } from '../pools';
-
-// TODO(feat): Graph layouts are hard. Maybe just a spreadsheet debug view?
 
 /**
  * Implementation of BehaviorSubject pattern, emitting three.js objects when changes
@@ -56,26 +54,33 @@ export abstract class Subject<Def extends PropertyDef, Value, Params = EmptyPara
 	// TODO(perf): Many publishes during an update (e.g. Material). Consider batching.
 	abstract update(): void;
 
-	publishAll(): this {
+	publishAll(): void {
 		// Prevent publishing updates during disposal.
-		if (this._context.isDisposed()) return this;
+		if (this._context.isDisposed()) return;
 
 		for (const output of this._outputs) {
 			this.publish(output);
 		}
-		return this;
 	}
 
-	publish(output: Output<Value>): this {
-		// Prevent publishing updates during disposal.
-		if (this._context.isDisposed()) return this;
+	publish(output: Output<Value>): void {
+		// Prevent publishing updates during disposal, which would cause loops.
+		if (this._context.isDisposed()) return;
 
 		if (output.value) {
 			this.pool.releaseVariant(output.value);
 		}
+
+		// Map value to the requirements associated with the output.
 		const paramsFn = this._outputParamsFns.get(output)!;
-		output.next(this.pool.requestVariant(this.value, paramsFn()));
-		return this;
+		const value = this.pool.requestVariant(this.value, paramsFn());
+
+		// Record for lookups before advancing the value. SingleUserPool
+		// requires this order to preserve PrimitiveDef output lookups.
+		this._context.recordOutputValue(this.def, value as unknown as THREEObject);
+
+		// Advance next value.
+		output.next(value);
 	}
 
 	dispose(): void {

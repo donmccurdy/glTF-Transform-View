@@ -35,17 +35,14 @@ test('DocumentView | view', t => {
     t.deepEquals(documentView.listViews(sceneDef), [scene], 'scene views');
     t.equals(documentView.listViews(nodeDef).length, 1, 'node views');
     t.equals(documentView.listViews(meshDef).length, 1, 'mesh views');
-    t.equals(documentView.listViews(primDef).length, 1, 'prim views');
+    // 1 external prim, 1 internal prim. See SingleUserPool.
+    t.equals(documentView.listViews(primDef).length, 2, 'prim views');
     t.equals(documentView.listViews(materialDef).length, 1, 'material views');
     t.equals(documentView.listViews(textureDef).length, 2, 'texture views');
     t.equals(documentView.getProperty(scene), sceneDef, 'scene → source');
     t.equals(documentView.getProperty(node), nodeDef, 'node → source');
     t.equals(documentView.getProperty(mesh), meshDef, 'mesh → source');
-    // TODO(bug): Primitive lookups not currently working. The `mesh.primitives` observer
-    // correctly records unique primitive outputs, but the `node.mesh` observer then
-    // does a deep clone of its own input, including any primitives. SingleUserPool
-    // could probably invoke a new `context.recordOutputVariant(src, dst)` when cloning.
-    // t.equals(documentView.getProperty(prim), primDef, 'prim → source');
+    t.equals(documentView.getProperty(prim), primDef, 'prim → source');
     t.equals(documentView.getProperty(material), materialDef, 'material → source');
     t.equals(documentView.getProperty(texture), textureDef, 'texture → source');
 
