@@ -1,4 +1,4 @@
-import { BufferAttribute, BufferGeometry, Line, LineLoop, LineSegments, Material, Mesh, MeshStandardMaterial, Points, SkinnedMesh } from 'three';
+import { BufferAttribute, BufferGeometry, Line, LineLoop, LineSegments, Material, Mesh, MeshStandardMaterial, Points } from 'three';
 import { Accessor as AccessorDef, GLTF, Material as MaterialDef, Primitive as PrimitiveDef } from '@gltf-transform/core';
 import type { UpdateContext } from '../UpdateContext';
 import { Subject } from './Subject';
@@ -7,7 +7,12 @@ import { MeshLike } from '../constants';
 import { MaterialParams, MaterialPool, ValuePool } from '../pools';
 
 // https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#default-material
-const DEFAULT_MATERIAL = new MeshStandardMaterial({color: 0xFFFFFF, roughness: 1.0, metalness: 1.0});
+const DEFAULT_MATERIAL = new MeshStandardMaterial({
+	name: '__DefaultMaterial',
+	color: 0xFFFFFF,
+	roughness: 1.0,
+	metalness: 1.0
+});
 
 function semanticToAttributeName(semantic: string): string {
 	switch (semantic) {
@@ -40,7 +45,7 @@ export class PrimitiveSubject extends Subject<PrimitiveDef, MeshLike> {
 
 		this.material.subscribe((material) => {
 			if (this.value.material !== material) {
-				this.value.material = material!;
+				this.value.material = material || DEFAULT_MATERIAL;
 				this.publishAll();
 			}
 		});

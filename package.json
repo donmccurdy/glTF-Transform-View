@@ -14,12 +14,12 @@
     "@gltf-transform/core": "^2.1.4"
   },
   "peerDependencies": {
+    "@gltf-transform/extensions": ">=2.1.0",
+    "@gltf-transform/functions": ">=2.1.0",
     "@types/three": ">=0.130.0",
     "three": ">=0.130.1"
   },
   "devDependencies": {
-    "@gltf-transform/extensions": "^2.1.4",
-    "@gltf-transform/functions": "^2.1.4",
     "@tweakpane/core": "^1.0.8",
     "@types/source-map-support": "^0.5.4",
     "@types/three": "^0.138.0",
