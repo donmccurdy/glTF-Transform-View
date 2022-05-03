@@ -1,15 +1,15 @@
 import { Group, Object3D } from 'three';
 import type { Node as NodeDef, Scene as SceneDef } from '@gltf-transform/core';
-import type { UpdateContext } from '../UpdateContext';
+import type { DocumentViewImpl } from '../DocumentViewImpl';
 import { Subject } from './Subject';
 import { RefListObserver } from '../observers';
 
 /** @internal */
 export class SceneSubject extends Subject<SceneDef, Group> {
-	protected children = new RefListObserver<NodeDef, Object3D>('children', this._context);
+	protected children = new RefListObserver<NodeDef, Object3D>('children', this._documentView);
 
-	constructor(context: UpdateContext, def: SceneDef) {
-		super(context, def, context.scenePool.requestBase(new Group()), context.scenePool);
+	constructor(documentView: DocumentViewImpl, def: SceneDef) {
+		super(documentView, def, documentView.scenePool.requestBase(new Group()), documentView.scenePool);
 		this.children.subscribe((nextChildren, prevChildren) => {
 			if (prevChildren.length) this.value.remove(...prevChildren);
 			if (nextChildren.length) this.value.add(...nextChildren);

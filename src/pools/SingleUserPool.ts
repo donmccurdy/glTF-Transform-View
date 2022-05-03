@@ -26,7 +26,7 @@ export class SingleUserPool<T extends Object3D> extends Pool<T, SingleUserParams
 		const dstObject = srcObject.clone();
 		parallelTraverse(srcObject, dstObject, (base, variant) => {
 			if (base === srcObject) return; // Skip root; recorded elsewhere.
-			this.context.recordOutputVariant(base, variant);
+			this.documentView.recordOutputVariant(base, variant);
 		});
 		return dstObject;
 	}

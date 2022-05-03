@@ -1,6 +1,6 @@
 import { BufferAttribute, BufferGeometry, Line, LineLoop, LineSegments, Material, Mesh, MeshStandardMaterial, Points } from 'three';
 import { Accessor as AccessorDef, GLTF, Material as MaterialDef, Primitive as PrimitiveDef } from '@gltf-transform/core';
-import type { UpdateContext } from '../UpdateContext';
+import type { DocumentViewImpl } from '../DocumentViewImpl';
 import { Subject } from './Subject';
 import { RefMapObserver, RefObserver } from '../observers';
 import { MeshLike } from '../constants';
@@ -30,17 +30,17 @@ function semanticToAttributeName(semantic: string): string {
 
 /** @internal */
 export class PrimitiveSubject extends Subject<PrimitiveDef, MeshLike> {
-	protected material = new RefObserver<MaterialDef, Material, MaterialParams>('material', this._context)
+	protected material = new RefObserver<MaterialDef, Material, MaterialParams>('material', this._documentView)
 		.setParamsFn(() => MaterialPool.createParams(this.def));
-	protected indices = new RefObserver<AccessorDef, BufferAttribute>('indices', this._context);
-	protected attributes = new RefMapObserver<AccessorDef, BufferAttribute>('attributes', this._context);
+	protected indices = new RefObserver<AccessorDef, BufferAttribute>('indices', this._documentView);
+	protected attributes = new RefMapObserver<AccessorDef, BufferAttribute>('attributes', this._documentView);
 
-	constructor(context: UpdateContext, def: PrimitiveDef) {
+	constructor(documentView: DocumentViewImpl, def: PrimitiveDef) {
 		super(
-			context,
+			documentView,
 			def,
-			PrimitiveSubject.createValue(def, new BufferGeometry(), DEFAULT_MATERIAL, context.primitivePool),
-			context.primitivePool,
+			PrimitiveSubject.createValue(def, new BufferGeometry(), DEFAULT_MATERIAL, documentView.primitivePool),
+			documentView.primitivePool,
 		);
 
 		this.material.subscribe((material) => {

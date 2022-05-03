@@ -1,4 +1,4 @@
-import type { UpdateContext } from "../UpdateContext";
+import type { DocumentViewImpl } from "../DocumentViewImpl";
 
 export type EmptyParams = {} | null | undefined;
 
@@ -25,13 +25,13 @@ export interface ValuePool<Value, Params = EmptyParams> {
  */
 export class Pool<Value, Params = EmptyParams> implements ValuePool<Value, Params> {
 	readonly name: string;
-	readonly context: UpdateContext;
+	readonly documentView: DocumentViewImpl;
 
 	protected _users = new Map<Value, number>();
 
-	constructor(name: string, context: UpdateContext) {
+	constructor(name: string, documentView: DocumentViewImpl) {
 		this.name = name;
-		this.context = context;
+		this.documentView = documentView;
 	}
 
 	protected _request(value: Value): Value {

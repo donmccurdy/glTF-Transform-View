@@ -1,6 +1,6 @@
 import { Group, Material, Object3D, Texture } from 'three';
 import { Document, Scene as SceneDef, Node as NodeDef, Material as MaterialDef, Mesh as MeshDef, Primitive as PrimitiveDef, Property as PropertyDef, Texture as TextureDef } from '@gltf-transform/core';
-import { UpdateContext } from './UpdateContext';
+import { DocumentViewImpl } from './DocumentViewImpl';
 import { DefaultImageProvider } from './ImageProvider';
 import { MeshLike } from './constants';
 
@@ -12,12 +12,12 @@ import { MeshLike } from './constants';
  */
 export class DocumentView {
 	/** @internal */ private _document: Document;
-	/** @internal */ private _context: UpdateContext;
+	/** @internal */ private _impl: DocumentViewImpl;
 
 	/** Constructs a new DocumentView. */
 	constructor(document: Document) {
 		this._document = document;
-		this._context = new UpdateContext();
+		this._impl = new DocumentViewImpl();
 	}
 
 	/**
@@ -25,8 +25,8 @@ export class DocumentView {
 	 * with the same input will yield the same output Object3D instance.
 	 */
 	public view(def: SceneDef): Group {
-		const value = this._context.bind(def).value as Group;
-		this._context.recordOutputValue(def, value);
+		const value = this._impl.bind(def).value as Group;
+		this._impl.recordOutputValue(def, value);
 		return value;
 	}
 
@@ -36,7 +36,7 @@ export class DocumentView {
 	public listViews(source: PrimitiveDef): MeshLike[];
 	public listViews(source: SceneDef | NodeDef | MeshDef): Object3D[];
 	public listViews(source: PropertyDef): object[] {
-		return this._context.findValues(source as any);
+		return this._impl.findValues(source as any);
 	}
 
 	/** For a given Object3D target, finds the source glTF-Transform Property definition. */
@@ -45,15 +45,15 @@ export class DocumentView {
 	public getProperty(view: MeshLike): PrimitiveDef | null
 	public getProperty(view: Object3D): MeshDef | NodeDef | SceneDef | null
 	public getProperty(view: object): PropertyDef | null {
-		return this._context.findDef(view as any);
+		return this._impl.findDef(view as any);
 	}
 
 	public stats(): Record<string, number> {
-		return this._context.stats();
+		return this._impl.stats();
 	}
 
 	public gc(): void {
-		this._context.gc();
+		this._impl.gc();
 	}
 
 	/**
@@ -65,11 +65,11 @@ export class DocumentView {
 	 * - ...disposed Properties, dispose immediately.
 	 */
 	public dispose(): void {
-		this._context.dispose();
+		this._impl.dispose();
 	}
 
 	public setImageProvider(provider: DefaultImageProvider): this {
-		this._context.setImageProvider(provider);
+		this._impl.setImageProvider(provider);
 		return this;
 	}
 }

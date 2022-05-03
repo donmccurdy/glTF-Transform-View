@@ -1,6 +1,6 @@
 import { Texture } from 'three';
 import { Texture as TextureDef } from '@gltf-transform/core';
-import type { UpdateContext } from '../UpdateContext';
+import type { DocumentViewImpl } from '../DocumentViewImpl';
 import { Subject } from './Subject';
 import { NULL_TEXTURE } from '../ImageProvider';
 
@@ -8,8 +8,8 @@ import { NULL_TEXTURE } from '../ImageProvider';
 export class TextureSubject extends Subject<TextureDef, Texture> {
 	private _image: ArrayBuffer | null = null;
 
-	constructor(context: UpdateContext, def: TextureDef) {
-		super(context, def, NULL_TEXTURE, context.texturePool);
+	constructor(documentView: DocumentViewImpl, def: TextureDef) {
+		super(documentView, def, NULL_TEXTURE, documentView.texturePool);
 	}
 
 	update() {
@@ -26,7 +26,7 @@ export class TextureSubject extends Subject<TextureDef, Texture> {
 			if (this.value !== NULL_TEXTURE) {
 				this.pool.releaseBase(this.value);
 			}
-			this.value = this.pool.requestBase(this._context.imageProvider.get(def));
+			this.value = this.pool.requestBase(this._documentView.imageProvider.get(def));
 		}
 	}
 

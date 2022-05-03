@@ -1,6 +1,6 @@
 import { Group } from 'three';
 import { Mesh as MeshDef, Primitive as PrimitiveDef } from '@gltf-transform/core';
-import type { UpdateContext } from '../UpdateContext';
+import type { DocumentViewImpl } from '../DocumentViewImpl';
 import { Subject } from './Subject';
 import { RefListObserver } from '../observers';
 import { MeshLike } from '../constants';
@@ -8,11 +8,11 @@ import { SingleUserParams, SingleUserPool } from '../pools';
 
 /** @internal */
 export class MeshSubject extends Subject<MeshDef, Group> {
-	protected primitives = new RefListObserver<PrimitiveDef, MeshLike, SingleUserParams>('primitives', this._context)
+	protected primitives = new RefListObserver<PrimitiveDef, MeshLike, SingleUserParams>('primitives', this._documentView)
 		.setParamsFn(() => SingleUserPool.createParams(this.def))
 
-	constructor(context: UpdateContext, def: MeshDef) {
-		super(context, def, context.meshPool.requestBase(new Group()), context.meshPool);
+	constructor(documentView: DocumentViewImpl, def: MeshDef) {
+		super(documentView, def, documentView.meshPool.requestBase(new Group()), documentView.meshPool);
 
 		this.primitives.subscribe((nextPrims, prevPrims) => {
 			if (prevPrims.length) this.value.remove(...prevPrims);

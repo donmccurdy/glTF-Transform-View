@@ -7,7 +7,7 @@ import { DefaultImageProvider, ImageProvider, NullImageProvider } from './ImageP
 import { MaterialPool, SingleUserPool, Pool, TexturePool } from './pools';
 
 /** @internal */
-export class UpdateContext {
+export class DocumentViewImpl {
 	private _disposed = false;
 	private _subjects = new Map<PropertyDef, Subject<PropertyDef, any>>();
 	private _outputValues = new WeakMap<PropertyDef, Set<object>>();

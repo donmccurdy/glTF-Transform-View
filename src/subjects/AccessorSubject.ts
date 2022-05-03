@@ -1,17 +1,17 @@
 import { BufferAttribute } from 'three';
 import { Accessor as AccessorDef } from '@gltf-transform/core';
-import type { UpdateContext } from '../UpdateContext';
+import type { DocumentViewImpl } from '../DocumentViewImpl';
 import { Subject } from './Subject';
 import { ValuePool } from '../pools';
 
 /** @internal */
 export class AccessorSubject extends Subject<AccessorDef, BufferAttribute> {
-	constructor(context: UpdateContext, def: AccessorDef) {
+	constructor(documentView: DocumentViewImpl, def: AccessorDef) {
 		super(
-			context,
+			documentView,
 			def,
-			AccessorSubject.createValue(def, context.accessorPool),
-			context.accessorPool,
+			AccessorSubject.createValue(def, documentView.accessorPool),
+			documentView.accessorPool,
 		);
 	}
 

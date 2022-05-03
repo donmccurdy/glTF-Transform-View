@@ -1,5 +1,5 @@
 import type { Property as PropertyDef } from '@gltf-transform/core';
-import type { UpdateContext } from '../UpdateContext';
+import type { DocumentViewImpl } from '../DocumentViewImpl';
 import type { Subject } from '../subjects';
 import type { Subscription } from '../constants';
 import { Observable } from '../utils';
@@ -10,15 +10,15 @@ import { RefObserver } from './RefObserver';
 export class RefListObserver<Def extends PropertyDef, Value, Params = EmptyParams> extends Observable<Value[]> {
 	readonly name: string;
 
-	protected readonly _context: UpdateContext;
+	protected readonly _documentView: DocumentViewImpl;
 
 	private readonly _observers: RefObserver<Def, Value>[] = [];
 	private readonly _subscriptions: Subscription[] = [];
 
-	constructor(name: string, context: UpdateContext) {
+	constructor(name: string, documentView: DocumentViewImpl) {
 		super([]);
 		this.name = name;
-		this._context = context;
+		this._documentView = documentView;
 	}
 
 	update(defs: Def[]) {
@@ -37,7 +37,7 @@ export class RefListObserver<Def extends PropertyDef, Value, Params = EmptyParam
 				removed.add(i);
 				needsUpdate = true;
 			} else if (!observer) {
-				added.add(this._context.bind(def) as Subject<Def, Value>);
+				added.add(this._documentView.bind(def) as Subject<Def, Value>);
 				needsUpdate = true;
 			} else if (def !== observer.getDef()) {
 				observer.update(def);
@@ -68,7 +68,7 @@ export class RefListObserver<Def extends PropertyDef, Value, Params = EmptyParam
 	}
 
 	private _add(subject: Subject<Def, Value>) {
-		const observer = new RefObserver(this.name + '[]', this._context) as RefObserver<Def, Value>;
+		const observer = new RefObserver(this.name + '[]', this._documentView) as RefObserver<Def, Value>;
 		observer.update(subject.def);
 		this._observers.push(observer);
 		this._subscriptions.push(observer.subscribe((next) => {

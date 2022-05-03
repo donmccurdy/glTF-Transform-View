@@ -1,7 +1,7 @@
 import { DoubleSide, FrontSide, LinearEncoding, Material, MeshBasicMaterial, MeshPhysicalMaterial, MeshStandardMaterial, Texture, TextureEncoding, sRGBEncoding } from 'three';
 import { ExtensionProperty as ExtensionPropertyDef, Material as MaterialDef, Texture as TextureDef, TextureInfo as TextureInfoDef, vec3 } from '@gltf-transform/core';
 import type { Clearcoat, IOR, Sheen, Specular, Transmission, Volume } from '@gltf-transform/extensions';
-import type { UpdateContext } from '../UpdateContext';
+import type { DocumentViewImpl } from '../DocumentViewImpl';
 import { eq } from '../utils';
 import { Subject } from './Subject';
 import { RefListObserver, RefObserver } from '../observers';
@@ -20,39 +20,39 @@ enum ShadingModel {
 
 /** @internal */
 export class MaterialSubject extends Subject<MaterialDef, Material> {
-	protected readonly extensions = new RefListObserver<ExtensionPropertyDef, ExtensionPropertyDef>('extensions', this._context);
+	protected readonly extensions = new RefListObserver<ExtensionPropertyDef, ExtensionPropertyDef>('extensions', this._documentView);
 
-	protected readonly baseColorTexture = new RefObserver<TextureDef, Texture, TextureParams>('baseColorTexture', this._context);
-	protected readonly emissiveTexture = new RefObserver<TextureDef, Texture, TextureParams>('emissiveTexture', this._context);
-	protected readonly normalTexture = new RefObserver<TextureDef, Texture, TextureParams>('normalTexture', this._context);
-	protected readonly occlusionTexture = new RefObserver<TextureDef, Texture, TextureParams>('occlusionTexture', this._context);
-	protected readonly metallicRoughnessTexture = new RefObserver<TextureDef, Texture, TextureParams>('metallicRoughnessTexture', this._context);
+	protected readonly baseColorTexture = new RefObserver<TextureDef, Texture, TextureParams>('baseColorTexture', this._documentView);
+	protected readonly emissiveTexture = new RefObserver<TextureDef, Texture, TextureParams>('emissiveTexture', this._documentView);
+	protected readonly normalTexture = new RefObserver<TextureDef, Texture, TextureParams>('normalTexture', this._documentView);
+	protected readonly occlusionTexture = new RefObserver<TextureDef, Texture, TextureParams>('occlusionTexture', this._documentView);
+	protected readonly metallicRoughnessTexture = new RefObserver<TextureDef, Texture, TextureParams>('metallicRoughnessTexture', this._documentView);
 
 	// KHR_materials_clearcoat
-	protected readonly clearcoatTexture = new RefObserver<TextureDef, Texture, TextureParams>('clearcoatTexture', this._context);
-	protected readonly clearcoatRoughnessTexture = new RefObserver<TextureDef, Texture, TextureParams>('clearcoatRoughnessTexture', this._context);
-	protected readonly clearcoatNormalTexture = new RefObserver<TextureDef, Texture, TextureParams>('clearcoatNormalTexture', this._context);
+	protected readonly clearcoatTexture = new RefObserver<TextureDef, Texture, TextureParams>('clearcoatTexture', this._documentView);
+	protected readonly clearcoatRoughnessTexture = new RefObserver<TextureDef, Texture, TextureParams>('clearcoatRoughnessTexture', this._documentView);
+	protected readonly clearcoatNormalTexture = new RefObserver<TextureDef, Texture, TextureParams>('clearcoatNormalTexture', this._documentView);
 
 	// KHR_materials_sheen
-	protected readonly sheenColorTexture = new RefObserver<TextureDef, Texture, TextureParams>('sheenColorTexture', this._context);
-	protected readonly sheenRoughnessTexture = new RefObserver<TextureDef, Texture, TextureParams>('sheenRoughnessTexture', this._context);
+	protected readonly sheenColorTexture = new RefObserver<TextureDef, Texture, TextureParams>('sheenColorTexture', this._documentView);
+	protected readonly sheenRoughnessTexture = new RefObserver<TextureDef, Texture, TextureParams>('sheenRoughnessTexture', this._documentView);
 
 	// KHR_materials_specular
-	protected readonly specularTexture = new RefObserver<TextureDef, Texture, TextureParams>('specularTexture', this._context);
-	protected readonly specularColorTexture = new RefObserver<TextureDef, Texture, TextureParams>('specularColorTexture', this._context);
+	protected readonly specularTexture = new RefObserver<TextureDef, Texture, TextureParams>('specularTexture', this._documentView);
+	protected readonly specularColorTexture = new RefObserver<TextureDef, Texture, TextureParams>('specularColorTexture', this._documentView);
 
 	// KHR_materials_transmission
-	protected readonly transmissionTexture = new RefObserver<TextureDef, Texture, TextureParams>('transmissionTexture', this._context);
+	protected readonly transmissionTexture = new RefObserver<TextureDef, Texture, TextureParams>('transmissionTexture', this._documentView);
 
 	// KHR_materials_volume
-	protected readonly thicknessTexture = new RefObserver<TextureDef, Texture, TextureParams>('thicknessTexture', this._context);
+	protected readonly thicknessTexture = new RefObserver<TextureDef, Texture, TextureParams>('thicknessTexture', this._documentView);
 
 	private readonly _textureObservers: RefObserver<TextureDef, Texture, TextureParams>[] = [];
 	private readonly _textureUpdateFns: (() => void)[] = [];
 	private readonly _textureApplyFns: (() => void)[] = [];
 
-	constructor(context: UpdateContext, def: MaterialDef) {
-		super(context, def, MaterialSubject.createValue(def, context.materialPool), context.materialPool);
+	constructor(documentView: DocumentViewImpl, def: MaterialDef) {
+		super(documentView, def, MaterialSubject.createValue(def, documentView.materialPool), documentView.materialPool);
 
 		this.extensions.subscribe(() => {
 			this.update();

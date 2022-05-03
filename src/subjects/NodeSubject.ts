@@ -1,6 +1,6 @@
 import { Group, Object3D } from 'three';
 import { Mesh as MeshDef, Node as NodeDef, vec3, vec4 } from '@gltf-transform/core';
-import type { UpdateContext } from '../UpdateContext';
+import type { DocumentViewImpl } from '../DocumentViewImpl';
 import { eq } from '../utils';
 import { Subject } from './Subject';
 import { RefListObserver, RefObserver } from '../observers';
@@ -11,12 +11,12 @@ const _vec4: vec4 = [0, 0, 0, 0];
 
 /** @internal */
 export class NodeSubject extends Subject<NodeDef, Object3D> {
-	protected children = new RefListObserver<NodeDef, Object3D>('children', this._context);
-	protected mesh = new RefObserver<MeshDef, Group>('mesh', this._context)
+	protected children = new RefListObserver<NodeDef, Object3D>('children', this._documentView);
+	protected mesh = new RefObserver<MeshDef, Group>('mesh', this._documentView)
 		.setParamsFn(() => SingleUserPool.createParams(this.def));
 
-	constructor(context: UpdateContext, def: NodeDef) {
-		super(context, def, context.nodePool.requestBase(new Object3D()), context.nodePool);
+	constructor(documentView: DocumentViewImpl, def: NodeDef) {
+		super(documentView, def, documentView.nodePool.requestBase(new Object3D()), documentView.nodePool);
 
 		this.children.subscribe((nextChildren, prevChildren) => {
 			if (prevChildren.length) this.value.remove(...prevChildren);

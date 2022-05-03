@@ -1,5 +1,5 @@
 import type { Property as PropertyDef } from '@gltf-transform/core';
-import type { UpdateContext } from '../UpdateContext';
+import type { DocumentViewImpl } from '../DocumentViewImpl';
 import type { Subject } from '../subjects';
 import { Observable } from '../utils';
 import { EmptyParams } from '../pools';
@@ -34,12 +34,12 @@ export class RefObserver<Def extends PropertyDef, Value, Params = EmptyParams> e
 	private _subject: Subject<Def, Value> | null = null;
 	private _subjectParamsFn: () => Params = () => ({} as Params);
 
-	private readonly _context: UpdateContext;
+	private readonly _documentView: DocumentViewImpl;
 
-	constructor(name: string, context: UpdateContext,) {
+	constructor(name: string, documentView: DocumentViewImpl,) {
 		super(null);
 		this.name = name;
-		this._context = context;
+		this._documentView = documentView;
 	}
 
 	/**************************************************************************
@@ -52,7 +52,7 @@ export class RefObserver<Def extends PropertyDef, Value, Params = EmptyParams> e
 
 	next(value: Value | null) {
 		// Prevent publishing updates during disposal.
-		if (this._context.isDisposed()) return;
+		if (this._documentView.isDisposed()) return;
 
 		super.next(value);
 	}
@@ -71,7 +71,7 @@ export class RefObserver<Def extends PropertyDef, Value, Params = EmptyParams> e
 	}
 
 	update(def: Def | null) {
-		const subject = def ? this._context.bind(def) as Subject<Def, Value> : null;
+		const subject = def ? this._documentView.bind(def) as Subject<Def, Value> : null;
 		if (subject === this._subject) return;
 
 		this._clear();

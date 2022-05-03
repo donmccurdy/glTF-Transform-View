@@ -1,6 +1,6 @@
 import { Property as PropertyDef } from '@gltf-transform/core';
 import { Output } from '../observers';
-import type { UpdateContext } from '../UpdateContext';
+import type { DocumentViewImpl } from '../DocumentViewImpl';
 import type { Subscription, THREEObject } from '../constants';
 import { EmptyParams, ValuePool } from '../pools';
 
@@ -21,13 +21,13 @@ export abstract class Subject<Def extends PropertyDef, Value, Params = EmptyPara
 	value: Value;
 	pool: ValuePool<Value, Params>;
 
-	protected _context: UpdateContext;
+	protected _documentView: DocumentViewImpl;
 	protected _subscriptions: Subscription[] = [];
 	protected _outputs = new Set<Output<Value>>();
 	protected _outputParamsFns = new Map<Output<Value>, () => Params>();
 
-	protected constructor(context: UpdateContext, def: Def, value: Value, pool: ValuePool<Value>) {
-		this._context = context;
+	protected constructor(documentView: DocumentViewImpl, def: Def, value: Value, pool: ValuePool<Value>) {
+		this._documentView = documentView;
 		this.def = def;
 		this.value = value;
 		this.pool = pool;
@@ -56,7 +56,7 @@ export abstract class Subject<Def extends PropertyDef, Value, Params = EmptyPara
 
 	publishAll(): void {
 		// Prevent publishing updates during disposal.
-		if (this._context.isDisposed()) return;
+		if (this._documentView.isDisposed()) return;
 
 		for (const output of this._outputs) {
 			this.publish(output);
@@ -65,7 +65,7 @@ export abstract class Subject<Def extends PropertyDef, Value, Params = EmptyPara
 
 	publish(output: Output<Value>): void {
 		// Prevent publishing updates during disposal, which would cause loops.
-		if (this._context.isDisposed()) return;
+		if (this._documentView.isDisposed()) return;
 
 		if (output.value) {
 			this.pool.releaseVariant(output.value);
@@ -77,7 +77,7 @@ export abstract class Subject<Def extends PropertyDef, Value, Params = EmptyPara
 
 		// Record for lookups before advancing the value. SingleUserPool
 		// requires this order to preserve PrimitiveDef output lookups.
-		this._context.recordOutputValue(this.def, value as unknown as THREEObject);
+		this._documentView.recordOutputValue(this.def, value as unknown as THREEObject);
 
 		// Advance next value.
 		output.next(value);

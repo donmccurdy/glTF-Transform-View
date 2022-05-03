@@ -1,5 +1,5 @@
 import type { Property as PropertyDef } from '@gltf-transform/core';
-import type { UpdateContext } from '../UpdateContext';
+import type { DocumentViewImpl } from '../DocumentViewImpl';
 import type { Subject } from '../subjects';
 import type { Subscription } from '../constants';
 import { Observable } from '../utils';
@@ -10,15 +10,15 @@ import { RefObserver } from './RefObserver';
 export class RefMapObserver<Def extends PropertyDef, Value, Params = EmptyParams> extends Observable<Record<string, Value>> {
 	readonly name: string;
 
-	protected readonly _context: UpdateContext;
+	protected readonly _documentView: DocumentViewImpl;
 
 	private readonly _observers: Record<string, RefObserver<Def, Value>> = {};
 	private readonly _subscriptions: Record<string, Subscription> = {};
 
-	constructor(name: string, context: UpdateContext) {
+	constructor(name: string, documentView: DocumentViewImpl) {
 		super({});
 		this.name = name;
-		this._context = context;
+		this._documentView = documentView;
 	}
 
 	update(keys: string[], defs: Def[]) {
@@ -38,7 +38,7 @@ export class RefMapObserver<Def extends PropertyDef, Value, Params = EmptyParams
 		for (const key of keys) {
 			const observer = this._observers[key];
 			if (!observer) {
-				this._add(key, this._context.bind(nextDefs[key]) as Subject<Def, Value>);
+				this._add(key, this._documentView.bind(nextDefs[key]) as Subject<Def, Value>);
 				needsUpdate = true;
 			} else if (observer.getDef() !== nextDefs[key]) {
 				observer.update(nextDefs[key]);
@@ -60,7 +60,7 @@ export class RefMapObserver<Def extends PropertyDef, Value, Params = EmptyParams
 	}
 
 	private _add(key: string, subject: Subject<Def, Value>) {
-		const observer = new RefObserver(this.name + `[${key}]`, this._context) as RefObserver<Def, Value>;
+		const observer = new RefObserver(this.name + `[${key}]`, this._documentView) as RefObserver<Def, Value>;
 		observer.update(subject.def);
 
 		this._observers[key] = observer;
