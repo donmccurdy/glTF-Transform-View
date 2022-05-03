@@ -893,29 +893,29 @@
     lodash "^4.17.19"
     to-fast-properties "^2.0.0"
 
-"@gltf-transform/core@^2.1.4":
-  version "2.1.4"
-  resolved "https://registry.yarnpkg.com/@gltf-transform/core/-/core-2.1.4.tgz#ef7746aa6e6cba3831616f5cbf5eb5c3a4e84c8b"
-  integrity sha512-tg6C9BM4kyUxZNAwdksti+r3aIr6uydnf0TYimavSRq0Bmy48vJVRSyPf0pQjxrp10zicrw488oNv1mvwTGhGg==
+"@gltf-transform/core@^2.1.5":
+  version "2.1.5"
+  resolved "https://registry.yarnpkg.com/@gltf-transform/core/-/core-2.1.5.tgz#a92e7c82839c6af390e8d93f6e7eddc67ee5d29d"
+  integrity sha512-730+fAPNwabMmH2RRH4aQuzS+Iys7Cd4TIjlQRk8kzb4Un77tNIIGsTvP0VIClSa2GkNrErN9y8ue0/9AQ/aiA==
   dependencies:
     gl-matrix "~3.4.3"
     property-graph "^0.2.6"
 
-"@gltf-transform/extensions@^2.1.4":
-  version "2.1.4"
-  resolved "https://registry.yarnpkg.com/@gltf-transform/extensions/-/extensions-2.1.4.tgz#e33780bd4dd32f3297cb2687b862a8a8271b1135"
-  integrity sha512-ASx5oY/zat5Okgq9lqio+7/vXIQR1056h1xR4Dzf+tygEv/KTgYmIIm0RK+ee2i1sHKUFW72VU15kTgZkBZPYg==
+"@gltf-transform/extensions@^2.1.5":
+  version "2.1.5"
+  resolved "https://registry.yarnpkg.com/@gltf-transform/extensions/-/extensions-2.1.5.tgz#dfb006231584cfda4f128282694233e2eb8c8f57"
+  integrity sha512-AvSE30gCMtmwJI1DG4cqYQrN0JnHRGUxh1ZbhPGTcjK9D0pPuxYhE4xh29KBnyXfTyNAN/XDIEdKucKeSVf6eA==
   dependencies:
-    "@gltf-transform/core" "^2.1.4"
+    "@gltf-transform/core" "^2.1.5"
     ktx-parse "^0.2.2"
 
-"@gltf-transform/functions@^2.1.4":
-  version "2.1.4"
-  resolved "https://registry.yarnpkg.com/@gltf-transform/functions/-/functions-2.1.4.tgz#89983beedfb276e2fb6c7254ff57d20f8ee11f86"
-  integrity sha512-1syO4OYrvsNcmDb8+PKiMwFqYcMcDwwTsf5Rys5aDxxNfSY3c6ndNVviH1aApb4zBuqJvWjVS4v2wIy7P6Bo3Q==
+"@gltf-transform/functions@^2.1.5":
+  version "2.1.5"
+  resolved "https://registry.yarnpkg.com/@gltf-transform/functions/-/functions-2.1.5.tgz#a216b6c2d3abd87a1cb46a946784524dd93aa845"
+  integrity sha512-2mtlFyHlP9ckXaQITCPsSCu4Ut4bJBp+v5EG/d1a2Rw7AjWVof+Xc7/iPcd03Tro+d0OnfQgJ60zJvX/+3aA/A==
   dependencies:
-    "@gltf-transform/core" "^2.1.4"
-    "@gltf-transform/extensions" "^2.1.4"
+    "@gltf-transform/core" "^2.1.5"
+    "@gltf-transform/extensions" "^2.1.5"
     gl-matrix "~3.4.3"
     ndarray "^1.0.19"
     ndarray-lanczos "^0.1.2"
