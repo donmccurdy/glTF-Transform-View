@@ -1,6 +1,6 @@
 import { Group, Object3D } from 'three';
 import { Mesh as MeshDef, Node as NodeDef, vec3, vec4 } from '@gltf-transform/core';
-import type { DocumentViewImpl } from '../DocumentViewImpl';
+import type { DocumentViewSubjectAPI } from '../DocumentViewImpl';
 import { eq } from '../utils';
 import { Subject } from './Subject';
 import { RefListObserver, RefObserver } from '../observers';
@@ -15,7 +15,7 @@ export class NodeSubject extends Subject<NodeDef, Object3D> {
 	protected mesh = new RefObserver<MeshDef, Group>('mesh', this._documentView)
 		.setParamsFn(() => SingleUserPool.createParams(this.def));
 
-	constructor(documentView: DocumentViewImpl, def: NodeDef) {
+	constructor(documentView: DocumentViewSubjectAPI, def: NodeDef) {
 		super(documentView, def, documentView.nodePool.requestBase(new Object3D()), documentView.nodePool);
 
 		this.children.subscribe((nextChildren, prevChildren) => {

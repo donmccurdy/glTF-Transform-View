@@ -1,4 +1,4 @@
-import type { DocumentViewImpl } from "../DocumentViewImpl";
+import type { DocumentViewSubjectAPI } from "../DocumentViewImpl";
 
 export type EmptyParams = {} | null | undefined;
 
@@ -25,11 +25,11 @@ export interface ValuePool<Value, Params = EmptyParams> {
  */
 export class Pool<Value, Params = EmptyParams> implements ValuePool<Value, Params> {
 	readonly name: string;
-	readonly documentView: DocumentViewImpl;
+	readonly documentView: DocumentViewSubjectAPI;
 
 	protected _users = new Map<Value, number>();
 
-	constructor(name: string, documentView: DocumentViewImpl) {
+	constructor(name: string, documentView: DocumentViewSubjectAPI) {
 		this.name = name;
 		this.documentView = documentView;
 	}

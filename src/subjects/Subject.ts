@@ -1,6 +1,6 @@
 import { Property as PropertyDef } from '@gltf-transform/core';
 import { Output } from '../observers';
-import type { DocumentViewImpl } from '../DocumentViewImpl';
+import type { DocumentViewSubjectAPI } from '../DocumentViewImpl';
 import type { Subscription, THREEObject } from '../constants';
 import { EmptyParams, ValuePool } from '../pools';
 
@@ -21,12 +21,12 @@ export abstract class Subject<Def extends PropertyDef, Value, Params = EmptyPara
 	value: Value;
 	pool: ValuePool<Value, Params>;
 
-	protected _documentView: DocumentViewImpl;
+	protected _documentView: DocumentViewSubjectAPI;
 	protected _subscriptions: Subscription[] = [];
 	protected _outputs = new Set<Output<Value>>();
 	protected _outputParamsFns = new Map<Output<Value>, () => Params>();
 
-	protected constructor(documentView: DocumentViewImpl, def: Def, value: Value, pool: ValuePool<Value>) {
+	protected constructor(documentView: DocumentViewSubjectAPI, def: Def, value: Value, pool: ValuePool<Value>) {
 		this._documentView = documentView;
 		this.def = def;
 		this.value = value;

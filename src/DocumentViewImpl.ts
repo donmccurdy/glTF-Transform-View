@@ -6,21 +6,49 @@ import type { MeshLike, THREEObject } from './constants';
 import { DefaultImageProvider, ImageProvider, NullImageProvider } from './ImageProvider';
 import { MaterialPool, SingleUserPool, Pool, TexturePool } from './pools';
 
+export interface DocumentViewSubjectAPI {
+	readonly accessorPool: Pool<BufferAttribute>;
+	readonly extensionPool: Pool<ExtensionPropertyDef>;
+	readonly materialPool: MaterialPool;
+	readonly meshPool: SingleUserPool<Group>;
+	readonly nodePool: Pool<Object3D>;
+	readonly primitivePool: SingleUserPool<MeshLike>;
+	readonly scenePool: Pool<Group>;
+	readonly texturePool: TexturePool;
+
+	imageProvider: ImageProvider;
+
+	bind(def: null): null;
+	bind(def: AccessorDef): AccessorSubject;
+	bind(def: MaterialDef): MaterialSubject;
+	bind(def: MeshDef): MeshSubject;
+	bind(def: NodeDef): NodeSubject;
+	bind(def: PrimitiveDef): PrimitiveSubject;
+	bind(def: SceneDef): SceneSubject;
+	bind(def: PropertyDef): Subject<PropertyDef, any>;
+	bind(def: PropertyDef | null): Subject<PropertyDef, any> | null;
+
+	recordOutputValue(def: PropertyDef, value: THREEObject): void;
+	recordOutputVariant(base: THREEObject, variant: THREEObject): void;
+
+	isDisposed(): boolean;
+}
+
 /** @internal */
-export class DocumentViewImpl {
+export class DocumentViewImpl implements DocumentViewSubjectAPI {
 	private _disposed = false;
 	private _subjects = new Map<PropertyDef, Subject<PropertyDef, any>>();
 	private _outputValues = new WeakMap<PropertyDef, Set<object>>();
 	private _outputValuesInverse = new WeakMap<object, PropertyDef>();
 
-	readonly accessorPool = new Pool<BufferAttribute>('accessors', this);
-	readonly extensionPool = new Pool<ExtensionPropertyDef>('extensions', this);
-	readonly materialPool = new MaterialPool('materials', this);
-	readonly meshPool = new SingleUserPool<Group>('meshes', this);
-	readonly nodePool = new Pool<Object3D>('nodes', this);
-	readonly primitivePool = new SingleUserPool<MeshLike>('primitives', this);
-	readonly scenePool = new Pool<Group>('scenes', this);
-	readonly texturePool = new TexturePool('textures', this);
+	readonly accessorPool: Pool<BufferAttribute> = new Pool<BufferAttribute>('accessors', this);
+	readonly extensionPool: Pool<ExtensionPropertyDef> = new Pool<ExtensionPropertyDef>('extensions', this);
+	readonly materialPool: MaterialPool = new MaterialPool('materials', this);
+	readonly meshPool: SingleUserPool<Group> = new SingleUserPool<Group>('meshes', this);
+	readonly nodePool: Pool<Object3D> = new Pool<Object3D>('nodes', this);
+	readonly primitivePool: SingleUserPool<MeshLike> = new SingleUserPool<MeshLike>('primitives', this);
+	readonly scenePool: Pool<Group> = new Pool<Group>('scenes', this);
+	readonly texturePool: TexturePool = new TexturePool('textures', this);
 
 	public imageProvider: ImageProvider = new NullImageProvider();
 

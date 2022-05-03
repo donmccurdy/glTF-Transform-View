@@ -1,6 +1,6 @@
 import { BufferAttribute, BufferGeometry, Line, LineLoop, LineSegments, Material, Mesh, MeshStandardMaterial, Points } from 'three';
 import { Accessor as AccessorDef, GLTF, Material as MaterialDef, Primitive as PrimitiveDef } from '@gltf-transform/core';
-import type { DocumentViewImpl } from '../DocumentViewImpl';
+import type { DocumentViewSubjectAPI } from '../DocumentViewImpl';
 import { Subject } from './Subject';
 import { RefMapObserver, RefObserver } from '../observers';
 import { MeshLike } from '../constants';
@@ -35,7 +35,7 @@ export class PrimitiveSubject extends Subject<PrimitiveDef, MeshLike> {
 	protected indices = new RefObserver<AccessorDef, BufferAttribute>('indices', this._documentView);
 	protected attributes = new RefMapObserver<AccessorDef, BufferAttribute>('attributes', this._documentView);
 
-	constructor(documentView: DocumentViewImpl, def: PrimitiveDef) {
+	constructor(documentView: DocumentViewSubjectAPI, def: PrimitiveDef) {
 		super(
 			documentView,
 			def,

@@ -1,5 +1,5 @@
 import type { Property as PropertyDef } from '@gltf-transform/core';
-import type { DocumentViewImpl } from '../DocumentViewImpl';
+import type { DocumentViewSubjectAPI } from '../DocumentViewImpl';
 import type { Subject } from '../subjects';
 import type { Subscription } from '../constants';
 import { Observable } from '../utils';
@@ -10,12 +10,12 @@ import { RefObserver } from './RefObserver';
 export class RefMapObserver<Def extends PropertyDef, Value, Params = EmptyParams> extends Observable<Record<string, Value>> {
 	readonly name: string;
 
-	protected readonly _documentView: DocumentViewImpl;
+	protected readonly _documentView: DocumentViewSubjectAPI;
 
 	private readonly _observers: Record<string, RefObserver<Def, Value>> = {};
 	private readonly _subscriptions: Record<string, Subscription> = {};
 
-	constructor(name: string, documentView: DocumentViewImpl) {
+	constructor(name: string, documentView: DocumentViewSubjectAPI) {
 		super({});
 		this.name = name;
 		this._documentView = documentView;

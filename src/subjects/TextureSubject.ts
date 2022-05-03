@@ -1,6 +1,6 @@
 import { Texture } from 'three';
 import { Texture as TextureDef } from '@gltf-transform/core';
-import type { DocumentViewImpl } from '../DocumentViewImpl';
+import type { DocumentViewSubjectAPI } from '../DocumentViewImpl';
 import { Subject } from './Subject';
 import { NULL_TEXTURE } from '../ImageProvider';
 
@@ -8,7 +8,7 @@ import { NULL_TEXTURE } from '../ImageProvider';
 export class TextureSubject extends Subject<TextureDef, Texture> {
 	private _image: ArrayBuffer | null = null;
 
-	constructor(documentView: DocumentViewImpl, def: TextureDef) {
+	constructor(documentView: DocumentViewSubjectAPI, def: TextureDef) {
 		super(documentView, def, NULL_TEXTURE, documentView.texturePool);
 	}
 

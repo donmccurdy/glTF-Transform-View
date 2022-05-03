@@ -1,9 +1,8 @@
 import type { Property as PropertyDef } from '@gltf-transform/core';
-import type { DocumentViewImpl } from '../DocumentViewImpl';
+import type { DocumentViewSubjectAPI } from '../DocumentViewImpl';
 import type { Subject } from '../subjects';
 import { Observable } from '../utils';
 import { EmptyParams } from '../pools';
-import { THREEObject } from '../constants';
 
 /**
  * Exposes a limited view of the RefObserver interface to objects
@@ -34,9 +33,9 @@ export class RefObserver<Def extends PropertyDef, Value, Params = EmptyParams> e
 	private _subject: Subject<Def, Value> | null = null;
 	private _subjectParamsFn: () => Params = () => ({} as Params);
 
-	private readonly _documentView: DocumentViewImpl;
+	private readonly _documentView: DocumentViewSubjectAPI;
 
-	constructor(name: string, documentView: DocumentViewImpl,) {
+	constructor(name: string, documentView: DocumentViewSubjectAPI) {
 		super(null);
 		this.name = name;
 		this._documentView = documentView;
