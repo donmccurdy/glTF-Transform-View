@@ -1272,10 +1272,10 @@
   dependencies:
     source-map "^0.6.0"
 
-"@types/three@^0.138.0":
-  version "0.138.0"
-  resolved "https://registry.yarnpkg.com/@types/three/-/three-0.138.0.tgz#ec9f1d1fd8dffea2e0572f9d815ff5a35cf4dc6b"
-  integrity sha512-D8AoV7h2kbCfrv/DcebHOFh1WDwyus3HdooBkAwcBikXArdqnsQ38PQ85JCunnvun160oA9jz53GszF3zch3tg==
+"@types/three@^0.140.0":
+  version "0.140.0"
+  resolved "https://registry.yarnpkg.com/@types/three/-/three-0.140.0.tgz#3b74a021a69a6e2cd0e2550def15aa4c1c20e924"
+  integrity sha512-YPJLSIY6uKUOp1k6BZYDq5GtEIdhfeK04UCbc9IPAVbdn/RNjkfrbnyd7smrsNkJhc0IFASLpd3AAYgwqgXKVQ==
 
 "@typescript-eslint/eslint-plugin@^5.22.0":
   version "5.22.0"
@@ -6289,10 +6289,10 @@ terser@^5.7.0:
     source-map "~0.7.2"
     source-map-support "~0.5.19"
 
-three@0.136.x:
-  version "0.136.0"
-  resolved "https://registry.yarnpkg.com/three/-/three-0.136.0.tgz#b1504db021b46398ef468aa7849f3dcabb814f50"
-  integrity sha512-+fEMX7nYLz2ZesVP/dyifli5Jf8gR3XPAnFJveQ80aMhibFduzrADnjMbARXh8+W9qLK7rshJCjAIL/6cDxC+A==
+three@0.140.0:
+  version "0.140.0"
+  resolved "https://registry.yarnpkg.com/three/-/three-0.140.0.tgz#5ad85df954c63015337a846134e0daa6c7c0dead"
+  integrity sha512-jcHjbnYspPLDdsDQChmzyAoZ5KhJbgFk6pNGlAIc9fQMvsfPGjF5H9glrngqvb2CR/qXcClMyp5PYdF996lldA==
 
 through2@^2.0.0:
   version "2.0.5"
