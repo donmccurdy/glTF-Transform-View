@@ -17,7 +17,7 @@ renderer.physicallyCorrectLights = true;
 renderer.toneMapping = ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1;
 
-const containerEl = document.querySelector('#container');
+const containerEl = document.querySelector('#container')!;
 containerEl.appendChild(renderer.domElement);
 
 const io = new WebIO().registerExtensions(ALL_EXTENSIONS);

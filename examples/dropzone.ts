@@ -9,9 +9,9 @@ import { SimpleDropzone } from 'simple-dropzone';
  */
 
 const io = new WebIO().registerExtensions(ALL_EXTENSIONS);
-const dropEl = document.querySelector('body');
-const placeholderEl = document.querySelector<HTMLElement>('.dropzone-placeholder');
-const inputEl = document.querySelector('#file-input');
+const dropEl = document.querySelector('body')!;
+const placeholderEl = document.querySelector<HTMLElement>('.dropzone-placeholder')!;
+const inputEl = document.querySelector('#file-input')!;
 
 document.addEventListener('DOMContentLoaded', () => {
 	const dropzone = new SimpleDropzone(dropEl, inputEl) as any;

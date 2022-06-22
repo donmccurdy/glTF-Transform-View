@@ -1,4 +1,4 @@
-import { ACESFilmicToneMapping, AmbientLight, DirectionalLight, PMREMGenerator, PerspectiveCamera, Scene, UnsignedByteType, WebGLRenderer, sRGBEncoding } from 'three';
+import { ACESFilmicToneMapping, AmbientLight, DirectionalLight, PMREMGenerator, PerspectiveCamera, Scene, WebGLRenderer, sRGBEncoding } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTF, Material, WebIO } from '@gltf-transform/core';
 import { DocumentView, ImageProvider } from '../dist/view.modern.js';
@@ -16,7 +16,7 @@ renderer.physicallyCorrectLights = true;
 renderer.toneMapping = ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1;
 
-const containerEl = document.querySelector('#container');
+const containerEl = document.querySelector('#container')!;
 containerEl.appendChild(renderer.domElement);
 
 const pmremGenerator = new PMREMGenerator(renderer);
@@ -60,7 +60,7 @@ const updateStats = createStatsPane(renderer, pane);
 
 
 const io = new WebIO();
-io.read('../assets/DamagedHelmet.glb').then(async (doc) => {
+io.read('./DamagedHelmet.glb').then(async (doc) => {
 	const imageProvider = new ImageProvider();
 	await imageProvider.update(doc.getRoot().listTextures());
 
@@ -77,10 +77,10 @@ io.read('../assets/DamagedHelmet.glb').then(async (doc) => {
 
 	// GUI.
 
-	material = doc.getRoot().listMaterials().pop();
+	material = doc.getRoot().listMaterials().pop()!;
 	createMaterialPane(pane, doc, material);
 
-	const prim = doc.getRoot().listMeshes().pop().listPrimitives().pop();
+	const prim = doc.getRoot().listMeshes().pop()!.listPrimitives().pop()!;
 	const primFolder = pane.addFolder({title: 'Primitive'});
 	primFolder.addInput({mode: 4}, 'mode', {
 		options: {
