@@ -25,8 +25,8 @@ export class MaterialPool extends Pool<Material, MaterialParams> {
 		}
 	}
 
-    requestVariant(base: Material, params: MaterialParams): Material {
-        return this._request(this._createVariant(base as BaseMaterial, params));
+    requestVariant(srcMaterial: Material, params: MaterialParams): Material {
+        return this._request(this._createVariant(srcMaterial as BaseMaterial, params));
     }
 
 	protected _disposeValue(value: Material): void {
@@ -63,11 +63,11 @@ export class MaterialPool extends Pool<Material, MaterialParams> {
 			dstMaterial.copy(srcMaterial);
 		} else if (dstMaterial instanceof LineBasicMaterial) {
 			Material.prototype.copy.call(dstMaterial, srcMaterial);
-			dstMaterial.color.copy((srcMaterial as MeshStandardMaterial).color);
+			dstMaterial.color.copy(srcMaterial.color);
 		} else if (dstMaterial instanceof PointsMaterial) {
 			Material.prototype.copy.call(dstMaterial, srcMaterial);
-			dstMaterial.color.copy((srcMaterial as MeshStandardMaterial).color);
-			dstMaterial.map = (srcMaterial as MeshStandardMaterial).map;
+			dstMaterial.color.copy(srcMaterial.color);
+			dstMaterial.map = srcMaterial.map;
 			dstMaterial.sizeAttenuation = false;
 		}
 
