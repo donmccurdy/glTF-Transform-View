@@ -71,19 +71,17 @@ export class MaterialPool extends Pool<Material, MaterialParams> {
 			dstMaterial.sizeAttenuation = false;
 		}
 
-		if (params.useVertexColors) {
-			dstMaterial.vertexColors = true;
-		}
-		if (params.useFlatShading && dstMaterial instanceof MeshStandardMaterial) {
-			dstMaterial.flatShading = true;
-		}
-		if (!params.useVertexTangents) {
+		dstMaterial.vertexColors = params.useVertexColors;
+		if (dstMaterial instanceof MeshStandardMaterial) {
+			dstMaterial.flatShading = params.useFlatShading;
 			// https://github.com/mrdoob/three.js/issues/11438#issuecomment-507003995
-			if (dstMaterial instanceof MeshStandardMaterial) {
-				dstMaterial.normalScale.y *= -1;
-			}
+			dstMaterial.normalScale.y = params.useVertexTangents
+				? Math.abs(dstMaterial.normalScale.y)
+				: -1 * dstMaterial.normalScale.y;
 			if (dstMaterial instanceof MeshPhysicalMaterial) {
-				dstMaterial.clearcoatNormalScale.y *= -1;
+				dstMaterial.clearcoatNormalScale.y = params.useVertexTangents
+					? Math.abs(dstMaterial.clearcoatNormalScale.y)
+					: -1 * dstMaterial.clearcoatNormalScale.y;
 			}
 		}
 

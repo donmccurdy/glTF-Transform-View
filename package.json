@@ -40,7 +40,7 @@
   "scripts": {
     "dist": "microbundle --no-compress --format modern",
     "watch": "microbundle watch --no-compress --format modern",
-    "dev": "concurrently \"yarn watch\" \"snowpack dev --config snowpack.config.cjs\"",
+    "dev": "concurrently \"yarn watch\" \"vite -c examples/vite.config.js\"",
     "test": "tape -r ./test/_TestUtils.cjs test/**/*.test.js | tap-spec",
     "version": "yarn dist && yarn test",
     "postversion": "git push && git push --tags && npm publish"
