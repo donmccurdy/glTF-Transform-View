@@ -1,4 +1,4 @@
-import { ACESFilmicToneMapping, AmbientLight, DirectionalLight, PMREMGenerator, PerspectiveCamera, Scene, UnsignedByteType, WebGLRenderer, sRGBEncoding, TorusKnotBufferGeometry } from 'three';
+import { ACESFilmicToneMapping, AmbientLight, DirectionalLight, PMREMGenerator, PerspectiveCamera, Scene, WebGLRenderer, sRGBEncoding, TorusKnotBufferGeometry } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { Document, Material } from '@gltf-transform/core';
 import { DocumentView } from '../dist/view.modern.js';
@@ -15,7 +15,7 @@ renderer.physicallyCorrectLights = true;
 renderer.toneMapping = ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1;
 
-const containerEl = document.querySelector('#container');
+const containerEl = document.querySelector('#container')!;
 containerEl.appendChild(renderer.domElement);
 
 const pmremGenerator = new PMREMGenerator(renderer);
@@ -56,7 +56,7 @@ const doc = (() => {
 	const doc = new Document();
 	material = doc.createMaterial('Material');
 	const primTemplate = new TorusKnotBufferGeometry(1, 0.4, 100, 16);
-	const indicesArray = primTemplate.index.array as Uint16Array;
+	const indicesArray = primTemplate.index!.array as Uint16Array;
 	const positionArray = primTemplate.attributes.position.array as Float32Array;
 	const normalArray = primTemplate.attributes.normal.array as Float32Array;
 	const texcoordArray = primTemplate.attributes.uv.array as Float32Array;

@@ -20,7 +20,7 @@ export function createEnvironment(renderer: WebGLRenderer): Promise<Texture> {
 
 	return new Promise((resolve, reject) => {
 		new RGBELoader()
-			.load( '../assets/royal_esplanade_1k.hdr', ( texture ) => {
+			.load( './royal_esplanade_1k.hdr', ( texture ) => {
 				const envMap = pmremGenerator.fromEquirectangular( texture ).texture;
 				texture.dispose();
 				pmremGenerator.dispose();

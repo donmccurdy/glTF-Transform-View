@@ -12,7 +12,7 @@ const textureFromEvent = (event): Texture | null => {
 
 const textureValue = (texture: Texture | null, options: TextureOption[]): string => {
 	if (!texture) return '';
-	const option = options.find((option) => option.data === texture);
+	const option = options.find((option) => option.data === texture)!;
 	return option.value;
 }
 
@@ -39,7 +39,7 @@ export function createMaterialPane(_pane: Pane, document: Document, material: Ma
 		return {
 			text: texture.getName() || texture.getURI() || index.toString(),
 			value: index.toString(),
-			src: URL.createObjectURL(new Blob([texture.getImage()], {type: texture.getMimeType()})),
+			src: URL.createObjectURL(new Blob([texture.getImage()!], {type: texture.getMimeType()})),
 			data: texture,
 		}
 	});
