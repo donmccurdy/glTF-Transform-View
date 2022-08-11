@@ -5,6 +5,8 @@
 [![License](https://img.shields.io/badge/license-MIT-007ec6.svg)](https://github.com/donmccurdy/glTF-Transform-View/blob/main/LICENSE)
 [![Build Status](https://github.com/donmccurdy/glTF-Transform-View/workflows/build/badge.svg?branch=main&event=push)](https://github.com/donmccurdy/glTF-Transform-View/actions?query=workflow%3Abuild)
 
+> ⚠️ EXPERIMENTAL
+
 Creates three.js objects from glTF [Scene](https://gltf-transform.donmccurdy.com/classes/scene.html),
 [Node](https://gltf-transform.donmccurdy.com/classes/node.html),
 [Mesh](https://gltf-transform.donmccurdy.com/classes/mesh.html),
