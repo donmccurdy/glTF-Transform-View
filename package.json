@@ -26,7 +26,7 @@
     "@typescript-eslint/eslint-plugin": "5.33.0",
     "@typescript-eslint/parser": "5.33.0",
     "concurrently": "7.3.0",
-    "microbundle": "0.15.0",
+    "microbundle": "0.15.1",
     "simple-dropzone": "0.8.1",
     "source-map-support": "0.5.21",
     "tap-spec": "5.0.0",
