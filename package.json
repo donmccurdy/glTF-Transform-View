@@ -21,10 +21,10 @@
     "@gltf-transform/extensions": "2.4.1",
     "@gltf-transform/functions": "2.4.1",
     "@tweakpane/core": "1.1.0",
-    "@types/source-map-support": "0.5.4",
+    "@types/source-map-support": "0.5.6",
     "@types/three": "0.143.1",
-    "@typescript-eslint/eslint-plugin": "5.33.1",
-    "@typescript-eslint/parser": "5.33.1",
+    "@typescript-eslint/eslint-plugin": "5.35.1",
+    "@typescript-eslint/parser": "5.35.1",
     "concurrently": "7.3.0",
     "microbundle": "0.15.1",
     "simple-dropzone": "0.8.1",
@@ -34,7 +34,7 @@
     "three": "0.143.0",
     "tweakpane": "3.1.0",
     "tweakpane-plugin-thumbnail-list": "0.3.0",
-    "typescript": "4.7.4",
+    "typescript": "4.8.2",
     "vite": "3.0.9"
   },
   "scripts": {
