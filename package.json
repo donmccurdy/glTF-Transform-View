@@ -23,8 +23,8 @@
     "@tweakpane/core": "1.1.0",
     "@types/source-map-support": "0.5.6",
     "@types/three": "0.144.0",
-    "@typescript-eslint/eslint-plugin": "5.38.1",
-    "@typescript-eslint/parser": "5.38.1",
+    "@typescript-eslint/eslint-plugin": "5.39.0",
+    "@typescript-eslint/parser": "5.39.0",
     "concurrently": "7.4.0",
     "microbundle": "0.15.1",
     "simple-dropzone": "0.8.1",
@@ -35,7 +35,7 @@
     "tweakpane": "3.1.0",
     "tweakpane-plugin-thumbnail-list": "0.3.0",
     "typescript": "4.8.4",
-    "vite": "3.1.4"
+    "vite": "3.1.7"
   },
   "scripts": {
     "dist": "microbundle --no-compress --format modern",
