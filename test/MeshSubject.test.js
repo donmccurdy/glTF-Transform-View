@@ -17,7 +17,7 @@ test('MeshSubject', t => {
 		.setAttribute('POSITION', position);
 	const meshDef = document.createMesh()
 		.setName('MyMesh')
-		.addPrimitive(primDef)
+		.addPrimitive(primDef);
 
 	const documentView = new DocumentView(document);
 	const mesh = documentView.view(meshDef);

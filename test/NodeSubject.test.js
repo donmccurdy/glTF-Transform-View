@@ -35,3 +35,44 @@ test('NodeSubject', t => {
 
 	t.end();
 });
+
+test('NodeSubject | update in place', t => {
+	const document = new Document();
+	const meshDef = document.createMesh().setName('Mesh.v1')
+	const nodeDef1 = document.createNode('Node1').setMesh(meshDef);
+	const nodeDef2 = document.createNode('Node2').setMesh(meshDef).addChild(nodeDef1);
+	const sceneDef = document.createScene().addChild(nodeDef2);
+
+	const documentView = new DocumentView(document);
+	const scene = documentView.view(sceneDef);
+	const node1 = documentView.view(nodeDef1);
+	const node2 = documentView.view(nodeDef2);
+	const mesh = node1.children[0];
+
+	t.ok(scene, 'scene ok');
+	t.ok(node1, 'node1 ok');
+	t.ok(node2, 'node2 ok');
+	t.ok(mesh, 'mesh ok');
+
+	t.equals(scene.children[0], node2, 'node2 view');
+	t.equals(scene.children[0].children[0], node1, 'node1 view');
+	t.equals(scene.children[0].children[0].children[0], mesh, 'mesh view');
+
+	nodeDef1.setScale([2, 2, 2]);
+	nodeDef2.setScale([3, 3, 3]);
+
+	t.equals(scene.children[0], node2, 'node2 view after update');
+	t.equals(scene.children[0].children[0], node1, 'node1 view after update');
+	t.equals(scene.children[0].children[0].children[0], mesh, 'mesh view');
+
+	t.deepEquals(node1.scale.toArray([]), [2, 2, 2], 'node1 scale');
+	t.deepEquals(node2.scale.toArray([]), [3, 3, 3], 'node2 scale');
+
+	t.ok(node1.children.some((o) => o.name === 'Mesh.v1'), 'node1.mesh.name');
+	t.ok(node2.children.some((o) => o.name === 'Mesh.v1'), 'node2.mesh.name');
+	meshDef.setName('Mesh.v2');
+	t.ok(node1.children.some((o) => o.name === 'Mesh.v2'), 'node1.mesh.name');
+	t.ok(node2.children.some((o) => o.name === 'Mesh.v2'), 'node2.mesh.name');
+
+	t.end();
+});

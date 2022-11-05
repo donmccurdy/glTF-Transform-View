@@ -15,6 +15,9 @@ export class NodeSubject extends Subject<NodeDef, Object3D> {
 	protected mesh = new RefObserver<MeshDef, Group>('mesh', this._documentView)
 		.setParamsFn(() => SingleUserPool.createParams(this.def));
 
+	/** Output (Object3D) is never cloned by an observer. */
+	protected _outputSingleton = true;
+
 	constructor(documentView: DocumentViewSubjectAPI, def: NodeDef) {
 		super(documentView, def, documentView.nodePool.requestBase(new Object3D()), documentView.nodePool);
 

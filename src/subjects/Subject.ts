@@ -26,6 +26,13 @@ export abstract class Subject<Def extends PropertyDef, Value, Params = EmptyPara
 	protected _outputs = new Set<Output<Value>>();
 	protected _outputParamsFns = new Map<Output<Value>, () => Params>();
 
+	/**
+	 * Indicates that the output value of this subject is a singleton, and will not
+	 * be cloned by any observer. For some types (NodeSubject), declaring this can
+	 * avoid the need to republish after an in-place update to the value.
+	 */
+	protected _outputSingleton = false;
+
 	protected constructor(documentView: DocumentViewSubjectAPI, def: Def, value: Value, pool: ValuePool<Value>) {
 		this._documentView = documentView;
 		this.def = def;
@@ -33,8 +40,11 @@ export abstract class Subject<Def extends PropertyDef, Value, Params = EmptyPara
 		this.pool = pool;
 
 		const onChange = () => {
+			const prevValue = this.value;
 			this.update();
-			this.publishAll();
+			if (this.value !== prevValue || !this._outputSingleton) {
+				this.publishAll();
+			}
 		};
 		const onDispose = () => this.dispose();
 

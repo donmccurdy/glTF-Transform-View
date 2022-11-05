@@ -26,8 +26,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function load (fileMap: Map<string, File>) {
-	let rootFile: File;
-	let rootPath: string;
+	let rootFile: File | null = null;
+	let rootPath = '';
 	let images: File[] = [];
 	Array.from(fileMap).forEach(([path, file]) => {
 		if (file.name.match(/\.(gltf|glb)$/)) {
