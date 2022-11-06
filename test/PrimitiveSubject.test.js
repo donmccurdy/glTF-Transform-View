@@ -20,7 +20,7 @@ test('PrimitiveSubject', async t => {
 		.setAttribute('POSITION', position)
 		.setMaterial(materialDef);
 
-	const documentView = await new DocumentView().init(document, {imageProvider});
+	const documentView = new DocumentView(document, {imageProvider});
 	let prim = documentView.view(primDef);
 	const geometry = prim.geometry;
 

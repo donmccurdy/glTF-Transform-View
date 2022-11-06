@@ -6,7 +6,7 @@ import { Group } from 'three';
 const imageProvider = new NullImageProvider();
 
 test('DocumentView', t => {
-    t.ok(new DocumentView(new Document()), 'constructor');
+    t.ok(new DocumentView(new Document(), {imageProvider}), 'constructor');
     t.end();
 });
 
@@ -25,11 +25,7 @@ test('DocumentView | view', async t => {
     const sceneDef = document.createScene()
         .addChild(nodeDef);
 
-    const documentView = new DocumentView();
-
-    t.throws(() => documentView.view(sceneDef), /must be initialized/, 'require init');
-
-    await documentView.init(document, {imageProvider});
+    const documentView = new DocumentView(document, {imageProvider});
 
     const scene = documentView.view(sceneDef);
     const node = scene.children[0];
@@ -84,7 +80,7 @@ test('DocumentView | dispose', async t => {
             .setMesh(document.createMesh('Mesh').addPrimitive(primDef))
     );
 
-    const documentView = await new DocumentView().init(document, {imageProvider});
+    const documentView = new DocumentView(document, {imageProvider});
     const scene = documentView.view(sceneDef);
     const mesh = scene.getObjectByName('Mesh').children[0];
     const {geometry, material} = mesh;

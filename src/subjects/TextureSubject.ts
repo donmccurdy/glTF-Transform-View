@@ -2,14 +2,14 @@ import { Texture } from 'three';
 import { Texture as TextureDef } from '@gltf-transform/core';
 import type { DocumentViewSubjectAPI } from '../DocumentViewImpl';
 import { Subject } from './Subject';
-import { NULL_TEXTURE } from '../ImageProvider';
+import { LOADING_TEXTURE } from '../ImageProvider';
 
 /** @internal */
 export class TextureSubject extends Subject<TextureDef, Texture> {
 	private _image: ArrayBuffer | null = null;
 
 	constructor(documentView: DocumentViewSubjectAPI, def: TextureDef) {
-		super(documentView, def, NULL_TEXTURE, documentView.texturePool);
+		super(documentView, def, LOADING_TEXTURE, documentView.texturePool);
 	}
 
 	update() {
@@ -23,10 +23,13 @@ export class TextureSubject extends Subject<TextureDef, Texture> {
 		const image = def.getImage() as ArrayBuffer;
 		if (image !== this._image) {
 			this._image = image;
-			if (this.value !== NULL_TEXTURE) {
+			if (this.value !== LOADING_TEXTURE) {
 				this.pool.releaseBase(this.value);
 			}
-			this.value = this.pool.requestBase(this._documentView.imageProvider.get(def));
+			this._documentView.imageProvider.getTexture(def).then((texture) => {
+				this.value = this.pool.requestBase(texture);
+				this.publishAll(); // TODO(perf): Might be wasting cycles here.
+			});
 		}
 	}
 

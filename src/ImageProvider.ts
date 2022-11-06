@@ -14,26 +14,32 @@ function createKTX2Loader() {
 	return loader;
 }
 
-// Placeholder image.
-const NULL_IMAGE_URI = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAAXNSR0IArs4c6QAAABNJREFUGFdj/M9w9z8DEmAkXQAAyCMLcU6pckIAAAAASUVORK5CYII=';
-export const NULL_TEXTURE = (() => {
+/** Generates a Texture from a Data URI, or otherh URL. */
+function createTexture(name: string, uri: string): Texture {
 	const imageEl = document.createElement('img');
-	imageEl.src = NULL_IMAGE_URI;
+	imageEl.src = uri;
 	const texture = new Texture(imageEl);
-	texture.name = '__NULL_TEXTURE';
+	texture.name = name;
 	texture.flipY = false;
 	return texture;
-})();
+}
+
+// Placeholder images.
+const NULL_IMAGE_URI = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAAXNSR0IArs4c6QAAABNJREFUGFdj/M9w9z8DEmAkXQAAyCMLcU6pckIAAAAASUVORK5CYII=';
+const LOADING_IMAGE_URI = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdj+P///38ACfsD/QVDRcoAAAAASUVORK5CYII=';
+
+export const NULL_TEXTURE = createTexture('__NULL_TEXTURE', NULL_IMAGE_URI);
+export const LOADING_TEXTURE = createTexture('__LOADING_TEXTURE', LOADING_IMAGE_URI);
 
 export interface ImageProvider {
-	update(textureDefs: TextureDef[]): Promise<void>;
-	get(textureDef: TextureDef): Texture | CompressedTexture;
+	initTexture(textureDef: TextureDef): Promise<void>;
+	getTexture(textureDef: TextureDef): Promise<Texture | CompressedTexture>;
 	clear(): void;
 }
 
 export class NullImageProvider implements ImageProvider {
-	async update(textureDefs: TextureDef[]): Promise<void> {}
-	get(texture: TextureDef): Texture { return NULL_TEXTURE; }
+	async initTexture(textureDef: TextureDef): Promise<void> {}
+	async getTexture(_: TextureDef): Promise<Texture | CompressedTexture> { return NULL_TEXTURE; }
 	clear(): void {}
 }
 
@@ -41,27 +47,23 @@ export class DefaultImageProvider implements ImageProvider {
 	private _cache = new Map<ArrayBuffer, Texture|CompressedTexture>();
 	private _ktx2Loader = createKTX2Loader();
 
-	async update(textureDefs: TextureDef[]): Promise<void> {
-		const pending = textureDefs.map(async (textureDef) => {
-			const image = textureDef.getImage()!;
-			if (this._cache.has(image)) return;
-
-			const mimeType = textureDef.getMimeType();
-			const texture = mimeType === 'image/ktx2'
-				? await this._loadKTX2Image(image)
-				: await this._loadImage(image, mimeType);
-
-			this._cache.set(image, texture);
-		});
-
-		await Promise.all(pending);
+	async initTexture(textureDef: TextureDef): Promise<void> {
+		await this.getTexture(textureDef);
 	}
 
-	get(textureDef: TextureDef): Texture | CompressedTexture {
-		const texture = this._cache.get(textureDef.getImage()!);
-		if (!texture) {
-			throw new Error(`ImageProvider not initialized for texture "${textureDef.getName()}".`);
-		}
+	async getTexture(textureDef: TextureDef): Promise<Texture | CompressedTexture> {
+		const image = textureDef.getImage()!;
+		const mimeType = textureDef.getMimeType();
+
+		let texture = this._cache.get(image);
+
+		if (texture) return texture;
+
+		texture = mimeType === 'image/ktx2'
+			? await this._loadKTX2Image(image)
+			: await this._loadImage(image, mimeType);
+
+		this._cache.set(image, texture);
 		return texture;
 	}
 

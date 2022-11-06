@@ -15,7 +15,7 @@ test('TextureBinding', async t => {
 		.setBaseColorTexture(textureDef)
 		.setMetallicRoughnessTexture(textureDef);
 
-	const documentView = await new DocumentView().init(document, {imageProvider});
+	const documentView = new DocumentView(document, {imageProvider});
 	const texture = documentView.view(textureDef);
 	const material = documentView.view(materialDef);
 	const {map, metalnessMap, roughnessMap} = material;

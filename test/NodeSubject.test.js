@@ -12,7 +12,7 @@ test('NodeSubject', async t => {
 		.setScale([0.5, 0.5, 0.5])
 		.addChild(document.createNode('Node2').setTranslation([5, 0, 0]));
 
-	const documentView = await new DocumentView().init(document, {imageProvider});
+	const documentView = new DocumentView(document, {imageProvider});
 	const node1 = documentView.view(nodeDef1);
 
 	t.equals(node1.name, 'Node1', 'node1 → name');
@@ -45,7 +45,7 @@ test('NodeSubject | update in place', async t => {
 	const nodeDef2 = document.createNode('Node2').setMesh(meshDef).addChild(nodeDef1);
 	const sceneDef = document.createScene().addChild(nodeDef2);
 
-	const documentView = await new DocumentView().init(document, {imageProvider});
+	const documentView = new DocumentView(document, {imageProvider});
 	const scene = documentView.view(sceneDef);
 	const node1 = documentView.view(nodeDef1);
 	const node2 = documentView.view(nodeDef2);

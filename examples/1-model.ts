@@ -62,7 +62,7 @@ const updateStats = createStatsPane(renderer, pane);
 const io = new WebIO();
 io.read('./DamagedHelmet.glb').then(async (doc) => {
 	console.time('DocumentView::init');
-	documentView = await new DocumentView().init(doc);
+	documentView = new DocumentView(doc);
 	console.timeEnd('DocumentView::init');
 
 	window['doc'] = doc;

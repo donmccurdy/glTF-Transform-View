@@ -13,7 +13,7 @@ test('SceneBinding', async t => {
 		.addChild(document.createNode('Node3'));
 	nodeDef.addChild(document.createNode('Node4'));
 
-	const documentView = await new DocumentView().init(document, {imageProvider});
+	const documentView = new DocumentView(document, {imageProvider});
 	const scene = documentView.view(sceneDef);
 
 	t.equals(scene.name, 'MyScene', 'scene → name');

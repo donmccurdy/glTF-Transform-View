@@ -21,7 +21,7 @@ test('MeshSubject', async t => {
 		.setName('MyMesh')
 		.addPrimitive(primDef);
 
-	const documentView = await new DocumentView().init(document, {imageProvider});
+	const documentView = new DocumentView(document, {imageProvider});
 	const mesh = documentView.view(meshDef);
 
 	t.equals(mesh.name, 'MyMesh', 'mesh → name');

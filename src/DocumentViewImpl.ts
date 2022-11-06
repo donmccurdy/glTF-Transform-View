@@ -3,7 +3,7 @@ import type { Accessor as AccessorDef, Material as MaterialDef, Mesh as MeshDef,
 import type { Object3D, BufferAttribute, Group, Texture, Material } from 'three';
 import { AccessorSubject, Subject, ExtensionSubject, MaterialSubject, MeshSubject, NodeSubject, PrimitiveSubject, SceneSubject, TextureSubject } from './subjects';
 import type { MeshLike, THREEObject } from './constants';
-import { DefaultImageProvider, ImageProvider, NullImageProvider } from './ImageProvider';
+import { DefaultImageProvider, ImageProvider } from './ImageProvider';
 import { MaterialPool, SingleUserPool, Pool, TexturePool } from './pools';
 
 export interface DocumentViewSubjectAPI {
@@ -58,12 +58,6 @@ export class DocumentViewImpl implements DocumentViewSubjectAPI {
 
 	constructor(config: DocumentViewConfig) {
 		this.imageProvider = config.imageProvider || new DefaultImageProvider();
-	}
-
-	async init(document: Document): Promise<this> {
-		const textureDefs = document.getRoot().listTextures();
-		await this.imageProvider.update(textureDefs);
-		return this;
 	}
 
 	private _addSubject(subject: Subject<PropertyDef, any>): void {

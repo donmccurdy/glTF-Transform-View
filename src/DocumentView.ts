@@ -11,18 +11,14 @@ import { MeshLike } from './constants';
  */
 export class DocumentView {
 	/** @internal */ private _ready = false;
-	/** @internal */ declare private _document: Document;
-	/** @internal */ declare private _impl: DocumentViewImpl;
+	/** @internal */ private _document: Document;
+	/** @internal */ private _impl: DocumentViewImpl;
 
 	/** Constructs a new DocumentView. */
-	public constructor() {}
-
-	/** Initializes the DocumentView for use, with a given Document and optional configuration. */
-	public async init(document: Document, config = {} as DocumentViewConfig): Promise<this> {
+	public constructor(document: Document, config = {} as DocumentViewConfig) {
 		this._document = document;
-		this._impl = await new DocumentViewImpl(config).init(document);
+		this._impl = new DocumentViewImpl(config);
 		this._ready = true;
-		return this;
 	}
 
 	/**

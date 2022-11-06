@@ -73,7 +73,7 @@ const doc = (() => {
 })();
 
 const imageProvider = new NullImageProvider();
-const documentView = await new DocumentView().init(doc, {imageProvider});
+const documentView = new DocumentView(doc, {imageProvider});
 const modelDef = doc.getRoot().getDefaultScene() || doc.getRoot().listScenes()[0];
 const model = documentView.view(modelDef);
 scene.add(model);

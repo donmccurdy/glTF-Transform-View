@@ -21,7 +21,7 @@ test('MaterialSubject', async t => {
 	const nodeDef = document.createNode('Node').setMesh(meshDef);
 	const sceneDef = document.createScene('Scene').addChild(nodeDef);
 
-	const documentView = await new DocumentView().init(document, {imageProvider});
+	const documentView = new DocumentView(document, {imageProvider});
 	const scene = documentView.view(sceneDef);
 	let mesh = scene.children[0].children[0].children[0];
 	let material = mesh.material;
@@ -46,7 +46,7 @@ test('MaterialSubject | extensions', async t => {
 	const clearcoatExtension = document.createExtension(MaterialsClearcoat);
 
 	const materialDef = document.createMaterial('Material')
-	const documentView = await new DocumentView().init(document, {imageProvider});
+	const documentView = new DocumentView(document, {imageProvider});
 	let material = documentView.view(materialDef);
 
 	t.equals(material.type, 'MeshStandardMaterial', 'MeshStandardMaterial');
@@ -93,7 +93,7 @@ test('MaterialSubject | dispose', async t => {
 		document.createNode('Node').setMesh(meshDef)
 	);
 
-	const documentView = await new DocumentView().init(document, {imageProvider});
+	const documentView = new DocumentView(document, {imageProvider});
 	const scene = documentView.view(sceneDef);
 	const [mesh, points] = scene.getObjectByName('Mesh').children;
 	const meshMaterial = mesh.material;
@@ -147,7 +147,7 @@ test('MaterialSubject | texture memory', async t => {
 		.setBaseColorTexture(texDef1)
 		.setEmissiveTexture(texDef2);
 
-	const documentView = await new DocumentView().init(document, {imageProvider});
+	const documentView = new DocumentView(document, {imageProvider});
 	let material = documentView.view(materialDef);
 	const {map, emissiveMap} = material;
 

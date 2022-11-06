@@ -50,7 +50,7 @@ const scene = new Scene();
 // Load glTF Document.
 const io = new WebIO().registerExtensions(KHRONOS_EXTENSIONS);
 const document = await io.read('path/to/input.glb');
-const documentView = await new DocumentView().init(document);
+const documentView = new DocumentView(document);
 
 // Add glTF content to the scene (just once).
 const sceneDef = document.getRoot().listScenes()[0];

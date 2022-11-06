@@ -60,7 +60,7 @@ document.body.addEventListener('gltf-document', async (event) => {
 	await checkExtensions(doc);
 
 	console.time('DocumentView::init');
-	documentView = await new DocumentView().init(doc);
+	documentView = new DocumentView(doc);
 	modelAfter = documentView.view(modelDef);
 	console.timeEnd('DocumentView::init');
 
