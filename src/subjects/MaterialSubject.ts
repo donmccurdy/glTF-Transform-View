@@ -88,6 +88,9 @@ export class MaterialSubject extends Subject<MaterialDef, Material> {
 		// KHR_materials_volume
 		const volumeExt = (): Volume | null => def.getExtension<Volume>('KHR_materials_volume');
 		this.bindTexture(['thicknessMap'], this.thicknessTexture, () => volumeExt()?.getThicknessTexture() || null, () => volumeExt()?.getThicknessTextureInfo() || null, LinearEncoding);
+
+		// TODO(impl): KHR_materials_emissive_strength
+		// TODO(impl): KHR_materials_iridescence
 	}
 
 	private bindTexture(
