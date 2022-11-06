@@ -1,9 +1,11 @@
 import test from 'tape';
 import { Document, Primitive as PrimitiveDef } from '@gltf-transform/core';
-import { DocumentView } from '../dist/view.modern.js';
+import { DocumentView, NullImageProvider } from '../dist/view.modern.js';
 import { MaterialsClearcoat, MaterialsUnlit } from '@gltf-transform/extensions';
 
-test('MaterialSubject', t => {
+const imageProvider = new NullImageProvider();
+
+test('MaterialSubject', async t => {
 	const document = new Document();
 	const texDef1 = document.createTexture('Tex1')
 		.setMimeType('image/png')
@@ -19,7 +21,7 @@ test('MaterialSubject', t => {
 	const nodeDef = document.createNode('Node').setMesh(meshDef);
 	const sceneDef = document.createScene('Scene').addChild(nodeDef);
 
-	const documentView = new DocumentView(document);
+	const documentView = await new DocumentView().init(document, {imageProvider});
 	const scene = documentView.view(sceneDef);
 	let mesh = scene.children[0].children[0].children[0];
 	let material = mesh.material;
@@ -38,13 +40,13 @@ test('MaterialSubject', t => {
 	t.end();
 });
 
-test('MaterialSubject | extensions', t => {
+test('MaterialSubject | extensions', async t => {
 	const document = new Document();
 	const unlitExtension = document.createExtension(MaterialsUnlit);
 	const clearcoatExtension = document.createExtension(MaterialsClearcoat);
 
 	const materialDef = document.createMaterial('Material')
-	const documentView = new DocumentView(document);
+	const documentView = await new DocumentView().init(document, {imageProvider});
 	let material = documentView.view(materialDef);
 
 	t.equals(material.type, 'MeshStandardMaterial', 'MeshStandardMaterial');
@@ -67,7 +69,7 @@ test('MaterialSubject | extensions', t => {
 	t.end();
 });
 
-test('MaterialSubject | dispose', t => {
+test('MaterialSubject | dispose', async t => {
 	const document = new Document();
 	const texDef1 = document.createTexture('Tex1')
 		.setMimeType('image/png')
@@ -91,7 +93,7 @@ test('MaterialSubject | dispose', t => {
 		document.createNode('Node').setMesh(meshDef)
 	);
 
-	const documentView = new DocumentView(document);
+	const documentView = await new DocumentView().init(document, {imageProvider});
 	const scene = documentView.view(sceneDef);
 	const [mesh, points] = scene.getObjectByName('Mesh').children;
 	const meshMaterial = mesh.material;
@@ -132,7 +134,7 @@ test('MaterialSubject | dispose', t => {
 	t.end();
 });
 
-test('MaterialSubject | texture memory', t => {
+test('MaterialSubject | texture memory', async t => {
 	const document = new Document();
 	const clearcoatExtension = document.createExtension(MaterialsClearcoat);
 	const texDef1 = document.createTexture('Tex1')
@@ -145,7 +147,7 @@ test('MaterialSubject | texture memory', t => {
 		.setBaseColorTexture(texDef1)
 		.setEmissiveTexture(texDef2);
 
-	const documentView = new DocumentView(document);
+	const documentView = await new DocumentView().init(document, {imageProvider});
 	let material = documentView.view(materialDef);
 	const {map, emissiveMap} = material;
 

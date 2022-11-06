@@ -1,4 +1,4 @@
-import { PropertyType, ExtensionProperty as ExtensionPropertyDef } from '@gltf-transform/core';
+import { type Document, PropertyType, ExtensionProperty as ExtensionPropertyDef } from '@gltf-transform/core';
 import type { Accessor as AccessorDef, Material as MaterialDef, Mesh as MeshDef, Node as NodeDef, Primitive as PrimitiveDef, Property as PropertyDef, Scene as SceneDef, Texture as TextureDef } from '@gltf-transform/core';
 import type { Object3D, BufferAttribute, Group, Texture, Material } from 'three';
 import { AccessorSubject, Subject, ExtensionSubject, MaterialSubject, MeshSubject, NodeSubject, PrimitiveSubject, SceneSubject, TextureSubject } from './subjects';
@@ -34,6 +34,10 @@ export interface DocumentViewSubjectAPI {
 	isDisposed(): boolean;
 }
 
+export interface DocumentViewConfig {
+	imageProvider?: ImageProvider;
+}
+
 /** @internal */
 export class DocumentViewImpl implements DocumentViewSubjectAPI {
 	private _disposed = false;
@@ -50,10 +54,16 @@ export class DocumentViewImpl implements DocumentViewSubjectAPI {
 	readonly scenePool: Pool<Group> = new Pool<Group>('scenes', this);
 	readonly texturePool: TexturePool = new TexturePool('textures', this);
 
-	public imageProvider: ImageProvider = new NullImageProvider();
+	public imageProvider: ImageProvider;
 
-	setImageProvider(provider: DefaultImageProvider): void {
-		this.imageProvider = provider;
+	constructor(config: DocumentViewConfig) {
+		this.imageProvider = config.imageProvider || new DefaultImageProvider();
+	}
+
+	async init(document: Document): Promise<this> {
+		const textureDefs = document.getRoot().listTextures();
+		await this.imageProvider.update(textureDefs);
+		return this;
 	}
 
 	private _addSubject(subject: Subject<PropertyDef, any>): void {

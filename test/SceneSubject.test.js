@@ -1,8 +1,10 @@
 import test from 'tape';
 import { Document } from '@gltf-transform/core';
-import { DocumentView } from '../dist/view.modern.js';
+import { DocumentView, NullImageProvider } from '../dist/view.modern.js';
 
-test('SceneBinding', t => {
+const imageProvider = new NullImageProvider();
+
+test('SceneBinding', async t => {
 	const document = new Document();
 	let nodeDef;
 	const sceneDef = document.createScene('MyScene')
@@ -11,7 +13,7 @@ test('SceneBinding', t => {
 		.addChild(document.createNode('Node3'));
 	nodeDef.addChild(document.createNode('Node4'));
 
-	const documentView = new DocumentView(document);
+	const documentView = await new DocumentView().init(document, {imageProvider});
 	const scene = documentView.view(sceneDef);
 
 	t.equals(scene.name, 'MyScene', 'scene → name');

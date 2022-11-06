@@ -3,11 +3,9 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { Document, WebIO } from '@gltf-transform/core';
 import { metalRough } from '@gltf-transform/functions';
-import { DocumentView, ImageProvider } from '../dist/view.modern.js';
+import { DocumentView } from '../dist/view.modern.js';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import { createEnvironment, createKTX2Loader } from './util.js';
-
-const imageProvider = new ImageProvider();
 
 const renderer = new WebGLRenderer({antialias: true});
 renderer.setPixelRatio( window.devicePixelRatio );
@@ -56,16 +54,13 @@ document.body.addEventListener('gltf-document', async (event) => {
 	const doc = (event as CustomEvent).detail as Document;
 	const modelDef = doc.getRoot().getDefaultScene() || doc.getRoot().listScenes()[0];
 
-	imageProvider.clear();
-	await imageProvider.update(doc.getRoot().listTextures());
-
 	if (modelBefore) disposeBefore(modelBefore);
 	if (modelAfter) disposeAfter(modelAfter);
 
 	await checkExtensions(doc);
 
 	console.time('DocumentView::init');
-	documentView = new DocumentView(doc).setImageProvider(imageProvider);
+	documentView = await new DocumentView().init(doc);
 	modelAfter = documentView.view(modelDef);
 	console.timeEnd('DocumentView::init');
 

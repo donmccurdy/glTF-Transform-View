@@ -1,7 +1,7 @@
 import { ACESFilmicToneMapping, AmbientLight, DirectionalLight, PMREMGenerator, PerspectiveCamera, Scene, WebGLRenderer, sRGBEncoding } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTF, Material, WebIO } from '@gltf-transform/core';
-import { DocumentView, ImageProvider } from '../dist/view.modern.js';
+import { DocumentView } from '../dist/view.modern.js';
 import {Pane} from 'tweakpane';
 import * as TweakpanePluginThumbnailList from 'tweakpane-plugin-thumbnail-list';
 import { createStatsPane } from './stats-pane.js';
@@ -61,11 +61,8 @@ const updateStats = createStatsPane(renderer, pane);
 
 const io = new WebIO();
 io.read('./DamagedHelmet.glb').then(async (doc) => {
-	const imageProvider = new ImageProvider();
-	await imageProvider.update(doc.getRoot().listTextures());
-
 	console.time('DocumentView::init');
-	documentView = new DocumentView(doc).setImageProvider(imageProvider);
+	documentView = await new DocumentView().init(doc);
 	console.timeEnd('DocumentView::init');
 
 	window['doc'] = doc;

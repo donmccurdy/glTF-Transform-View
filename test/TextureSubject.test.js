@@ -1,9 +1,11 @@
 import test from 'tape';
-import { Document } from '@gltf-transform/core';
-import { DocumentView } from '../dist/view.modern.js';
 import { LinearEncoding, sRGBEncoding } from 'three';
+import { Document } from '@gltf-transform/core';
+import { DocumentView, NullImageProvider } from '../dist/view.modern.js';
 
-test('TextureBinding', t => {
+const imageProvider = new NullImageProvider();
+
+test('TextureBinding', async t => {
 	const document = new Document();
 	const textureDef = document.createTexture('MyTexture')
 		.setImage(new Uint8Array(0))
@@ -13,7 +15,7 @@ test('TextureBinding', t => {
 		.setBaseColorTexture(textureDef)
 		.setMetallicRoughnessTexture(textureDef);
 
-	const documentView = new DocumentView(document);
+	const documentView = await new DocumentView().init(document, {imageProvider});
 	const texture = documentView.view(textureDef);
 	const material = documentView.view(materialDef);
 	const {map, metalnessMap, roughnessMap} = material;

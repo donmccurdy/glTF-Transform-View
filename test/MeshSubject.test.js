@@ -1,8 +1,10 @@
 import test from 'tape';
 import { Document } from '@gltf-transform/core';
-import { DocumentView } from '../dist/view.modern.js';
+import { DocumentView, NullImageProvider } from '../dist/view.modern.js';
 
-test('MeshSubject', t => {
+const imageProvider = new NullImageProvider();
+
+test('MeshSubject', async t => {
 	const document = new Document();
 	const position = document.createAccessor()
 		.setType('VEC3')
@@ -19,7 +21,7 @@ test('MeshSubject', t => {
 		.setName('MyMesh')
 		.addPrimitive(primDef);
 
-	const documentView = new DocumentView(document);
+	const documentView = await new DocumentView().init(document, {imageProvider});
 	const mesh = documentView.view(meshDef);
 
 	t.equals(mesh.name, 'MyMesh', 'mesh → name');

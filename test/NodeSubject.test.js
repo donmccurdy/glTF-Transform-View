@@ -1,8 +1,10 @@
 import test from 'tape';
 import { Document } from '@gltf-transform/core';
-import { DocumentView } from '../dist/view.modern.js';
+import { DocumentView, NullImageProvider } from '../dist/view.modern.js';
 
-test('NodeSubject', t => {
+const imageProvider = new NullImageProvider();
+
+test('NodeSubject', async t => {
 	const document = new Document();
 	const nodeDef1 = document.createNode('Node1')
 		.setTranslation([0, 2, 0])
@@ -10,7 +12,7 @@ test('NodeSubject', t => {
 		.setScale([0.5, 0.5, 0.5])
 		.addChild(document.createNode('Node2').setTranslation([5, 0, 0]));
 
-	const documentView = new DocumentView(document);
+	const documentView = await new DocumentView().init(document, {imageProvider});
 	const node1 = documentView.view(nodeDef1);
 
 	t.equals(node1.name, 'Node1', 'node1 → name');
@@ -36,14 +38,14 @@ test('NodeSubject', t => {
 	t.end();
 });
 
-test('NodeSubject | update in place', t => {
+test('NodeSubject | update in place', async t => {
 	const document = new Document();
 	const meshDef = document.createMesh().setName('Mesh.v1')
 	const nodeDef1 = document.createNode('Node1').setMesh(meshDef);
 	const nodeDef2 = document.createNode('Node2').setMesh(meshDef).addChild(nodeDef1);
 	const sceneDef = document.createScene().addChild(nodeDef2);
 
-	const documentView = new DocumentView(document);
+	const documentView = await new DocumentView().init(document, {imageProvider});
 	const scene = documentView.view(sceneDef);
 	const node1 = documentView.view(nodeDef1);
 	const node2 = documentView.view(nodeDef2);

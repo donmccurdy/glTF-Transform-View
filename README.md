@@ -22,7 +22,7 @@ in the preview.
 > **NOTICE:** three.js can load glTF 2.0 files with [THREE.GLTFLoader](https://threejs.org/docs/index.html#examples/en/loaders/GLTFLoader)
 > and export them with [THREE.GLTFExporter](https://threejs.org/docs/index.html#examples/en/loaders/GLTFExporter),
 > but the GLTFExporter step is lossy and expensive. In comparison, the edit/refresh loop provided by
-> `@gltf-transform/view` is very fast and lossless, but requires some additional memory overhead when loading. 
+> `@gltf-transform/view` is very fast and lossless, but requires some additional memory overhead when loading.
 > This project is not meant to replace THREE.GLTFLoader for one-time resource loading.
 
 ## Quickstart
@@ -50,7 +50,7 @@ const scene = new Scene();
 // Load glTF Document.
 const io = new WebIO().registerExtensions(KHRONOS_EXTENSIONS);
 const document = await io.read('path/to/input.glb');
-const documentView = new DocumentView(document);
+const documentView = await new DocumentView().init(document);
 
 // Add glTF content to the scene (just once).
 const sceneDef = document.getRoot().listScenes()[0];

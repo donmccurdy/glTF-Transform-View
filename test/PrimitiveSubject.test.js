@@ -1,8 +1,10 @@
 import test from 'tape';
 import { Document, Primitive as PrimitiveDef } from '@gltf-transform/core';
-import { DocumentView } from '../dist/view.modern.js';
+import { DocumentView, NullImageProvider } from '../dist/view.modern.js';
 
-test('PrimitiveSubject', t => {
+const imageProvider = new NullImageProvider();
+
+test('PrimitiveSubject', async t => {
 	const document = new Document();
 	const position = document.createAccessor()
 		.setType('VEC3')
@@ -18,7 +20,7 @@ test('PrimitiveSubject', t => {
 		.setAttribute('POSITION', position)
 		.setMaterial(materialDef);
 
-	const documentView = new DocumentView(document);
+	const documentView = await new DocumentView().init(document, {imageProvider});
 	let prim = documentView.view(primDef);
 	const geometry = prim.geometry;
 

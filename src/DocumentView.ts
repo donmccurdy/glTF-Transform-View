@@ -1,7 +1,6 @@
 import { Group, Material, Object3D, Texture } from 'three';
 import { Document, Scene as SceneDef, Node as NodeDef, Material as MaterialDef, Mesh as MeshDef, Primitive as PrimitiveDef, Property as PropertyDef, Texture as TextureDef } from '@gltf-transform/core';
-import { DocumentViewImpl } from './DocumentViewImpl';
-import { DefaultImageProvider } from './ImageProvider';
+import { DocumentViewConfig, DocumentViewImpl } from './DocumentViewImpl';
 import { MeshLike } from './constants';
 
 /**
@@ -11,13 +10,19 @@ import { MeshLike } from './constants';
  * THREE.GLTFLoader each time.
  */
 export class DocumentView {
-	/** @internal */ private _document: Document;
-	/** @internal */ private _impl: DocumentViewImpl;
+	/** @internal */ private _ready = false;
+	/** @internal */ declare private _document: Document;
+	/** @internal */ declare private _impl: DocumentViewImpl;
 
 	/** Constructs a new DocumentView. */
-	constructor(document: Document) {
+	public constructor() {}
+
+	/** Initializes the DocumentView for use, with a given Document and optional configuration. */
+	public async init(document: Document, config = {} as DocumentViewConfig): Promise<this> {
 		this._document = document;
-		this._impl = new DocumentViewImpl();
+		this._impl = await new DocumentViewImpl(config).init(document);
+		this._ready = true;
+		return this;
 	}
 
 	/**
@@ -25,6 +30,7 @@ export class DocumentView {
 	 * with the same input will yield the same output Object3D instance.
 	 */
 	public view(def: SceneDef): Group {
+		assert(this._ready);
 		const value = this._impl.bind(def).value as Group;
 		this._impl.recordOutputValue(def, value);
 		return value;
@@ -36,6 +42,7 @@ export class DocumentView {
 	public listViews(source: PrimitiveDef): MeshLike[];
 	public listViews(source: SceneDef | NodeDef | MeshDef): Object3D[];
 	public listViews(source: PropertyDef): object[] {
+		assert(this._ready);
 		return this._impl.findValues(source as any);
 	}
 
@@ -45,14 +52,17 @@ export class DocumentView {
 	public getProperty(view: MeshLike): PrimitiveDef | null
 	public getProperty(view: Object3D): MeshDef | NodeDef | SceneDef | null
 	public getProperty(view: object): PropertyDef | null {
+		assert(this._ready);
 		return this._impl.findDef(view as any);
 	}
 
 	public stats(): Record<string, number> {
+		assert(this._ready);
 		return this._impl.stats();
 	}
 
 	public gc(): void {
+		assert(this._ready);
 		this._impl.gc();
 	}
 
@@ -65,11 +75,13 @@ export class DocumentView {
 	 * - ...disposed Properties, dispose immediately.
 	 */
 	public dispose(): void {
+		assert(this._ready);
 		this._impl.dispose();
 	}
+}
 
-	public setImageProvider(provider: DefaultImageProvider): this {
-		this._impl.setImageProvider(provider);
-		return this;
+function assert(ready: boolean) {
+	if (!ready) {
+		throw new Error('DocumentView must be initialized before use.');
 	}
 }

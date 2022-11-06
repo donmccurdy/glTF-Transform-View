@@ -1,14 +1,16 @@
 import test from 'tape';
-import { Document } from '@gltf-transform/core';
-import { DocumentView } from '../dist/view.modern.js';
+import { Document, NodeIO } from '@gltf-transform/core';
+import { DocumentView, NullImageProvider } from '../dist/view.modern.js';
 import { Group } from 'three';
+
+const imageProvider = new NullImageProvider();
 
 test('DocumentView', t => {
     t.ok(new DocumentView(new Document()), 'constructor');
     t.end();
 });
 
-test('DocumentView | view', t => {
+test('DocumentView | view', async t => {
     const document = new Document();
     const textureDef = document.createTexture();
     const materialDef = document.createMaterial()
@@ -23,7 +25,12 @@ test('DocumentView | view', t => {
     const sceneDef = document.createScene()
         .addChild(nodeDef);
 
-    const documentView = new DocumentView(document);
+    const documentView = new DocumentView();
+
+    t.throws(() => documentView.view(sceneDef), /must be initialized/, 'require init');
+
+    await documentView.init(document, {imageProvider});
+
     const scene = documentView.view(sceneDef);
     const node = scene.children[0];
     const mesh = node.children[0];
@@ -56,10 +63,11 @@ test('DocumentView | view', t => {
     t.ok(texture.isTexture, 'texture → THREE.Texture');
     t.equals(documentView.listViews(textureDef).length, 3, 'texture views');
     t.equals(documentView.getProperty(texture), textureDef, 'texture → source');
+
     t.end();
 });
 
-test('DocumentView | dispose', t => {
+test('DocumentView | dispose', async t => {
     const document = new Document();
     const texDef1 = document.createTexture('Tex1')
     .setMimeType('image/png')
@@ -76,7 +84,7 @@ test('DocumentView | dispose', t => {
             .setMesh(document.createMesh('Mesh').addPrimitive(primDef))
     );
 
-    const documentView = new DocumentView(document);
+    const documentView = await new DocumentView().init(document, {imageProvider});
     const scene = documentView.view(sceneDef);
     const mesh = scene.getObjectByName('Mesh').children[0];
     const {geometry, material} = mesh;
@@ -99,3 +107,22 @@ test('DocumentView | dispose', t => {
     t.ok(disposed.has(emissiveMap), 'disposed emissiveTexture');
     t.end();
 });
+
+// test.skip('DocumentView | alloc', async t => {
+//     // TODO(bug): It's OK for allocations to happen here,
+//     // but make sure they're properly gc'd...
+//     nodeDef.setMesh(meshDef);
+//     nodeDef.setMesh(null);
+//     nodeDef.setMesh(meshDef);
+//     nodeDef.setMesh(null);
+//     nodeDef.setMesh(meshDef);
+//     nodeDef.setMesh(null);
+//     nodeDef.setMesh(meshDef);
+//     nodeDef.setMesh(null);
+
+//     documentView.gc();
+
+//     t.deepEquals(documentView.stats(), expectedStats, 'stats (after)');
+//     console.log(documentView.stats());
+//     t.end();
+// });

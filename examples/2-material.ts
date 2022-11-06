@@ -1,7 +1,7 @@
-import { ACESFilmicToneMapping, AmbientLight, DirectionalLight, PMREMGenerator, PerspectiveCamera, Scene, WebGLRenderer, sRGBEncoding, TorusKnotBufferGeometry } from 'three';
+import { ACESFilmicToneMapping, AmbientLight, DirectionalLight, PMREMGenerator, PerspectiveCamera, Scene, WebGLRenderer, sRGBEncoding, TorusKnotGeometry } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { Document, Material } from '@gltf-transform/core';
-import { DocumentView } from '../dist/view.modern.js';
+import { DocumentView, NullImageProvider } from '../dist/view.modern.js';
 import { createMaterialPane } from './material-pane';
 import { createStatsPane } from './stats-pane.js';
 import { Pane } from 'tweakpane';
@@ -55,7 +55,7 @@ let material: Material;
 const doc = (() => {
 	const doc = new Document();
 	material = doc.createMaterial('Material');
-	const primTemplate = new TorusKnotBufferGeometry(1, 0.4, 100, 16);
+	const primTemplate = new TorusKnotGeometry(1, 0.4, 100, 16);
 	const indicesArray = primTemplate.index!.array as Uint16Array;
 	const positionArray = primTemplate.attributes.position.array as Float32Array;
 	const normalArray = primTemplate.attributes.normal.array as Float32Array;
@@ -72,7 +72,8 @@ const doc = (() => {
 	return doc;
 })();
 
-const documentView = new DocumentView(doc);
+const imageProvider = new NullImageProvider();
+const documentView = await new DocumentView().init(doc, {imageProvider});
 const modelDef = doc.getRoot().getDefaultScene() || doc.getRoot().listScenes()[0];
 const model = documentView.view(modelDef);
 scene.add(model);
