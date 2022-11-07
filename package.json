@@ -35,7 +35,7 @@
     "tweakpane": "3.1.0",
     "tweakpane-plugin-thumbnail-list": "0.3.0",
     "typescript": "4.8.4",
-    "vite": "3.2.2"
+    "vite": "3.2.3"
   },
   "scripts": {
     "dist": "microbundle --no-compress --format modern",
