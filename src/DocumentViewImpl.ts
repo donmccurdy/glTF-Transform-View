@@ -1,7 +1,7 @@
-import { type Document, PropertyType, ExtensionProperty as ExtensionPropertyDef } from '@gltf-transform/core';
-import type { Accessor as AccessorDef, Material as MaterialDef, Mesh as MeshDef, Node as NodeDef, Primitive as PrimitiveDef, Property as PropertyDef, Scene as SceneDef, Texture as TextureDef } from '@gltf-transform/core';
-import type { Object3D, BufferAttribute, Group, Texture, Material } from 'three';
-import { AccessorSubject, Subject, ExtensionSubject, MaterialSubject, MeshSubject, NodeSubject, PrimitiveSubject, SceneSubject, TextureSubject } from './subjects';
+import { PropertyType, ExtensionProperty as ExtensionPropertyDef } from '@gltf-transform/core';
+import type { Accessor as AccessorDef, Material as MaterialDef, Mesh as MeshDef, Node as NodeDef, Primitive as PrimitiveDef, Property as PropertyDef, Scene as SceneDef, Skin as SkinDef, Texture as TextureDef } from '@gltf-transform/core';
+import type { Object3D, BufferAttribute, Group, Texture, Material, Skeleton } from 'three';
+import { AccessorSubject, Subject, ExtensionSubject, MaterialSubject, MeshSubject, NodeSubject, PrimitiveSubject, SceneSubject, SkinSubject, TextureSubject } from './subjects';
 import type { MeshLike, THREEObject } from './constants';
 import { DefaultImageProvider, ImageProvider } from './ImageProvider';
 import { MaterialPool, SingleUserPool, Pool, TexturePool } from './pools';
@@ -14,6 +14,7 @@ export interface DocumentViewSubjectAPI {
 	readonly nodePool: Pool<Object3D>;
 	readonly primitivePool: SingleUserPool<MeshLike>;
 	readonly scenePool: Pool<Group>;
+	readonly skinPool: Pool<Skeleton>;
 	readonly texturePool: TexturePool;
 
 	imageProvider: ImageProvider;
@@ -25,6 +26,7 @@ export interface DocumentViewSubjectAPI {
 	bind(def: NodeDef): NodeSubject;
 	bind(def: PrimitiveDef): PrimitiveSubject;
 	bind(def: SceneDef): SceneSubject;
+	bind(def: SkinDef): SkinSubject;
 	bind(def: PropertyDef): Subject<PropertyDef, any>;
 	bind(def: PropertyDef | null): Subject<PropertyDef, any> | null;
 
@@ -52,6 +54,7 @@ export class DocumentViewImpl implements DocumentViewSubjectAPI {
 	readonly nodePool: Pool<Object3D> = new Pool<Object3D>('nodes', this);
 	readonly primitivePool: SingleUserPool<MeshLike> = new SingleUserPool<MeshLike>('primitives', this);
 	readonly scenePool: Pool<Group> = new Pool<Group>('scenes', this);
+	readonly skinPool: Pool<Skeleton> = new Pool<Skeleton>('skins', this);
 	readonly texturePool: TexturePool = new TexturePool('textures', this);
 
 	public imageProvider: ImageProvider;
@@ -75,6 +78,7 @@ export class DocumentViewImpl implements DocumentViewSubjectAPI {
 	bind(def: NodeDef): NodeSubject;
 	bind(def: PrimitiveDef): PrimitiveSubject;
 	bind(def: SceneDef): SceneSubject;
+	bind(def: SkinDef): SkinSubject;
 	bind(def: PropertyDef): Subject<PropertyDef, any>;
 	bind(def: PropertyDef | null): Subject<PropertyDef, any> | null {
 		if (!def) return null;
@@ -99,6 +103,9 @@ export class DocumentViewImpl implements DocumentViewSubjectAPI {
 				break;
 			case PropertyType.SCENE:
 				subject = new SceneSubject(this, def as SceneDef);
+				break;
+			case PropertyType.SKIN:
+				subject = new SkinSubject(this, def as SkinDef);
 				break;
 			case PropertyType.TEXTURE:
 				subject = new TextureSubject(this, def as TextureDef);
@@ -142,6 +149,7 @@ export class DocumentViewImpl implements DocumentViewSubjectAPI {
 			nodes: this.nodePool.size(),
 			primitives: this.primitivePool.size(),
 			scenes: this.scenePool.size(),
+			skins: this.skinPool.size(),
 			textures: this.texturePool.size(),
 		};
 	}
@@ -154,6 +162,7 @@ export class DocumentViewImpl implements DocumentViewSubjectAPI {
 		this.nodePool.gc();
 		this.primitivePool.gc();
 		this.scenePool.gc();
+		this.skinPool.gc();
 		this.texturePool.gc();
 	}
 

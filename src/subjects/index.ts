@@ -6,4 +6,5 @@ export * from './MeshSubject';
 export * from './NodeSubject';
 export * from './PrimitiveSubject';
 export * from './SceneSubject';
+export * from './SkinSubject';
 export * from './TextureSubject';
