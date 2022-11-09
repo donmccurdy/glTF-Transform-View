@@ -1,5 +1,5 @@
-import { Group, Object3D } from 'three';
-import { Mesh as MeshDef, Node as NodeDef, vec3, vec4 } from '@gltf-transform/core';
+import { Bone, Group, Object3D, Skeleton, SkinnedMesh } from 'three';
+import { Mesh as MeshDef, Node as NodeDef, Skin as SkinDef, vec3, vec4 } from '@gltf-transform/core';
 import type { DocumentViewSubjectAPI } from '../DocumentViewImpl';
 import { eq } from '../utils';
 import { Subject } from './Subject';
@@ -14,12 +14,18 @@ export class NodeSubject extends Subject<NodeDef, Object3D> {
 	protected children = new RefListObserver<NodeDef, Object3D>('children', this._documentView);
 	protected mesh = new RefObserver<MeshDef, Group>('mesh', this._documentView)
 		.setParamsFn(() => SingleUserPool.createParams(this.def));
+	protected skin = new RefObserver<SkinDef, Skeleton>('skin', this._documentView);
 
 	/** Output (Object3D) is never cloned by an observer. */
 	protected _outputSingleton = true;
 
 	constructor(documentView: DocumentViewSubjectAPI, def: NodeDef) {
-		super(documentView, def, documentView.nodePool.requestBase(new Object3D()), documentView.nodePool);
+		super(
+			documentView,
+			def,
+			documentView.nodePool.requestBase(isJoint(def) ? new Bone() : new Object3D()),
+			documentView.nodePool
+		);
 
 		this.children.subscribe((nextChildren, prevChildren) => {
 			if (prevChildren.length) this.value.remove(...prevChildren);
@@ -29,8 +35,24 @@ export class NodeSubject extends Subject<NodeDef, Object3D> {
 		this.mesh.subscribe((nextMesh, prevMesh) => {
 			if (prevMesh) this.value.remove(prevMesh);
 			if (nextMesh) this.value.add(nextMesh);
+			this.bindSkeleton(this.skin.value);
 			this.publishAll();
 		});
+		this.skin.subscribe((skin) => {
+			this.bindSkeleton(skin);
+			this.publishAll;
+		});
+	}
+
+	private bindSkeleton(skeleton: Skeleton | null) {
+		// TODO(test): Unclear what happens here if skin is unassigned.
+		if (!this.mesh.value || !skeleton) return;
+
+		for (const prim of this.mesh.value.children) {
+			if (prim instanceof SkinnedMesh) {
+				prim.bind(skeleton, prim.matrixWorld);
+			}
+		}
 	}
 
 	update() {
@@ -55,6 +77,7 @@ export class NodeSubject extends Subject<NodeDef, Object3D> {
 
 		this.children.update(def.listChildren());
 		this.mesh.update(def.getMesh());
+		this.skin.update(def.getSkin());
 	}
 
 	dispose() {
@@ -62,4 +85,8 @@ export class NodeSubject extends Subject<NodeDef, Object3D> {
 		this.mesh.dispose();
 		super.dispose();
 	}
+}
+
+function isJoint(def: NodeDef): boolean {
+	return def.listParents().some((parent) => parent instanceof SkinDef);
 }

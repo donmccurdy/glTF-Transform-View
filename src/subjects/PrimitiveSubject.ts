@@ -1,4 +1,4 @@
-import { BufferAttribute, BufferGeometry, Line, LineLoop, LineSegments, Material, Mesh, MeshStandardMaterial, Points } from 'three';
+import { BufferAttribute, BufferGeometry, Line, LineLoop, LineSegments, Material, Mesh, MeshStandardMaterial, Points, SkinnedMesh } from 'three';
 import { Accessor as AccessorDef, GLTF, Material as MaterialDef, Primitive as PrimitiveDef } from '@gltf-transform/core';
 import type { DocumentViewSubjectAPI } from '../DocumentViewImpl';
 import { Subject } from './Subject';
@@ -83,7 +83,7 @@ export class PrimitiveSubject extends Subject<PrimitiveDef, MeshLike> {
 		this.attributes.update(def.listSemantics(), def.listAttributes());
 		this.material.update(def.getMaterial());
 
-		if (def.getMode() !== getObject3DMode(value)) {
+		if (getType(def) !== value.type) {
 			this.pool.releaseBase(value);
 			this.value = value = PrimitiveSubject.createValue(def, value.geometry, value.material, this.pool);
 			this.material.invalidate();
@@ -94,10 +94,14 @@ export class PrimitiveSubject extends Subject<PrimitiveDef, MeshLike> {
 		switch (def.getMode()) {
 			case PrimitiveDef.Mode.TRIANGLES:
 			case PrimitiveDef.Mode.TRIANGLE_FAN:
-			case PrimitiveDef.Mode.TRIANGLE_STRIP:
-				// TODO(feat): Support SkinnedMesh.
+			case PrimitiveDef.Mode.TRIANGLE_STRIP: {
 				// TODO(feat): Support triangle fan and triangle strip.
-				return pool.requestBase(new Mesh(geometry, material));
+				if (geometry.hasAttribute('skinIndex')) {
+					return pool.requestBase(new SkinnedMesh(geometry, material));
+				} else {
+					return pool.requestBase(new Mesh(geometry, material));
+				}
+			}
 			case PrimitiveDef.Mode.LINES:
 				return pool.requestBase(new LineSegments(geometry, material));
 			case PrimitiveDef.Mode.LINE_LOOP:
@@ -137,5 +141,29 @@ function getObject3DMode(mesh: MeshLike): GLTF.MeshPrimitiveMode {
 			return PrimitiveDef.Mode.POINTS;
 		default:
 			throw new Error(`Unexpected type: ${mesh.type}`);
+	}
+}
+
+function getType(def: PrimitiveDef): string {
+	switch (def.getMode()) {
+		case PrimitiveDef.Mode.TRIANGLES:
+		case PrimitiveDef.Mode.TRIANGLE_FAN:
+		case PrimitiveDef.Mode.TRIANGLE_STRIP: {
+			if (def.getAttribute('JOINTS_0')) {
+				return 'SkinnedMesh';
+			} else {
+				return 'Mesh';
+			}
+		}
+		case PrimitiveDef.Mode.LINES:
+			return 'LineSegments';
+		case PrimitiveDef.Mode.LINE_LOOP:
+			return 'LineLoop';
+		case PrimitiveDef.Mode.LINE_STRIP:
+			return 'Line';
+		case PrimitiveDef.Mode.POINTS:
+			return 'Points';
+		default:
+			throw new Error(`Unexpected primitive mode: ${def.getMode()}`);
 	}
 }
