@@ -8,7 +8,16 @@ import { ValuePool } from '../pools';
 const _vec3: vec3 = [0, 0, 0];
 const _vec4: vec4 = [0, 0, 0, 0];
 
-/** @internal */
+/**
+ * SkinSubject transforms `nodeDef.skin` into a THREE.Skeleton instance. The upstream {@link NodeSubject}
+ * will bind the skeleton to the mesh, where {@link PrimitiveSubject} is responsible for emitting
+ * a THREE.SkinnedMesh if it contains skinning-related attributes.
+ *
+ * This subject does not guard against certain invalid states — missing bones, missing vertex weights — and
+ * should be used accordingly.
+ *
+ * @internal
+ */
 export class SkinSubject extends Subject<SkinDef, Skeleton> {
 	protected joints = new RefListObserver<NodeDef, Bone>('children', this._documentView);
 	protected inverseBindMatrices = new RefObserver<AccessorDef, BufferAttribute>('inverseBindMatrices', this._documentView);
@@ -36,9 +45,7 @@ export class SkinSubject extends Subject<SkinDef, Skeleton> {
 
 		for (let i = 0; i < bones.length; i++) {
 			const matrix = new Matrix4();
-			if (ibm && ibm.count > i + 1) {
-				matrix.fromArray(ibm.array, i * 16);
-			}
+			if (ibm) matrix.fromArray(ibm.array, i * 16);
 			boneInverses.push(matrix);
 		}
 

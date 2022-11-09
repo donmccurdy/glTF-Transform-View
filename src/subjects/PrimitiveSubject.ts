@@ -84,7 +84,6 @@ export class PrimitiveSubject extends Subject<PrimitiveDef, MeshLike> {
 		this.material.update(def.getMaterial());
 
 		if (getType(def) !== value.type) {
-			console.log(`${value.type} → ${getType(def)}`);
 			this.pool.releaseBase(value);
 			this.value = value = PrimitiveSubject.createValue(def, value.geometry, value.material, this.pool);
 			this.material.invalidate();
