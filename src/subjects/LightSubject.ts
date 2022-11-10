@@ -37,13 +37,16 @@ export class LightSubject extends Subject<LightDef, LightLike> {
 		value.name = def.getName();
 		value.color.fromArray(def.getColor());
 		value.intensity = def.getIntensity();
+		value.position.set(0, 0, 0); // non-default for SpotLight
 
 		if (value instanceof PointLight) {
 			value.distance = def.getRange() || 0;
+			value.decay = 2;
 		} else if (value instanceof SpotLight) {
 			value.distance = def.getRange() || 0;
 			value.angle = def.getOuterConeAngle();
 			value.penumbra = 1.0 - def.getInnerConeAngle() / def.getOuterConeAngle();
+			value.decay = 2;
 			value.target.position.set( 0, 0, - 1 );
 			value.add(value.target);
 		} else if (value instanceof DirectionalLight) {

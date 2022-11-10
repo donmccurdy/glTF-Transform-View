@@ -22,9 +22,11 @@ test('LightSubject | point', async t => {
 
 	t.equals(light.name, 'MyLight', 'node → light → name');
 	t.equals(light.type, 'PointLight', 'node → light → type');
+	t.deepEqual(light.position.toArray(), [0, 0, 0], 'node → light → position');
 	t.equals(light.intensity, 2000, 'node → light → intensity');
 	t.equals(light.distance, 100, 'node → light → range');
 	t.deepEqual(light.color.toArray(), [1, 0, 0], 'node → light → color');
+	t.equals(light.decay, 2, 'node → light → decay');
 	t.end();
 });
 
@@ -48,11 +50,13 @@ test('LightSubject | spot', async t => {
 	// TODO(bug): Weird warning on this one???
 	t.equals(light.name, 'MyLight', 'node → light → name');
 	t.equals(light.type, 'SpotLight', 'node → light → type');
+	t.deepEqual(light.position.toArray(), [0, 0, 0], 'node → light → position');
 	t.equals(light.intensity, 2000, 'node → light → intensity');
 	t.equals(light.distance, 0, 'node → light → range');
 	t.equals(light.angle, Math.PI / 2, 'node → light → angle');
 	t.equals(light.penumbra, 1.0 - (Math.PI / 4) / (Math.PI / 2), 'node → light → penumbra');
 	t.deepEqual(light.color.toArray(), [1, 1, 0], 'node → light → color');
+	t.equals(light.decay, 2, 'node → light → decay');
 	t.end();
 });
 
@@ -72,6 +76,7 @@ test('LightSubject | directional', async t => {
 
 	t.equals(light.name, 'MyLight', 'node → light → name');
 	t.equals(light.type, 'DirectionalLight', 'node → light → type');
+	t.deepEqual(light.position.toArray(), [0, 0, 0], 'node → light → position');
 	t.equals(light.intensity, 1.5, 'node → light → intensity');
 	t.deepEqual(light.color.toArray(), [1, 1, 1], 'node → light → color');
 	t.end();
