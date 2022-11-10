@@ -1,6 +1,7 @@
 export * from './Subject';
 export * from './AccessorSubject';
 export * from './ExtensionSubject';
+export * from './LightSubject';
 export * from './MaterialSubject';
 export * from './MeshSubject';
 export * from './NodeSubject';

@@ -1,10 +1,12 @@
 import { Bone, Group, Object3D, Skeleton, SkinnedMesh } from 'three';
 import { Mesh as MeshDef, Node as NodeDef, Skin as SkinDef, vec3, vec4 } from '@gltf-transform/core';
+import { Light as LightDef } from '@gltf-transform/extensions';
 import type { DocumentViewSubjectAPI } from '../DocumentViewImpl';
 import { eq } from '../utils';
 import { Subject } from './Subject';
 import { RefListObserver, RefObserver } from '../observers';
 import { SingleUserPool } from '../pools';
+import { LightLike } from '../constants';
 
 const _vec3: vec3 = [0, 0, 0];
 const _vec4: vec4 = [0, 0, 0, 0];
@@ -15,6 +17,7 @@ export class NodeSubject extends Subject<NodeDef, Object3D> {
 	protected mesh = new RefObserver<MeshDef, Group>('mesh', this._documentView)
 		.setParamsFn(() => SingleUserPool.createParams(this.def));
 	protected skin = new RefObserver<SkinDef, Skeleton>('skin', this._documentView);
+	protected light = new RefObserver<LightDef, LightLike>('light', this._documentView);
 
 	/** Output (Object3D) is never cloned by an observer. */
 	protected _outputSingleton = true;
@@ -41,6 +44,11 @@ export class NodeSubject extends Subject<NodeDef, Object3D> {
 		this.skin.subscribe((skin) => {
 			this.bindSkeleton(skin);
 			this.publishAll;
+		});
+		this.light.subscribe((nextLight, prevLight) => {
+			if (prevLight) this.value.remove(prevLight);
+			if (nextLight) this.value.add(nextLight);
+			this.publishAll();
 		});
 	}
 
@@ -78,11 +86,14 @@ export class NodeSubject extends Subject<NodeDef, Object3D> {
 		this.children.update(def.listChildren());
 		this.mesh.update(def.getMesh());
 		this.skin.update(def.getSkin());
+		this.light.update(def.getExtension('KHR_lights_punctual'));
 	}
 
 	dispose() {
 		this.children.dispose();
 		this.mesh.dispose();
+		this.skin.dispose();
+		this.light.dispose();
 		super.dispose();
 	}
 }

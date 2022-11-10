@@ -1,14 +1,16 @@
 import { PropertyType, ExtensionProperty as ExtensionPropertyDef } from '@gltf-transform/core';
 import type { Accessor as AccessorDef, Material as MaterialDef, Mesh as MeshDef, Node as NodeDef, Primitive as PrimitiveDef, Property as PropertyDef, Scene as SceneDef, Skin as SkinDef, Texture as TextureDef } from '@gltf-transform/core';
+import type { Light as LightDef } from '@gltf-transform/extensions';
 import type { Object3D, BufferAttribute, Group, Texture, Material, Skeleton } from 'three';
-import { AccessorSubject, Subject, ExtensionSubject, MaterialSubject, MeshSubject, NodeSubject, PrimitiveSubject, SceneSubject, SkinSubject, TextureSubject } from './subjects';
-import type { MeshLike, THREEObject } from './constants';
+import { AccessorSubject, Subject, ExtensionSubject, MaterialSubject, MeshSubject, NodeSubject, PrimitiveSubject, SceneSubject, SkinSubject, TextureSubject, LightSubject } from './subjects';
+import type { LightLike, MeshLike, THREEObject } from './constants';
 import { DefaultImageProvider, ImageProvider } from './ImageProvider';
 import { MaterialPool, SingleUserPool, Pool, TexturePool } from './pools';
 
 export interface DocumentViewSubjectAPI {
 	readonly accessorPool: Pool<BufferAttribute>;
 	readonly extensionPool: Pool<ExtensionPropertyDef>;
+	readonly lightPool: SingleUserPool<LightLike>;
 	readonly materialPool: MaterialPool;
 	readonly meshPool: SingleUserPool<Group>;
 	readonly nodePool: Pool<Object3D>;
@@ -21,6 +23,7 @@ export interface DocumentViewSubjectAPI {
 
 	bind(def: null): null;
 	bind(def: AccessorDef): AccessorSubject;
+	bind(def: LightDef): LightSubject;
 	bind(def: MaterialDef): MaterialSubject;
 	bind(def: MeshDef): MeshSubject;
 	bind(def: NodeDef): NodeSubject;
@@ -50,6 +53,7 @@ export class DocumentViewImpl implements DocumentViewSubjectAPI {
 	readonly accessorPool: Pool<BufferAttribute> = new Pool<BufferAttribute>('accessors', this);
 	readonly extensionPool: Pool<ExtensionPropertyDef> = new Pool<ExtensionPropertyDef>('extensions', this);
 	readonly materialPool: MaterialPool = new MaterialPool('materials', this);
+	readonly lightPool: SingleUserPool<LightLike> = new SingleUserPool<LightLike>('lights', this);
 	readonly meshPool: SingleUserPool<Group> = new SingleUserPool<Group>('meshes', this);
 	readonly nodePool: Pool<Object3D> = new Pool<Object3D>('nodes', this);
 	readonly primitivePool: SingleUserPool<MeshLike> = new SingleUserPool<MeshLike>('primitives', this);
@@ -73,6 +77,7 @@ export class DocumentViewImpl implements DocumentViewSubjectAPI {
 
 	bind(def: null): null;
 	bind(def: AccessorDef): AccessorSubject;
+	bind(def: LightDef): LightSubject;
 	bind(def: MaterialDef): MaterialSubject;
 	bind(def: MeshDef): MeshSubject;
 	bind(def: NodeDef): NodeSubject;
@@ -88,6 +93,9 @@ export class DocumentViewImpl implements DocumentViewSubjectAPI {
 		switch (def.propertyType) {
 			case PropertyType.ACCESSOR:
 				subject = new AccessorSubject(this, def as AccessorDef);
+				break;
+			case 'Light':
+				subject = new LightSubject(this, def as LightDef);
 				break;
 			case PropertyType.MATERIAL:
 				subject = new MaterialSubject(this, def as MaterialDef);
@@ -144,6 +152,7 @@ export class DocumentViewImpl implements DocumentViewSubjectAPI {
 		return {
 			accessors: this.accessorPool.size(),
 			extensions: this.extensionPool.size(),
+			lights: this.lightPool.size(),
 			materials: this.materialPool.size(),
 			meshes: this.meshPool.size(),
 			nodes: this.nodePool.size(),
@@ -157,6 +166,7 @@ export class DocumentViewImpl implements DocumentViewSubjectAPI {
 	gc() {
 		this.accessorPool.gc();
 		this.extensionPool.gc();
+		this.lightPool.gc();
 		this.materialPool.gc();
 		this.meshPool.gc();
 		this.nodePool.gc();
@@ -171,6 +181,7 @@ export class DocumentViewImpl implements DocumentViewSubjectAPI {
 	 * glTF-Transform Property definition.
 	 */
 	findDef(target: Texture): TextureDef | null
+	findDef(target: LightLike): LightDef | null
 	findDef(target: Material): MaterialDef | null
 	findDef(target: MeshLike): PrimitiveDef | null
 	findDef(target: Object3D): SceneDef | NodeDef | MeshDef | null
@@ -183,6 +194,7 @@ export class DocumentViewImpl implements DocumentViewSubjectAPI {
 	 * the list of output THREE.Object3D instances.
 	 */
 	findValues(def: TextureDef): Texture[];
+	findValues(def: LightDef): LightLike[];
 	findValues(def: MaterialDef): Material[];
 	findValues(def: PrimitiveDef): MeshLike[];
 	findValues(def: SceneDef | NodeDef | MeshDef): Object3D[];
@@ -203,10 +215,12 @@ export class DocumentViewImpl implements DocumentViewSubjectAPI {
 
 		// Last, to clean up anything left after disposal.
 		this.accessorPool.dispose();
+		this.lightPool.dispose();
 		this.materialPool.dispose();
 		this.meshPool.dispose();
 		this.nodePool.dispose();
 		this.primitivePool.dispose();
+		this.skinPool.dispose();
 		this.scenePool.dispose();
 		this.texturePool.dispose();
 	}
