@@ -92,11 +92,12 @@ Resources will be re-allocated automatically if they are used again.
 | Accessor      | ✅      |
 | Material      | ✅      |
 | Texture       | ✅      |
+| Light         | ✅      |
+| Skin          | ✅      |
 | TextureInfo   | 🚧     |
 | Morph Targets | ❌      |
 | Animation     | ❌      |
 | Camera        | ❌      |
-| Light         | ❌      |
 
 For supported extensions, see [glTF-Transform-View#7](https://github.com/donmccurdy/glTF-Transform-View/issues/7).
 
