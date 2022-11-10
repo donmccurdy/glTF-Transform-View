@@ -1,7 +1,8 @@
 import { Group, Material, Object3D, Texture } from 'three';
 import { Document, Scene as SceneDef, Node as NodeDef, Material as MaterialDef, Mesh as MeshDef, Primitive as PrimitiveDef, Property as PropertyDef, Texture as TextureDef } from '@gltf-transform/core';
+import { Light as LightDef } from '@gltf-transform/extensions';
 import { DocumentViewConfig, DocumentViewImpl } from './DocumentViewImpl';
-import { MeshLike } from './constants';
+import { LightLike, MeshLike } from './constants';
 
 /**
  * Constructs a three.js subtree from a glTF-Transform Document, and maintains a
@@ -34,6 +35,7 @@ export class DocumentView {
 
 	/** For a given source glTF-Transform Property definition, returns a list of rendered three.js objects. */
 	public listViews(source: TextureDef): Texture[];
+	public listViews(source: LightDef): LightLike[];
 	public listViews(source: MaterialDef): Material[];
 	public listViews(source: PrimitiveDef): MeshLike[];
 	public listViews(source: SceneDef | NodeDef | MeshDef): Object3D[];
@@ -44,6 +46,7 @@ export class DocumentView {
 
 	/** For a given Object3D target, finds the source glTF-Transform Property definition. */
 	public getProperty(view: Texture): TextureDef | null
+	public getProperty(view: LightLike): LightDef | null
 	public getProperty(view: Material): MaterialDef | null
 	public getProperty(view: MeshLike): PrimitiveDef | null
 	public getProperty(view: Object3D): MeshDef | NodeDef | SceneDef | null

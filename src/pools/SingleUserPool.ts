@@ -1,5 +1,6 @@
 import { Property as PropertyDef, Mesh as MeshDef, Node as NodeDef, uuid } from '@gltf-transform/core';
 import { Object3D } from 'three';
+import { LightLike } from '../constants';
 import { Pool } from './Pool';
 
 export interface SingleUserParams {id: string}
@@ -26,6 +27,7 @@ export class SingleUserPool<T extends Object3D> extends Pool<T, SingleUserParams
 		const dstObject = srcObject.clone();
 		parallelTraverse(srcObject, dstObject, (base, variant) => {
 			if (base === srcObject) return; // Skip root; recorded elsewhere.
+			if ((srcObject as unknown as LightLike).isLight) return; // Skip light target.
 			this.documentView.recordOutputVariant(base, variant);
 		});
 		return dstObject;
