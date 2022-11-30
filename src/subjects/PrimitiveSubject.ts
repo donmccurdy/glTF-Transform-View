@@ -56,11 +56,18 @@ export class PrimitiveSubject extends Subject<PrimitiveDef, MeshLike> {
 			}
 		});
 		this.attributes.subscribe((nextAttributes, prevAttributes) => {
+			const geometry = this.value.geometry;
 			for (const key in prevAttributes) {
-				this.value.geometry.deleteAttribute(semanticToAttributeName(key));
+				geometry.deleteAttribute(semanticToAttributeName(key));
 			}
 			for (const key in nextAttributes) {
-				this.value.geometry.setAttribute(semanticToAttributeName(key), nextAttributes[key]);
+				geometry.setAttribute(semanticToAttributeName(key), nextAttributes[key]);
+			}
+			// three.js uses TEXCOORD_1 for aoMap and lightMap, and TEXCOORD_0 for
+			// all other textures. Use fallback to match THREE.GLTFLoader.
+			// TODO(bug): Ideally 'uv2' should be removed if 'uv' is removed.
+			if (geometry.hasAttribute('uv') && !geometry.hasAttribute('uv2')) {
+				geometry.setAttribute('uv2', geometry.getAttribute('uv'));
 			}
 			this.publishAll();
 		});
