@@ -1,12 +1,12 @@
 import { ACESFilmicToneMapping, AmbientLight, DirectionalLight, PMREMGenerator, PerspectiveCamera, Scene, WebGLRenderer, sRGBEncoding } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { GLTF, Material, WebIO } from '@gltf-transform/core';
+import { GLTF, Material } from '@gltf-transform/core';
 import { DocumentView } from '../dist/view.modern.js';
 import {Pane} from 'tweakpane';
 import * as TweakpanePluginThumbnailList from 'tweakpane-plugin-thumbnail-list';
 import { createStatsPane } from './stats-pane.js';
 import { createMaterialPane } from './material-pane.js';
-import { createEnvironment } from './util.js';
+import { createEnvironment, createIO } from './util.js';
 
 const renderer = new WebGLRenderer({antialias: true});
 renderer.setPixelRatio( window.devicePixelRatio );
@@ -59,7 +59,7 @@ pane.registerPlugin(TweakpanePluginThumbnailList);
 const updateStats = createStatsPane(renderer, pane);
 
 
-const io = new WebIO();
+const io = createIO();
 io.read('./DamagedHelmet.glb').then(async (doc) => {
 	console.time('DocumentView::init');
 	documentView = new DocumentView(doc);

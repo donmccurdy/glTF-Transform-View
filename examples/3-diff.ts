@@ -1,11 +1,9 @@
 import { ACESFilmicToneMapping, AmbientLight, DirectionalLight, PerspectiveCamera, Scene, WebGLRenderer, sRGBEncoding, Object3D, Mesh, Material, Box3, Vector3 } from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { Document, WebIO } from '@gltf-transform/core';
+import { Document } from '@gltf-transform/core';
 import { metalRough } from '@gltf-transform/functions';
 import { DocumentView } from '../dist/view.modern.js';
-import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
-import { createEnvironment, createKTX2Loader } from './util.js';
+import { createEnvironment, createGLTFLoader, createIO } from './util.js';
 
 const renderer = new WebGLRenderer({antialias: true});
 renderer.setPixelRatio( window.devicePixelRatio );
@@ -17,9 +15,6 @@ renderer.toneMappingExposure = 1;
 
 const containerEl = document.querySelector('#container')!;
 containerEl.appendChild(renderer.domElement);
-
-const io = new WebIO().registerExtensions(ALL_EXTENSIONS);
-const loader = new GLTFLoader().setKTX2Loader(createKTX2Loader());
 
 const scene = new Scene();
 let documentView: DocumentView;
@@ -45,6 +40,9 @@ camera.lookAt(scene.position);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.addEventListener('change', render);
 controls.update();
+
+const io = createIO();
+const loader = createGLTFLoader();
 
 window.addEventListener('resize', onWindowResize);
 

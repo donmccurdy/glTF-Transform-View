@@ -26,6 +26,7 @@
     "@typescript-eslint/eslint-plugin": "5.44.0",
     "@typescript-eslint/parser": "5.44.0",
     "concurrently": "7.6.0",
+    "meshoptimizer": "^0.18.1",
     "microbundle": "0.15.1",
     "simple-dropzone": "0.8.1",
     "source-map-support": "0.5.21",

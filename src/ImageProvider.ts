@@ -43,6 +43,7 @@ export class NullImageProvider implements ImageProvider {
 	clear(): void {}
 }
 
+// TODO(feat): Method to provide KTX2Loader.
 export class DefaultImageProvider implements ImageProvider {
 	private _cache = new Map<ArrayBuffer, Texture|CompressedTexture>();
 	private _ktx2Loader = createKTX2Loader();

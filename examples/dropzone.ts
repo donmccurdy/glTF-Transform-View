@@ -1,6 +1,6 @@
-import { Document, JSONDocument, WebIO } from '@gltf-transform/core';
-import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
+import { Document, JSONDocument } from '@gltf-transform/core';
 import { SimpleDropzone } from 'simple-dropzone';
+import { createIO } from './util';
 
 /**
  * Dropzone
@@ -8,7 +8,6 @@ import { SimpleDropzone } from 'simple-dropzone';
  * Utility file to load glTF/GLB models and emit a Document.
  */
 
-const io = new WebIO().registerExtensions(ALL_EXTENSIONS);
 const dropEl = document.querySelector('body')!;
 const placeholderEl = document.querySelector<HTMLElement>('.dropzone-placeholder')!;
 const inputEl = document.querySelector('#file-input')!;
@@ -43,6 +42,7 @@ async function load (fileMap: Map<string, File>) {
 }
 
 async function loadDocument(fileMap: Map<string, File>, rootFile: File, rootPath: string) {
+	const io = createIO();
 	let jsonDocument: JSONDocument;
 	let doc: Document;
 
