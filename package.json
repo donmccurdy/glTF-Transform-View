@@ -17,14 +17,14 @@
     "three": ">=0.130.1"
   },
   "devDependencies": {
-    "@gltf-transform/core": "2.4.6",
-    "@gltf-transform/extensions": "2.4.6",
-    "@gltf-transform/functions": "2.4.6",
-    "@tweakpane/core": "1.1.0",
+    "@gltf-transform/core": "2.4.7",
+    "@gltf-transform/extensions": "2.4.7",
+    "@gltf-transform/functions": "2.4.7",
+    "@tweakpane/core": "1.1.1",
     "@types/source-map-support": "0.5.6",
     "@types/three": "0.146.0",
-    "@typescript-eslint/eslint-plugin": "5.44.0",
-    "@typescript-eslint/parser": "5.44.0",
+    "@typescript-eslint/eslint-plugin": "5.45.0",
+    "@typescript-eslint/parser": "5.45.0",
     "concurrently": "7.6.0",
     "meshoptimizer": "^0.18.1",
     "microbundle": "0.15.1",
@@ -32,11 +32,11 @@
     "source-map-support": "0.5.21",
     "tap-spec": "5.0.0",
     "tape": "5.6.1",
-    "three": "0.146.0",
-    "tweakpane": "3.1.0",
+    "three": "0.147.0",
+    "tweakpane": "3.1.1",
     "tweakpane-plugin-thumbnail-list": "0.3.0",
     "typescript": "4.9.3",
-    "vite": "3.2.4"
+    "vite": "3.2.5"
   },
   "scripts": {
     "dist": "microbundle --no-compress --format modern",
