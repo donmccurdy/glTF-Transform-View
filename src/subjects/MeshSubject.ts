@@ -9,7 +9,7 @@ import { SingleUserParams, SingleUserPool } from '../pools';
 /** @internal */
 export class MeshSubject extends Subject<MeshDef, Group> {
 	protected primitives = new RefListObserver<PrimitiveDef, MeshLike, SingleUserParams>('primitives', this._documentView)
-		.setParamsFn(() => SingleUserPool.createParams(this.def))
+		.setParamsFn(() => SingleUserPool.createParams(this.def));
 
 	constructor(documentView: DocumentViewSubjectAPI, def: MeshDef) {
 		super(documentView, def, documentView.meshPool.requestBase(new Group()), documentView.meshPool);
