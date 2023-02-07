@@ -27,7 +27,7 @@ export interface Output<Value> extends Observable<Value | null> {
  *
  * @internal
  */
-export class RefObserver<Def extends PropertyDef, Value, Params = EmptyParams> extends Observable<Value | null> implements Output<Value> {
+export class RefObserver<Def extends PropertyDef, Value, Params extends EmptyParams = EmptyParams> extends Observable<Value | null> implements Output<Value> {
 	readonly name: string;
 
 	private _subject: Subject<Def, Value> | null = null;

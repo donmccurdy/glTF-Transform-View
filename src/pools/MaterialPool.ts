@@ -22,7 +22,7 @@ export class MaterialPool extends Pool<Material, MaterialParams> {
 			useVertexColors: !!primitive.getAttribute('COLOR_0'),
 			useFlatShading: !primitive.getAttribute('NORMAL'),
 			useMorphTargets: primitive.listTargets().length > 0,
-		}
+		};
 	}
 
     requestVariant(srcMaterial: Material, params: MaterialParams): Material {

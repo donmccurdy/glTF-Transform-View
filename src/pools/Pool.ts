@@ -1,8 +1,8 @@
-import type { DocumentViewSubjectAPI } from "../DocumentViewImpl";
+import type { DocumentViewSubjectAPI } from '../DocumentViewImpl';
 
-export type EmptyParams = {} | null | undefined;
+export type EmptyParams = object | null | undefined;
 
-export interface ValuePool<Value, Params = EmptyParams> {
+export interface ValuePool<Value, Params extends EmptyParams = EmptyParams> {
 	requestBase(base: Value): Value;
 	releaseBase(base: Value): void;
 
@@ -23,7 +23,7 @@ export interface ValuePool<Value, Params = EmptyParams> {
  *
  * @internal
  */
-export class Pool<Value, Params = EmptyParams> implements ValuePool<Value, Params> {
+export class Pool<Value, Params extends EmptyParams = EmptyParams> implements ValuePool<Value, Params> {
 	readonly name: string;
 	readonly documentView: DocumentViewSubjectAPI;
 

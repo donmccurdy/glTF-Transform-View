@@ -16,7 +16,7 @@ import { EmptyParams, ValuePool } from '../pools';
  *
  * @internal
  */
-export abstract class Subject<Def extends PropertyDef, Value, Params = EmptyParams> {
+export abstract class Subject<Def extends PropertyDef, Value, Params extends EmptyParams = EmptyParams> {
 	def: Def;
 	value: Value;
 	pool: ValuePool<Value, Params>;

@@ -1,20 +1,17 @@
 import { Bone, BufferAttribute, Matrix4, Skeleton } from 'three';
-import { Accessor as AccessorDef, Node as NodeDef, Skin as SkinDef, vec3, vec4 } from '@gltf-transform/core';
+import { Accessor as AccessorDef, Node as NodeDef, Skin as SkinDef } from '@gltf-transform/core';
 import type { DocumentViewSubjectAPI } from '../DocumentViewImpl';
 import { Subject } from './Subject';
 import { RefListObserver, RefObserver } from '../observers';
 import { ValuePool } from '../pools';
 
-const _vec3: vec3 = [0, 0, 0];
-const _vec4: vec4 = [0, 0, 0, 0];
-
 /**
- * SkinSubject transforms `nodeDef.skin` into a THREE.Skeleton instance. The upstream {@link NodeSubject}
- * will bind the skeleton to the mesh, where {@link PrimitiveSubject} is responsible for emitting
- * a THREE.SkinnedMesh if it contains skinning-related attributes.
+ * SkinSubject transforms `nodeDef.skin` into a THREE.Skeleton instance. The upstream
+ * {@link NodeSubject} will bind the skeleton to the mesh, where {@link PrimitiveSubject}
+ * is responsible for emitting a THREE.SkinnedMesh if it contains skinning-related attributes.
  *
- * This subject does not guard against certain invalid states — missing bones, missing vertex weights — and
- * should be used accordingly.
+ * This subject does not guard against certain invalid states — missing bones, missing
+ * vertex weights — and should be used accordingly.
  *
  * @internal
  */

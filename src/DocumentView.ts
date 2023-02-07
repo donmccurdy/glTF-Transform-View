@@ -23,22 +23,36 @@ export class DocumentView {
 	}
 
 	/**
-	 * For a given glTF-Transform Scene definition, returns an Object3D root note. Successive calls
-	 * with the same input will yield the same output Object3D instance.
+	 * For a given glTF-Transform Property definition, returns a corresponding
+	 * three.js view into the object. For example, given a glTF Transform scene,
+	 * returns a THREE.Group representing that scene. Repeated calls with the
+	 * same input will yield the same output objects.
 	 */
-	public view(def: SceneDef): Group {
+	public view(def: TextureDef): Texture;
+	public view(def: LightDef): LightLike;
+	public view(def: MaterialDef): Material;
+	public view(def: PrimitiveDef): MeshLike;
+	public view(def: MeshDef): Group;
+	public view(def: NodeDef): Object3D;
+	public view(def: SceneDef): Group;
+	public view(def: PropertyDef): object {
 		assert(this._ready);
 		const value = this._impl.bind(def).value as Group;
 		this._impl.recordOutputValue(def, value);
 		return value;
 	}
 
-	/** For a given source glTF-Transform Property definition, returns a list of rendered three.js objects. */
+	/**
+	 * For a given source glTF-Transform Property definition, returns a list of rendered three.js
+	 * objects.
+	 */
 	public listViews(source: TextureDef): Texture[];
 	public listViews(source: LightDef): LightLike[];
 	public listViews(source: MaterialDef): Material[];
 	public listViews(source: PrimitiveDef): MeshLike[];
-	public listViews(source: SceneDef | NodeDef | MeshDef): Object3D[];
+	public listViews(source: MeshDef): Group[];
+	public listViews(source: NodeDef): Object3D[];
+	public listViews(source: SceneDef): Group[];
 	public listViews(source: PropertyDef): object[] {
 		assert(this._ready);
 		return this._impl.findValues(source as any);

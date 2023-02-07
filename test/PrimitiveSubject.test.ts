@@ -1,6 +1,6 @@
-import test from 'tape';
+import test from 'ava';
 import { Document, Primitive as PrimitiveDef } from '@gltf-transform/core';
-import { DocumentView, NullImageProvider } from '../dist/view.modern.js';
+import { DocumentView, NullImageProvider } from '@gltf-transform/view';
 
 const imageProvider = new NullImageProvider();
 
@@ -27,39 +27,37 @@ test('PrimitiveSubject', async t => {
 	const disposed = new Set();
 	geometry.addEventListener('dispose', () => disposed.add(geometry));
 
-	t.equals(prim.type, 'Mesh', 'Mesh');
+	t.is(prim.type, 'Mesh', 'Mesh');
 
 	primDef.setMode(PrimitiveDef.Mode.POINTS);
 	prim = documentView.view(primDef);
 
-	t.equals(prim.type, 'Points', 'Points');
+	t.is(prim.type, 'Points', 'Points');
 
 	primDef.setMode(PrimitiveDef.Mode.LINES);
 	prim = documentView.view(primDef);
 
-	t.equals(prim.type, 'LineSegments', 'LineSegments');
+	t.is(prim.type, 'LineSegments', 'LineSegments');
 
 	primDef.setMode(PrimitiveDef.Mode.LINE_LOOP);
 	prim = documentView.view(primDef);
 
-	t.equals(prim.type, 'LineLoop', 'LineLoop');
+	t.is(prim.type, 'LineLoop', 'LineLoop');
 
 	primDef.setMode(PrimitiveDef.Mode.LINE_STRIP);
 	prim = documentView.view(primDef);
 
-	t.equals(prim.type, 'Line', 'Line');
+	t.is(prim.type, 'Line', 'Line');
 
-	t.equals(prim.material.name, 'MyMaterial', 'prim.material → material');
+	t.is(prim.material.name, 'MyMaterial', 'prim.material → material');
 
 	primDef.setMaterial(null);
 
-	t.equals(prim.material.name, '__DefaultMaterial', 'prim.material → null');
+	t.is(prim.material.name, '__DefaultMaterial', 'prim.material → null');
 
-	t.equals(disposed.size, 0, 'preserve geometry');
+	t.is(disposed.size, 0, 'preserve geometry');
 
 	primDef.dispose();
 
-	t.equals(disposed.size, 1, 'dispose geometry');
-
-	t.end();
+	t.is(disposed.size, 1, 'dispose geometry');
 });
