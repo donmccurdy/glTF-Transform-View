@@ -1,6 +1,6 @@
 import { DoubleSide, FrontSide, LinearEncoding, Material, MeshBasicMaterial, MeshPhysicalMaterial, MeshStandardMaterial, Texture, TextureEncoding, sRGBEncoding } from 'three';
 import { ExtensionProperty as ExtensionPropertyDef, Material as MaterialDef, Texture as TextureDef, TextureInfo as TextureInfoDef, vec3 } from '@gltf-transform/core';
-import type { Clearcoat, IOR, Sheen, Specular, Transmission, Volume } from '@gltf-transform/extensions';
+import { Clearcoat, EmissiveStrength, IOR, Iridescence, Sheen, Specular, Transmission, Volume } from '@gltf-transform/extensions';
 import type { DocumentViewImpl } from '../DocumentViewImpl';
 import { eq } from '../utils';
 import { Subject } from './Subject';
@@ -32,6 +32,10 @@ export class MaterialSubject extends Subject<MaterialDef, Material> {
 	protected readonly clearcoatTexture = new RefObserver<TextureDef, Texture, TextureParams>('clearcoatTexture', this._documentView);
 	protected readonly clearcoatRoughnessTexture = new RefObserver<TextureDef, Texture, TextureParams>('clearcoatRoughnessTexture', this._documentView);
 	protected readonly clearcoatNormalTexture = new RefObserver<TextureDef, Texture, TextureParams>('clearcoatNormalTexture', this._documentView);
+
+	// KHR_materials_iridescence
+	protected readonly iridescenceTexture = new RefObserver<TextureDef, Texture, TextureParams>('iridescenceTexture', this._documentView);
+	protected readonly iridescenceThicknessTexture = new RefObserver<TextureDef, Texture, TextureParams>('iridescenceThicknessTexture', this._documentView);
 
 	// KHR_materials_sheen
 	protected readonly sheenColorTexture = new RefObserver<TextureDef, Texture, TextureParams>('sheenColorTexture', this._documentView);
@@ -71,6 +75,11 @@ export class MaterialSubject extends Subject<MaterialDef, Material> {
 		this.bindTexture(['clearcoatRoughnessMap'], this.clearcoatRoughnessTexture, () => clearcoatExt()?.getClearcoatRoughnessTexture() || null, () => clearcoatExt()?.getClearcoatRoughnessTextureInfo() || null, LinearEncoding);
 		this.bindTexture(['clearcoatNormalMap'], this.clearcoatNormalTexture, () => clearcoatExt()?.getClearcoatNormalTexture() || null, () => clearcoatExt()?.getClearcoatNormalTextureInfo() || null, LinearEncoding);
 
+		// KHR_materials_iridescence
+		const iridescenceExt = (): Iridescence | null => def.getExtension<Iridescence>('KHR_materials_iridescence');
+		this.bindTexture(['iridescenceTexture'], this.iridescenceTexture, () => iridescenceExt()?.getIridescenceTexture() || null, () => iridescenceExt()?.getIridescenceTextureInfo() || null, LinearEncoding);
+		this.bindTexture(['iridescenceThicknessTexture'], this.iridescenceThicknessTexture, () => iridescenceExt()?.getIridescenceThicknessTexture() || null, () => iridescenceExt()?.getIridescenceThicknessTextureInfo() || null, LinearEncoding);
+
 		// KHR_materials_sheen
 		const sheenExt = (): Sheen | null => def.getExtension<Sheen>('KHR_materials_sheen');
 		this.bindTexture(['sheenColorMap'], this.sheenColorTexture, () => sheenExt()?.getSheenColorTexture() || null, () => sheenExt()?.getSheenColorTextureInfo() || null, sRGBEncoding);
@@ -88,9 +97,6 @@ export class MaterialSubject extends Subject<MaterialDef, Material> {
 		// KHR_materials_volume
 		const volumeExt = (): Volume | null => def.getExtension<Volume>('KHR_materials_volume');
 		this.bindTexture(['thicknessMap'], this.thicknessTexture, () => volumeExt()?.getThicknessTexture() || null, () => volumeExt()?.getThicknessTextureInfo() || null, LinearEncoding);
-
-		// TODO(impl): KHR_materials_emissive_strength
-		// TODO(impl): KHR_materials_iridescence
 	}
 
 	private bindTexture(
@@ -109,7 +115,7 @@ export class MaterialSubject extends Subject<MaterialDef, Material> {
 				if (!!material[map] !== !!texture) material.needsUpdate = true; // Recompile on add/remove.
 				material[map] = texture;
 			}
-		}
+		};
 
 		this._textureObservers.push(observer);
 		this._textureUpdateFns.push(() => observer.update(textureFn()));
@@ -257,6 +263,16 @@ export class MaterialSubject extends Subject<MaterialDef, Material> {
 			target.clearcoat = 0;
 		}
 
+		// KHR_materials_emissive_strength
+		const emissiveStrength = def.getExtension<EmissiveStrength>('KHR_materials_emissive_strength');
+		if (emissiveStrength) {
+			if (emissiveStrength.getEmissiveStrength() !== target.emissiveIntensity) {
+				target.emissiveIntensity = emissiveStrength.getEmissiveStrength();
+			}
+		} else {
+			target.emissiveIntensity = 1.0;
+		}
+
 		// KHR_materials_ior
 		const ior = def.getExtension<IOR>('KHR_materials_ior');
 		if (ior) {
@@ -265,6 +281,27 @@ export class MaterialSubject extends Subject<MaterialDef, Material> {
 			}
 		} else {
 			target.ior = 1.5;
+		}
+
+		// KHR_materials_iridescence
+		const iridescence = def.getExtension<Iridescence>('KHR_materials_iridescence');
+		if (iridescence) {
+			if (iridescence.getIridescenceFactor() !== target.iridescence) {
+				target.iridescence = iridescence.getIridescenceFactor();
+			}
+			const range = [
+				iridescence.getIridescenceThicknessMinimum(),
+				iridescence.getIridescenceThicknessMaximum(),
+			];
+			if (!eq(range, target.iridescenceThicknessRange)) {
+				target.iridescenceThicknessRange[0] = range[0];
+				target.iridescenceThicknessRange[1] = range[1];
+			}
+			if (iridescence.getIridescenceIOR() !== target.iridescenceIOR) {
+				target.iridescenceIOR = iridescence.getIridescenceIOR();
+			}
+		} else {
+			target.iridescence = 0;
 		}
 
 		// KHR_materials_sheen
@@ -338,15 +375,13 @@ export class MaterialSubject extends Subject<MaterialDef, Material> {
 
 function getShadingModel(def: MaterialDef): ShadingModel {
 	for (const extension of def.listExtensions()) {
-		if (extension.extensionName === 'KHR_materials_unlit') {
-			return ShadingModel.UNLIT;
-		}
-	}
-	for (const extension of def.listExtensions()) {
 		switch (extension.extensionName) {
 			case 'KHR_materials_unlit':
+				return ShadingModel.UNLIT;
+
 			case 'KHR_materials_clearcoat':
 			case 'KHR_materials_ior':
+			case 'KHR_materials_iridescence':
 			case 'KHR_materials_sheen':
 			case 'KHR_materials_specular':
 			case 'KHR_materials_transmission':
