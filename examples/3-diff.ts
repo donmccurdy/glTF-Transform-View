@@ -1,6 +1,6 @@
 import { ACESFilmicToneMapping, AmbientLight, DirectionalLight, PerspectiveCamera, Scene, WebGLRenderer, sRGBEncoding, Object3D, Mesh, Material, Box3, Vector3 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { Document } from '@gltf-transform/core';
+import { Document, Material as MaterialDef } from '@gltf-transform/core';
 import { metalRough } from '@gltf-transform/functions';
 import { DocumentView } from '../dist/view.modern.js';
 import { createEnvironment, createGLTFLoader, createIO } from './util.js';
@@ -55,6 +55,7 @@ document.body.addEventListener('gltf-document', async (event) => {
 	if (modelBefore) disposeBefore(modelBefore);
 	if (modelAfter) disposeAfter(modelAfter);
 
+	await checkMaterials(doc);
 	await checkExtensions(doc);
 
 	console.time('DocumentView::init');
@@ -141,6 +142,27 @@ function frameContent(object: Object3D, offset: 1 | -1) {
 	controls.saveState();
 
 	scene.add(object);
+}
+
+/**
+ * Adds a default PBR material to any mesh primitives without one. This is considerably simpler
+ * than trying to handle all cases with default materials internally, because the logic for
+ * creating material variants (vertexColors, points, ...) is part of the _MaterialSubject_ class,
+ * and no MaterialDef exists for input.
+ *
+ * Context:
+ * - https://github.com/donmccurdy/glTF-Report-Feedback/issues/43
+ */
+async function checkMaterials(document: Document) {
+	let defaultMaterial: MaterialDef | undefined;
+	for (const mesh of document.getRoot().listMeshes()) {
+		for (const prim of mesh.listPrimitives()) {
+			if (!prim.getMaterial()) {
+				defaultMaterial ||= document.createMaterial();
+				prim.setMaterial(defaultMaterial);
+			}
+		}
+	}
 }
 
 async function checkExtensions(document: Document) {
