@@ -1,13 +1,12 @@
-import test from 'tape';
-import { Document, NodeIO } from '@gltf-transform/core';
-import { DocumentView, NullImageProvider } from '../dist/view.modern.js';
-import { Group } from 'three';
+import test from 'ava';
+import { Document } from '@gltf-transform/core';
+import { DocumentView, NullImageProvider } from '@gltf-transform/view';
+import { BufferGeometry, Group, Mesh, MeshStandardMaterial, Texture } from 'three';
 
 const imageProvider = new NullImageProvider();
 
 test('DocumentView', t => {
-    t.ok(new DocumentView(new Document(), {imageProvider}), 'constructor');
-    t.end();
+    t.truthy(new DocumentView(new Document(), {imageProvider}), 'constructor');
 });
 
 test('DocumentView | view', async t => {
@@ -30,37 +29,35 @@ test('DocumentView | view', async t => {
     const scene = documentView.view(sceneDef);
     const node = scene.children[0];
     const mesh = node.children[0];
-    const prim = mesh.children[0];
+    const prim = mesh.children[0] as Mesh<BufferGeometry, MeshStandardMaterial>;
     let material = prim.material;
-    let texture = material.map;
+    let texture = material.map as Texture;
 
-    t.ok(scene instanceof Group, 'scene → THREE.Group')
-    t.deepEquals(documentView.listViews(sceneDef), [scene], 'scene views');
-    t.equals(documentView.listViews(nodeDef).length, 1, 'node views');
-    t.equals(documentView.listViews(meshDef).length, 1, 'mesh views');
+    t.true(scene instanceof Group, 'scene → THREE.Group');
+    t.deepEqual(documentView.listViews(sceneDef), [scene], 'scene views');
+    t.is(documentView.listViews(nodeDef).length, 1, 'node views');
+    t.is(documentView.listViews(meshDef).length, 1, 'mesh views');
     // 1 external prim, 1 internal prim. See SingleUserPool.
-    t.equals(documentView.listViews(primDef).length, 2, 'prim views');
-    t.equals(documentView.listViews(materialDef).length, 1, 'material views');
-    t.equals(documentView.listViews(textureDef).length, 2, 'texture views');
-    t.equals(documentView.getProperty(scene), sceneDef, 'scene → source');
-    t.equals(documentView.getProperty(node), nodeDef, 'node → source');
-    t.equals(documentView.getProperty(mesh), meshDef, 'mesh → source');
-    t.equals(documentView.getProperty(prim), primDef, 'prim → source');
-    t.equals(documentView.getProperty(material), materialDef, 'material → source');
-    t.equals(documentView.getProperty(texture), textureDef, 'texture → source');
+    t.is(documentView.listViews(primDef).length, 2, 'prim views');
+    t.is(documentView.listViews(materialDef).length, 1, 'material views');
+    t.is(documentView.listViews(textureDef).length, 2, 'texture views');
+    t.is(documentView.getProperty(scene), sceneDef, 'scene → source');
+    t.is(documentView.getProperty(node), nodeDef, 'node → source');
+    t.is(documentView.getProperty(mesh), meshDef, 'mesh → source');
+    t.is(documentView.getProperty(prim), primDef, 'prim → source');
+    t.is(documentView.getProperty(material), materialDef, 'material → source');
+    t.is(documentView.getProperty(texture), textureDef, 'texture → source');
 
-    material = documentView.view(materialDef);
-    t.equals(material.type, 'MeshStandardMaterial', 'material → THREE.MeshStandardMaterial');
-    t.equals(documentView.listViews(materialDef).length, 2, 'material views');
-    t.equals(documentView.listViews(textureDef).length, 2, 'texture views');
-    t.equals(documentView.getProperty(material), materialDef, 'material → source');
+    material = documentView.view(materialDef) as MeshStandardMaterial;
+    t.is(material.type, 'MeshStandardMaterial', 'material → THREE.MeshStandardMaterial');
+    t.is(documentView.listViews(materialDef).length, 2, 'material views');
+    t.is(documentView.listViews(textureDef).length, 2, 'texture views');
+    t.is(documentView.getProperty(material), materialDef, 'material → source');
 
     texture = documentView.view(textureDef);
-    t.ok(texture.isTexture, 'texture → THREE.Texture');
-    t.equals(documentView.listViews(textureDef).length, 3, 'texture views');
-    t.equals(documentView.getProperty(texture), textureDef, 'texture → source');
-
-    t.end();
+    t.true(texture.isTexture, 'texture → THREE.Texture');
+    t.is(documentView.listViews(textureDef).length, 3, 'texture views');
+    t.is(documentView.getProperty(texture), textureDef, 'texture → source');
 });
 
 test('DocumentView | dispose', async t => {
@@ -82,9 +79,10 @@ test('DocumentView | dispose', async t => {
 
     const documentView = new DocumentView(document, {imageProvider});
     const scene = documentView.view(sceneDef);
-    const mesh = scene.getObjectByName('Mesh').children[0];
+    const mesh = scene.getObjectByName('Mesh')!.children[0] as
+        Mesh<BufferGeometry, MeshStandardMaterial>;
     const {geometry, material} = mesh;
-    const {map, emissiveMap} = material;
+    const {map, emissiveMap} = material as {map: Texture, emissiveMap: Texture};
 
     const disposed = new Set();
     geometry.addEventListener('dispose', () => disposed.add(geometry));
@@ -92,16 +90,15 @@ test('DocumentView | dispose', async t => {
     map.addEventListener('dispose', () => disposed.add(map));
     emissiveMap.addEventListener('dispose', () => disposed.add(emissiveMap));
 
-    t.equals(disposed.size, 0, 'initial resources')
+    t.is(disposed.size, 0, 'initial resources');
 
     documentView.dispose();
 
-    t.equals(disposed.size, 4);
-    t.ok(disposed.has(geometry), 'disposed geometry');
-    t.ok(disposed.has(material), 'disposed material');
-    t.ok(disposed.has(map), 'disposed baseColorTexture');
-    t.ok(disposed.has(emissiveMap), 'disposed emissiveTexture');
-    t.end();
+    t.is(disposed.size, 4);
+    t.true(disposed.has(geometry), 'disposed geometry');
+    t.true(disposed.has(material), 'disposed material');
+    t.true(disposed.has(map), 'disposed baseColorTexture');
+    t.true(disposed.has(emissiveMap), 'disposed emissiveTexture');
 });
 
 // test.skip('DocumentView | alloc', async t => {
@@ -118,7 +115,6 @@ test('DocumentView | dispose', async t => {
 
 //     documentView.gc();
 
-//     t.deepEquals(documentView.stats(), expectedStats, 'stats (after)');
+//     t.deepEqual(documentView.stats(), expectedStats, 'stats (after)');
 //     console.log(documentView.stats());
-//     t.end();
 // });

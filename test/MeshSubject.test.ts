@@ -1,6 +1,6 @@
-import test from 'tape';
+import test from 'ava';
 import { Document } from '@gltf-transform/core';
-import { DocumentView, NullImageProvider } from '../dist/view.modern.js';
+import { DocumentView, NullImageProvider } from '@gltf-transform/view';
 
 const imageProvider = new NullImageProvider();
 
@@ -24,18 +24,16 @@ test('MeshSubject', async t => {
 	const documentView = new DocumentView(document, {imageProvider});
 	const mesh = documentView.view(meshDef);
 
-	t.equals(mesh.name, 'MyMesh', 'mesh → name');
+	t.is(mesh.name, 'MyMesh', 'mesh → name');
 
 	meshDef.setName('MyMeshRenamed');
-	t.equals(mesh.name, 'MyMeshRenamed', 'mesh → name (2)');
+	t.is(mesh.name, 'MyMeshRenamed', 'mesh → name (2)');
 
-	t.equals(mesh.children[0].type, 'Mesh', 'mesh → prim (initial)');
+	t.is(mesh.children[0].type, 'Mesh', 'mesh → prim (initial)');
 
 	meshDef.removePrimitive(primDef);
-	t.equals(mesh.children.length, 0, 'mesh → prim (remove)');
+	t.is(mesh.children.length, 0, 'mesh → prim (remove)');
 
 	meshDef.addPrimitive(primDef);
-	t.equals(mesh.children.length, 1, 'mesh → prim (add)');
-
-	t.end();
+	t.is(mesh.children.length, 1, 'mesh → prim (add)');
 });

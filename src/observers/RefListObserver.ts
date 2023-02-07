@@ -7,7 +7,7 @@ import { EmptyParams } from '../pools';
 import { RefObserver } from './RefObserver';
 
 /** @internal */
-export class RefListObserver<Def extends PropertyDef, Value, Params = EmptyParams> extends Observable<Value[]> {
+export class RefListObserver<Def extends PropertyDef, Value, Params extends EmptyParams = EmptyParams> extends Observable<Value[]> {
 	readonly name: string;
 
 	protected readonly _documentView: DocumentViewSubjectAPI;

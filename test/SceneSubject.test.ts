@@ -1,6 +1,6 @@
-import test from 'tape';
+import test from 'ava';
 import { Document } from '@gltf-transform/core';
-import { DocumentView, NullImageProvider } from '../dist/view.modern.js';
+import { DocumentView, NullImageProvider } from '@gltf-transform/view';
 
 const imageProvider = new NullImageProvider();
 
@@ -16,19 +16,17 @@ test('SceneBinding', async t => {
 	const documentView = new DocumentView(document, {imageProvider});
 	const scene = documentView.view(sceneDef);
 
-	t.equals(scene.name, 'MyScene', 'scene → name');
+	t.is(scene.name, 'MyScene', 'scene → name');
 	sceneDef.setName('MySceneRenamed');
-	t.equals(scene.name, 'MySceneRenamed', 'scene → name (renamed)');
-	t.equals(scene.children.length, 3, 'scene → children → 3');
+	t.is(scene.name, 'MySceneRenamed', 'scene → name (renamed)');
+	t.is(scene.children.length, 3, 'scene → children → 3');
 
-	t.equals(scene.children[1].children[0].name, 'Node4', 'scene → ... → grandchild');
+	t.is(scene.children[1].children[0].name, 'Node4', 'scene → ... → grandchild');
 	nodeDef.listChildren()[0].dispose();
-	t.equals(scene.children[1].children.length, 0, 'scene → ... → grandchild (dispose)');
+	t.is(scene.children[1].children.length, 0, 'scene → ... → grandchild (dispose)');
 
 	nodeDef.dispose();
-	t.equals(scene.children.length, 2, 'scene → children → 2');
+	t.is(scene.children.length, 2, 'scene → children → 2');
 	sceneDef.removeChild(sceneDef.listChildren()[0]);
-	t.equals(scene.children.length, 1, 'scene → children → 1');
-
-	t.end();
+	t.is(scene.children.length, 1, 'scene → children → 1');
 });

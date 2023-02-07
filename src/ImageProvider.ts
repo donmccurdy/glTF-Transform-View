@@ -25,7 +25,9 @@ function createTexture(name: string, uri: string): Texture {
 }
 
 // Placeholder images.
+// eslint-disable-next-line max-len
 const NULL_IMAGE_URI = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAAXNSR0IArs4c6QAAABNJREFUGFdj/M9w9z8DEmAkXQAAyCMLcU6pckIAAAAASUVORK5CYII=';
+// eslint-disable-next-line max-len
 const LOADING_IMAGE_URI = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdj+P///38ACfsD/QVDRcoAAAAASUVORK5CYII=';
 
 export const NULL_TEXTURE = createTexture('__NULL_TEXTURE', NULL_IMAGE_URI);
@@ -38,7 +40,7 @@ export interface ImageProvider {
 }
 
 export class NullImageProvider implements ImageProvider {
-	async initTexture(textureDef: TextureDef): Promise<void> {}
+	async initTexture(_textureDef: TextureDef): Promise<void> {}
 	async getTexture(_: TextureDef): Promise<Texture | CompressedTexture> { return NULL_TEXTURE; }
 	clear(): void {}
 }

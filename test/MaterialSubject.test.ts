@@ -1,7 +1,8 @@
-import test from 'tape';
+import test from 'ava';
 import { Document, Primitive as PrimitiveDef } from '@gltf-transform/core';
-import { DocumentView, NullImageProvider } from '../dist/view.modern.js';
+import { DocumentView, NullImageProvider } from '@gltf-transform/view';
 import { MaterialsClearcoat, MaterialsUnlit } from '@gltf-transform/extensions';
+import { BufferGeometry, LineBasicMaterial, LineSegments, Mesh, MeshStandardMaterial, Points, PointsMaterial, Texture } from 'three';
 
 const imageProvider = new NullImageProvider();
 
@@ -23,21 +24,21 @@ test('MaterialSubject', async t => {
 
 	const documentView = new DocumentView(document, {imageProvider});
 	const scene = documentView.view(sceneDef);
-	let mesh = scene.children[0].children[0].children[0];
+	let mesh = scene.children[0].children[0].children[0] as
+		Mesh<BufferGeometry, MeshStandardMaterial>;
 	let material = mesh.material;
 
-	t.equals(material.name, 'Material', 'material.name → Material');
-	t.equals(material.type, 'MeshStandardMaterial', 'material.type → MeshStandardMaterial');
-	t.ok(material.map, 'material.map → ok');
-	t.ok(material.emissiveMap, 'material.emissiveMap → ok');
+	t.is(material.name, 'Material', 'material.name → Material');
+	t.is(material.type, 'MeshStandardMaterial', 'material.type → MeshStandardMaterial');
+	t.truthy(material.map, 'material.map → ok');
+	t.truthy(material.emissiveMap, 'material.emissiveMap → ok');
 
 	texDef1.dispose();
-	mesh = scene.children[0].children[0].children[0];
+	mesh = scene.children[0].children[0].children[0] as Mesh<BufferGeometry, MeshStandardMaterial>;
 	material = mesh.material;
 
-	t.notOk(material.map, 'material.map → null');
-	t.ok(material.emissiveMap, 'material.emissiveMap → ok');
-	t.end();
+	t.falsy(material.map, 'material.map → null');
+	t.truthy(material.emissiveMap, 'material.emissiveMap → ok');
 });
 
 test('MaterialSubject | extensions', async t => {
@@ -45,28 +46,27 @@ test('MaterialSubject | extensions', async t => {
 	const unlitExtension = document.createExtension(MaterialsUnlit);
 	const clearcoatExtension = document.createExtension(MaterialsClearcoat);
 
-	const materialDef = document.createMaterial('Material')
+	const materialDef = document.createMaterial('Material');
 	const documentView = new DocumentView(document, {imageProvider});
+
 	let material = documentView.view(materialDef);
 
-	t.equals(material.type, 'MeshStandardMaterial', 'MeshStandardMaterial');
+	t.is(material.type, 'MeshStandardMaterial', 'MeshStandardMaterial');
 
 	materialDef.setExtension('KHR_materials_unlit', unlitExtension.createUnlit());
 	material = documentView.view(materialDef);
 
-	t.equals(material.type, 'MeshBasicMaterial', 'MeshBasicMaterial');
+	t.is(material.type, 'MeshBasicMaterial', 'MeshBasicMaterial');
 
 	materialDef.setExtension('KHR_materials_unlit', null);
 	material = documentView.view(materialDef);
 
-	t.equals(material.type, 'MeshStandardMaterial', 'MeshStandardMaterial');
+	t.is(material.type, 'MeshStandardMaterial', 'MeshStandardMaterial');
 
 	materialDef.setExtension('KHR_materials_clearcoat', clearcoatExtension.createClearcoat());
 	material = documentView.view(materialDef);
 
-	t.equals(material.type, 'MeshPhysicalMaterial', 'MeshPhysicalMaterial');
-
-	t.end();
+	t.is(material.type, 'MeshPhysicalMaterial', 'MeshPhysicalMaterial');
 });
 
 test('MaterialSubject | dispose', async t => {
@@ -95,43 +95,41 @@ test('MaterialSubject | dispose', async t => {
 
 	const documentView = new DocumentView(document, {imageProvider});
 	const scene = documentView.view(sceneDef);
-	const [mesh, points] = scene.getObjectByName('Mesh').children;
-	const meshMaterial = mesh.material;
-	const pointsMaterial = points.material;
+	const [mesh, points] = scene.getObjectByName('Mesh')!.children as [Mesh, Points];
+	const meshMaterial = mesh.material as MeshStandardMaterial;
+	const pointsMaterial = points.material as PointsMaterial;
 
 	const disposed = new Set();
 	meshMaterial.addEventListener('dispose', () => disposed.add(meshMaterial));
 	pointsMaterial.addEventListener('dispose', () => disposed.add(pointsMaterial));
 
-	t.equals(disposed.size, 0, 'initial values');
-	t.equals(meshMaterial.type, 'MeshStandardMaterial', 'creates MeshStandardMaterial');
-	t.equals(pointsMaterial.type, 'PointsMaterial', 'creates PointsMaterial');
+	t.is(disposed.size, 0, 'initial values');
+	t.is(meshMaterial.type, 'MeshStandardMaterial', 'creates MeshStandardMaterial');
+	t.is(pointsMaterial.type, 'PointsMaterial', 'creates PointsMaterial');
 
 	meshPrimDef.setMaterial(null);
 	documentView.gc();
 
-	t.equals(disposed.size, 1, 'dispose count (1/3)');
-	t.ok(disposed.has(meshMaterial), 'dispose MeshStandardMaterial');
+	t.is(disposed.size, 1, 'dispose count (1/3)');
+	t.truthy(disposed.has(meshMaterial), 'dispose MeshStandardMaterial');
 
 	pointsPrimDef.setMode(PrimitiveDef.Mode.LINES);
 	documentView.gc();
 
-	t.equals(disposed.size, 2, 'dispose count (2/3)');
-	t.ok(disposed.has(pointsMaterial), 'dispose PointsMaterial');
+	t.is(disposed.size, 2, 'dispose count (2/3)');
+	t.truthy(disposed.has(pointsMaterial), 'dispose PointsMaterial');
 
-	const [_, lines] = scene.getObjectByName('Mesh').children;
-	const lineMaterial = lines.material;
+	const [_, lines] = scene.getObjectByName('Mesh')!.children as [unknown, LineSegments];
+	const lineMaterial = lines.material as LineBasicMaterial;
 	lineMaterial.addEventListener('dispose', () => disposed.add(lineMaterial));
 
-	t.equals(lineMaterial.type, 'LineBasicMaterial', 'creates LineBasicMaterial');
+	t.is(lineMaterial.type, 'LineBasicMaterial', 'creates LineBasicMaterial');
 
 	materialDef.dispose();
 	documentView.gc();
 
-	t.equals(disposed.size, 3, 'dispose count (3/3)');
-	t.ok(disposed.has(pointsMaterial), 'dispose LineBasicMaterial');
-
-	t.end();
+	t.is(disposed.size, 3, 'dispose count (3/3)');
+	t.truthy(disposed.has(pointsMaterial), 'dispose LineBasicMaterial');
 });
 
 test('MaterialSubject | texture memory', async t => {
@@ -149,22 +147,20 @@ test('MaterialSubject | texture memory', async t => {
 
 	const documentView = new DocumentView(document, {imageProvider});
 	let material = documentView.view(materialDef);
-	const {map, emissiveMap} = material;
+	const {map, emissiveMap} = material as unknown as {map: Texture, emissiveMap: Texture};
 
-	t.equals(material.type, 'MeshStandardMaterial', 'original material');
-	t.ok(map.source === emissiveMap.source, 'map.source === emissiveMap.source');
+	t.is(material.type, 'MeshStandardMaterial', 'original material');
+	t.truthy(map.source === emissiveMap.source, 'map.source === emissiveMap.source');
 
-	let baseVersion = map.version;
-	t.equals(map.version, baseVersion, 'map.version');
-	t.equals(emissiveMap.version, baseVersion, 'emissiveMap.version');
+	const baseVersion = map.version;
+	t.is(map.version, baseVersion, 'map.version');
+	t.is(emissiveMap.version, baseVersion, 'emissiveMap.version');
 
 	materialDef.setExtension('KHR_materials_clearcoat', clearcoatExtension.createClearcoat());
 	material = documentView.view(materialDef);
 
-	t.equals(material.type, 'MeshPhysicalMaterial', 'new material');
-	t.ok(map.source === emissiveMap.source, 'map.source === emissiveMap.source');
-	t.equals(map.version, baseVersion, 'map.version');
-	t.equals(emissiveMap.version, baseVersion, 'emissiveMap.version');
-
-	t.end();
+	t.is(material.type, 'MeshPhysicalMaterial', 'new material');
+	t.truthy(map.source === emissiveMap.source, 'map.source === emissiveMap.source');
+	t.is(map.version, baseVersion, 'map.version');
+	t.is(emissiveMap.version, baseVersion, 'emissiveMap.version');
 });

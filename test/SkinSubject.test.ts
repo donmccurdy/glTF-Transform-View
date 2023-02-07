@@ -1,6 +1,7 @@
-import test from 'tape';
+import test from 'ava';
 import { Document } from '@gltf-transform/core';
-import { DocumentView, NullImageProvider } from '../dist/view.modern.js';
+import { DocumentView, NullImageProvider } from '@gltf-transform/view';
+import { Bone, Mesh, SkinnedMesh } from 'three';
 
 const imageProvider = new NullImageProvider();
 
@@ -32,18 +33,17 @@ test('SkinSubject', async t => {
 
 	const documentView = new DocumentView(document, {imageProvider});
 	const armature = documentView.view(armatureDef);
-	const boneA = armature.children.find((child) => child.name === 'JointA');
+	const boneA = armature.children.find((child) => child.name === 'JointA') as Bone;
 	const boneB = boneA.children[0];
-	const mesh = armature.children.find((child) => child.name === 'Mesh');
-	const prim = mesh.children.find((child) => child.type === 'SkinnedMesh');
+	const mesh = armature.children.find((child) => child.name === 'Mesh') as Mesh;
+	const prim = mesh.children.find((child) => child.type === 'SkinnedMesh') as SkinnedMesh;
 
-	t.equals(armature.name, 'Armature', 'armature → name');
-	t.equals(mesh.type, 'Group', 'armature → mesh');
-	t.equals(prim.type, 'SkinnedMesh', 'armature → mesh → prim');
-	t.equals(boneA.type, 'Bone', 'armature → jointA');
-	t.equals(boneB.type, 'Bone', 'armature → jointA → jointB');
-	t.ok(prim.skeleton, 'skeleton');
+	t.is(armature.name, 'Armature', 'armature → name');
+	t.is(mesh.type, 'Group', 'armature → mesh');
+	t.is(prim.type, 'SkinnedMesh', 'armature → mesh → prim');
+	t.is(boneA.type, 'Bone', 'armature → jointA');
+	t.is(boneB.type, 'Bone', 'armature → jointA → jointB');
+	t.truthy(prim.skeleton, 'skeleton');
 	t.deepEqual(prim.skeleton.bones, [boneA, boneB], 'skeleton.bones');
-	t.equals(prim.skeleton.boneInverses.length, 2, 'skeleton.boneInverses');
-	t.end();
+	t.is(prim.skeleton.boneInverses.length, 2, 'skeleton.boneInverses');
 });

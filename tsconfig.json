@@ -1,12 +1,16 @@
 {
-    "compilerOptions": {
-      "esModuleInterop": true,
-      "moduleResolution": "node",
-      "lib": ["es2020", "dom"],
-      "target": "es2020",
-      "declaration": true,
-      "typeRoots": ["node_modules/@types"],
-      "strict": true,
+  "include": ["src/**/*.ts"],
+  "compilerOptions": {
+    "paths": {
+      "@gltf-transform/view": ["./"]
     },
-    "include": ["src/**/*.ts"]
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "lib": ["es2020", "dom"],
+    "target": "es2020",
+    "module": "esnext",
+    "declaration": true,
+    "typeRoots": ["node_modules/@types"],
+    "strict": true,
   }
+}
