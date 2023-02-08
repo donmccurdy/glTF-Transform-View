@@ -101,20 +101,101 @@ test('DocumentView | dispose', async t => {
     t.true(disposed.has(emissiveMap), 'disposed emissiveTexture');
 });
 
-// test.skip('DocumentView | alloc', async t => {
-//     // TODO(bug): It's OK for allocations to happen here,
-//     // but make sure they're properly gc'd...
-//     nodeDef.setMesh(meshDef);
-//     nodeDef.setMesh(null);
-//     nodeDef.setMesh(meshDef);
-//     nodeDef.setMesh(null);
-//     nodeDef.setMesh(meshDef);
-//     nodeDef.setMesh(null);
-//     nodeDef.setMesh(meshDef);
-//     nodeDef.setMesh(null);
+test('DocumentView | alloc', async t => {
+    // Parts of this test are subjective — we don't *really* need to keep a Mesh
+    // in memory if the MeshDef is unused — but it's important that the counts
+    // come to zero when things are disposed. And if these results change
+    // unintentionally, that's a good time to review side effects.
 
-//     documentView.gc();
+    const document = new Document();
+    const positionDef = document.createAccessor()
+        .setType('VEC3')
+        .setArray(new Float32Array([0, 0, 0]));
+    const primDef = document.createPrimitive().setAttribute('POSITION', positionDef);
+    const meshDef = document.createMesh().addPrimitive(primDef);
+    const nodeDef = document.createNode();
+    const sceneDef = document.createScene().addChild(nodeDef);
 
-//     t.deepEqual(documentView.stats(), expectedStats, 'stats (after)');
-//     console.log(documentView.stats());
-// });
+    const documentView = new DocumentView(document, {imageProvider});
+
+    t.deepEqual(getPartialStats(documentView), {
+        scenes: 0,
+        nodes: 0,
+        meshes: 0,
+        primitives: 0,
+    }, '1. empty');
+
+    documentView.view(sceneDef);
+
+    t.deepEqual(getPartialStats(documentView), {
+        scenes: 1,
+        nodes: 1,
+        meshes: 0,
+        primitives: 0,
+    }, '2. no mesh');
+
+    nodeDef.setMesh(meshDef);
+
+    t.deepEqual(getPartialStats(documentView), {
+        scenes: 1,
+        nodes: 1,
+        meshes: 2, // 1 internal, 1 view
+        primitives: 2, // 1 internal, 1 view
+    }, '3. add mesh');
+
+    nodeDef.setMesh(null);
+    nodeDef.setMesh(meshDef);
+    nodeDef.setMesh(null);
+    nodeDef.setMesh(meshDef);
+    nodeDef.setMesh(null);
+    nodeDef.setMesh(meshDef);
+
+    t.deepEqual(getPartialStats(documentView), {
+        scenes: 1,
+        nodes: 1,
+        meshes: 5, // garbage accumulation
+        primitives: 2,
+    }, '4. garbage accumulation');
+
+    documentView.gc();
+
+    t.deepEqual(getPartialStats(documentView), {
+        scenes: 1,
+        nodes: 1,
+        meshes: 2, // garbage collection
+        primitives: 2,
+    }, '5. garbage collection pt 1');
+
+    nodeDef.setMesh(null);
+    documentView.gc();
+
+    t.deepEqual(getPartialStats(documentView), {
+        scenes: 1,
+        nodes: 1,
+        meshes: 1, // garbage collection
+        primitives: 2,
+    }, '5. garbage collection pt 2');
+
+    primDef.dispose();
+    meshDef.dispose();
+    documentView.gc();
+
+    t.deepEqual(getPartialStats(documentView), {
+        scenes: 1,
+        nodes: 1,
+        meshes: 0, // garbage collection
+        primitives: 0, // garbage collection
+    }, '5. garbage collection pt 2');
+});
+
+interface PartialStats {
+    scenes: number,
+    nodes: number,
+    meshes: number,
+    primitives: number,
+}
+
+function getPartialStats(view: DocumentView): PartialStats {
+    const {scenes, nodes, meshes, primitives} = view.stats();
+    return {scenes, nodes, meshes, primitives};
+}
