@@ -61,7 +61,7 @@ export abstract class Subject<Def extends PropertyDef, Value, Params extends Emp
 	 * Lifecycle.
 	 */
 
-	// TODO(perf): Many publishes during an update (e.g. Material). Consider batching.
+	// TODO(perf): Many publishes during an update (e.g. Material). Consider batching or scheduling.
 	abstract update(): void;
 
 	publishAll(): void {
