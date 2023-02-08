@@ -18,3 +18,10 @@ jobs:
     - run: yarn install
     - run: yarn dist
     - run: yarn test
+
+    # Coverage.
+    - run: yarn coverage --no-worker-threads # https://github.com/avajs/ava/discussions/3158
+    - run: yarn coverage:report
+    - uses: codecov/codecov-action@v3
+      with:
+        files: coverage/coverage.lcov
