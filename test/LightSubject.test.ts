@@ -47,7 +47,6 @@ test('LightSubject | spot', async t => {
 	const node = documentView.view(nodeDef);
 	const light = node.children[0] as SpotLight;
 
-	// TODO(bug): Weird warning on this one???
 	t.is(light.name, 'MyLight', 'node → light → name');
 	t.is(light.type, 'SpotLight', 'node → light → type');
 	t.deepEqual(light.position.toArray(), [0, 0, 0], 'node → light → position');
