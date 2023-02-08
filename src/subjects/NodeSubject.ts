@@ -1,4 +1,4 @@
-import { Bone, Group, Object3D, Skeleton, SkinnedMesh } from 'three';
+import { Bone, BufferAttribute, Group, Matrix4, Object3D, Skeleton, SkinnedMesh } from 'three';
 import { Mesh as MeshDef, Node as NodeDef, Skin as SkinDef, vec3, vec4 } from '@gltf-transform/core';
 import { Light as LightDef } from '@gltf-transform/extensions';
 import type { DocumentViewSubjectAPI } from '../DocumentViewImpl';
@@ -10,6 +10,7 @@ import { LightLike } from '../constants';
 
 const _vec3: vec3 = [0, 0, 0];
 const _vec4: vec4 = [0, 0, 0, 0];
+const IDENTITY = new Matrix4().identity();
 
 /** @internal */
 export class NodeSubject extends Subject<NodeDef, Object3D> {
@@ -53,12 +54,12 @@ export class NodeSubject extends Subject<NodeDef, Object3D> {
 	}
 
 	private bindSkeleton(skeleton: Skeleton | null) {
-		// TODO(test): Unclear what happens here if skin is unassigned.
 		if (!this.mesh.value || !skeleton) return;
 
 		for (const prim of this.mesh.value.children) {
 			if (prim instanceof SkinnedMesh) {
-				prim.bind(skeleton, prim.matrixWorld);
+				prim.bind(skeleton, IDENTITY);
+				prim.normalizeSkinWeights(); // three.js#15319
 			}
 		}
 	}
