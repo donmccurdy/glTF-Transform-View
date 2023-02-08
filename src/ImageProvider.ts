@@ -36,19 +36,20 @@ export const LOADING_TEXTURE = createTexture('__LOADING_TEXTURE', LOADING_IMAGE_
 export interface ImageProvider {
 	initTexture(textureDef: TextureDef): Promise<void>;
 	getTexture(textureDef: TextureDef): Promise<Texture | CompressedTexture>;
+	setKTX2Loader(loader: KTX2Loader): this;
 	clear(): void;
 }
 
 export class NullImageProvider implements ImageProvider {
 	async initTexture(_textureDef: TextureDef): Promise<void> {}
 	async getTexture(_: TextureDef): Promise<Texture | CompressedTexture> { return NULL_TEXTURE; }
+	setKTX2Loader(_loader: KTX2Loader): this { return this; }
 	clear(): void {}
 }
 
-// TODO(feat): Method to provide KTX2Loader.
 export class DefaultImageProvider implements ImageProvider {
 	private _cache = new Map<ArrayBuffer, Texture|CompressedTexture>();
-	private _ktx2Loader = createKTX2Loader();
+	private _ktx2Loader: KTX2Loader | null = null;
 
 	async initTexture(textureDef: TextureDef): Promise<void> {
 		await this.getTexture(textureDef);
@@ -70,6 +71,11 @@ export class DefaultImageProvider implements ImageProvider {
 		return texture;
 	}
 
+	setKTX2Loader(loader: KTX2Loader): this {
+		this._ktx2Loader = loader;
+		return this;
+	}
+
 	clear(): void {
 		for (const [_, texture] of this._cache) {
 			texture.dispose();
@@ -79,7 +85,7 @@ export class DefaultImageProvider implements ImageProvider {
 
 	dispose() {
 		this.clear();
-		this._ktx2Loader.dispose();
+		if (this._ktx2Loader) this._ktx2Loader.dispose();
 	}
 
 	/** Load PNG, JPEG, or other browser-suppored image format. */
@@ -103,6 +109,7 @@ export class DefaultImageProvider implements ImageProvider {
 
 	/** Load KTX2 + Basis Universal compressed texture format. */
 	private async _loadKTX2Image(image: ArrayBuffer): Promise<CompressedTexture> {
+		this._ktx2Loader ||= createKTX2Loader();
 		const blob = new Blob([image], {type: 'image/ktx2'});
 		const imageURL = URL.createObjectURL(blob);
 		const texture = await this._ktx2Loader.loadAsync(imageURL);
