@@ -8,23 +8,13 @@
 
 > ⚠️ EXPERIMENTAL
 
-Creates three.js objects from glTF [Scene](https://gltf-transform.donmccurdy.com/classes/scene.html),
-[Node](https://gltf-transform.donmccurdy.com/classes/node.html),
-[Mesh](https://gltf-transform.donmccurdy.com/classes/mesh.html),
-[Material](https://gltf-transform.donmccurdy.com/classes/material.html)
-and other properties, and keeps those three.js objects updated in realtime as changes are made
+Creates three.js objects from glTF Trasnform [https://gltf-transform.donmccurdy.com/classes/core.document.html](Documents)
+and sub-properties, then keeps those three.js objects updated — in realtime ⚡️ — as changes are made
 through the [glTF Transform](https://gltf-transform.donmccurdy.com/) library. Combined with
 import/export using [WebIO](https://gltf-transform.donmccurdy.com/classes/core.platformio.html), `@gltf-transform/view`
 provides a lossless workflow to load, view, edit, and export glTF assets — particularly useful in
-editor-like applications on the web. Changes to a glTF Document are reflected in three.js
-immediately, and any features three.js doesn't support won't be lost — they just aren't rendered
-in the preview.
-
-> **NOTICE:** three.js can load glTF 2.0 files with [THREE.GLTFLoader](https://threejs.org/docs/index.html#examples/en/loaders/GLTFLoader)
-> and export them with [THREE.GLTFExporter](https://threejs.org/docs/index.html#examples/en/loaders/GLTFExporter),
-> but the GLTFExporter step is lossy and expensive. In comparison, the edit/refresh loop provided by
-> `@gltf-transform/view` is very fast and lossless, but requires some additional memory overhead when loading.
-> This project is not meant to replace THREE.GLTFLoader for one-time resource loading.
+editor-like applications on the web. Unlike using [THREE.GLTFExporter](https://threejs.org/docs/index.html#examples/en/loaders/GLTFExporter),
+any glTF features that three.js doesn't support won't be lost, they just aren't rendered in the preview.
 
 ## Quickstart
 
@@ -38,7 +28,6 @@ npm install --save @gltf-transform/view
 
 ```typescript
 import { Scene, WebGLRenderer, PerspectiveCamera } from 'three';
-
 import { WebIO } from '@gltf-transform/core';
 import { KHRONOS_EXTENSIONS } from '@gltf-transform/extensions';
 import { DocumentView } from '@gltf-transform/view';
@@ -54,9 +43,9 @@ const document = await io.read('path/to/input.glb');
 const documentView = new DocumentView(document);
 
 // Add glTF content to the scene (just once).
-const sceneDef = document.getRoot().listScenes()[0];
-const sceneGroup = documentView.view(sceneDef);
-scene.add(sceneGroup);
+const sceneDef = document.getRoot().getDefaultScene(); // glTF Transform Scene
+const group = documentView.view(sceneDef); // THREE.Group
+scene.add(group);
 
 // Render.
 function animate () {
