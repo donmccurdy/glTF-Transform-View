@@ -8,13 +8,7 @@
 
 > ⚠️ EXPERIMENTAL
 
-Creates three.js objects from glTF Trasnform [https://gltf-transform.donmccurdy.com/classes/core.document.html](Documents)
-and sub-properties, then keeps those three.js objects updated — in realtime ⚡️ — as changes are made
-through the [glTF Transform](https://gltf-transform.donmccurdy.com/) library. Combined with
-import/export using [WebIO](https://gltf-transform.donmccurdy.com/classes/core.platformio.html), `@gltf-transform/view`
-provides a lossless workflow to load, view, edit, and export glTF assets — particularly useful in
-editor-like applications on the web. Unlike using [THREE.GLTFExporter](https://threejs.org/docs/index.html#examples/en/loaders/GLTFExporter),
-any glTF features that three.js doesn't support won't be lost, they just aren't rendered in the preview.
+Creates three.js objects from a glTF Transform [Document](https://gltf-transform.donmccurdy.com/classes/core.document.html), then keeps the three.js scene graph updated — in realtime ⚡️ — as changes are made to the Document. Combined with import/export using [WebIO](https://gltf-transform.donmccurdy.com/classes/core.platformio.html), `@gltf-transform/view` provides a lossless workflow to load, view, edit, and export glTF assets. It's meant for editor-like applications on the web. Unlike using [THREE.GLTFExporter](https://threejs.org/docs/index.html#examples/en/loaders/GLTFExporter), any glTF features that three.js doesn't support won't be lost, they just aren't rendered in the preview.
 
 ## Quickstart
 
@@ -61,11 +55,7 @@ buttonEl.addEventListener('click', () => {
 });
 ```
 
-Each DocumentView instance maintains reference counts and disposes of three.js WebGL resources
-(textures, geometry, materials) when the underlying glTF Transform properties are disposed.
-Unused resources are *not* disposed immediately, in case they might be used again later. To
-manually dispose of unused resources — e.g. to free up GPU memory — call  `documentView.gc()`.
-Resources will be re-allocated automatically if they are used again.
+Each DocumentView instance maintains reference counts and disposes of three.js WebGL resources (textures, geometry, materials) when the underlying glTF Transform properties are disposed. Unused resources are *not* disposed immediately, in case they might be used again later. To manually dispose of unused resources — e.g. to free up GPU memory — call  `documentView.gc()`. Resources will be re-allocated automatically if they are used again.
 
 ### Feature support
 
