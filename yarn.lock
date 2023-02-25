@@ -1030,7 +1030,14 @@
     minimatch "^3.1.2"
     strip-json-comments "^3.1.1"
 
-"@gltf-transform/core@2.5.1", "@gltf-transform/core@^2.5.1":
+"@gltf-transform/core@3.0.4":
+  version "3.0.4"
+  resolved "https://registry.yarnpkg.com/@gltf-transform/core/-/core-3.0.4.tgz#a3ad31735d21af821197ed9f95d68e45d953a298"
+  integrity sha512-Qi6rB2TOHkRT8lyIEeebIjw6WZuWJcUBlGymGds8PiTSkkUZmfIHHLsiY7KyAFKCp0L/F/mf8FJQCuS507JzjA==
+  dependencies:
+    property-graph "^1.1.0"
+
+"@gltf-transform/core@^2.5.1":
   version "2.5.1"
   resolved "https://registry.yarnpkg.com/@gltf-transform/core/-/core-2.5.1.tgz#d84ba1a02f956276ab055fc670cfb0771466e3fd"
   integrity sha512-Ah4TVzQtlUpEOJPJovgobbviec7og7NaSo9f+Lg0kJCk3Wwjl++FuDHKCDYEB+CQL8CoLpfB62+8t+NH5buedg==
@@ -5033,6 +5040,11 @@ property-graph@^0.2.6:
   version "0.2.6"
   resolved "https://registry.yarnpkg.com/property-graph/-/property-graph-0.2.6.tgz#add988a436745936d4b2ae19f747f2556296c828"
   integrity sha512-QiBHxNZlwIarbkxsqCY688aP1ANbwtoQFBYgTZopQ0Bvku6/EYp3H4KH0ygxkhWQbJv5DEONspLy1rHi5xIycg==
+
+property-graph@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/property-graph/-/property-graph-1.1.0.tgz#4914a9dac0be48d2e9f5f14b2de2e65ab3be90fa"
+  integrity sha512-zaS0ktlJ4TDS0fnlQyFw+YgRzhhvjJISq4OjS7glBuB5FtSIpqvzrr5E2yz7QcuiEfLO/OLgDvxCpwOEV78k7Q==
 
 psl@^1.1.28:
   version "1.8.0"

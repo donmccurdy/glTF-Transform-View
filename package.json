@@ -18,7 +18,7 @@
     "three": ">=0.130.1"
   },
   "devDependencies": {
-    "@gltf-transform/core": "2.5.1",
+    "@gltf-transform/core": "3.0.4",
     "@gltf-transform/extensions": "2.5.1",
     "@gltf-transform/functions": "2.5.1",
     "@tweakpane/core": "1.1.4",
