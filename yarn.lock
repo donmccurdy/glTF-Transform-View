@@ -1038,7 +1038,22 @@
     gl-matrix "~3.4.3"
     property-graph "^0.2.6"
 
-"@gltf-transform/extensions@2.5.1", "@gltf-transform/extensions@^2.5.1":
+"@gltf-transform/core@^3.0.4":
+  version "3.0.4"
+  resolved "https://registry.yarnpkg.com/@gltf-transform/core/-/core-3.0.4.tgz#a3ad31735d21af821197ed9f95d68e45d953a298"
+  integrity sha512-Qi6rB2TOHkRT8lyIEeebIjw6WZuWJcUBlGymGds8PiTSkkUZmfIHHLsiY7KyAFKCp0L/F/mf8FJQCuS507JzjA==
+  dependencies:
+    property-graph "^1.1.0"
+
+"@gltf-transform/extensions@3.0.4":
+  version "3.0.4"
+  resolved "https://registry.yarnpkg.com/@gltf-transform/extensions/-/extensions-3.0.4.tgz#4b02705a6b7c72bf872e053a8114888dcc85d601"
+  integrity sha512-VrqLJbO0nbrZxBobJYA6oQUW7vzCryXOPIFuterJPSzbr8W56qfdw9SNeiueE9njkyskelgXhemV/QjbE1wZ8w==
+  dependencies:
+    "@gltf-transform/core" "^3.0.4"
+    ktx-parse "^0.5.0"
+
+"@gltf-transform/extensions@^2.5.1":
   version "2.5.1"
   resolved "https://registry.yarnpkg.com/@gltf-transform/extensions/-/extensions-2.5.1.tgz#cae4cde16cf7b6ab0548a22cde681320d6fb5570"
   integrity sha512-fn+Mkh5XoaWYU/BUa5BvU5T1u7Bj8o2z2mDGhTKSzoGgNG2RO6tGrniESBEuDYQCtDx9HJLs0YOlziBx4zFbiw==
@@ -3917,6 +3932,11 @@ ktx-parse@^0.4.5:
   resolved "https://registry.yarnpkg.com/ktx-parse/-/ktx-parse-0.4.5.tgz#79905e22281a9d3e602b2ff522df1ee7d1813aa6"
   integrity sha512-MK3FOody4TXbFf8Yqv7EBbySw7aPvEcPX++Ipt6Sox+/YMFvR5xaTyhfNSk1AEmMy+RYIw81ctN4IMxCB8OAlg==
 
+ktx-parse@^0.5.0:
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/ktx-parse/-/ktx-parse-0.5.0.tgz#b4025bbc73ac5386ac37e869de455eab915261bc"
+  integrity sha512-5IZrv5s1byUeDTIee1jjJQBiD5LPDB0w9pJJ0oT9BCKKJf16Tuj123vm1Ps0GOHSHmeWPgKM0zuViCVuTRpqaA==
+
 levn@^0.4.1:
   version "0.4.1"
   resolved "https://registry.yarnpkg.com/levn/-/levn-0.4.1.tgz#ae4562c007473b932a6200d403268dd2fffc6ade"
@@ -5033,6 +5053,11 @@ property-graph@^0.2.6:
   version "0.2.6"
   resolved "https://registry.yarnpkg.com/property-graph/-/property-graph-0.2.6.tgz#add988a436745936d4b2ae19f747f2556296c828"
   integrity sha512-QiBHxNZlwIarbkxsqCY688aP1ANbwtoQFBYgTZopQ0Bvku6/EYp3H4KH0ygxkhWQbJv5DEONspLy1rHi5xIycg==
+
+property-graph@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/property-graph/-/property-graph-1.1.0.tgz#4914a9dac0be48d2e9f5f14b2de2e65ab3be90fa"
+  integrity sha512-zaS0ktlJ4TDS0fnlQyFw+YgRzhhvjJISq4OjS7glBuB5FtSIpqvzrr5E2yz7QcuiEfLO/OLgDvxCpwOEV78k7Q==
 
 psl@^1.1.28:
   version "1.8.0"
