@@ -1,6 +1,6 @@
 import test from 'ava';
 import { Document } from '@gltf-transform/core';
-import { Light as LightDef, LightsPunctual } from '@gltf-transform/extensions';
+import { Light as LightDef, KHRLightsPunctual } from '@gltf-transform/extensions';
 import { DocumentView, NullImageProvider } from '@gltf-transform/view';
 import { DirectionalLight, PointLight, SpotLight } from 'three';
 
@@ -8,7 +8,7 @@ const imageProvider = new NullImageProvider();
 
 test('LightSubject | point', async t => {
 	const document = new Document();
-	const lightExt = document.createExtension(LightsPunctual);
+	const lightExt = document.createExtension(KHRLightsPunctual);
 	const lightDef = lightExt.createLight('MyLight')
 		.setColor([1, 0, 0])
 		.setIntensity(2000)
@@ -32,7 +32,7 @@ test('LightSubject | point', async t => {
 
 test('LightSubject | spot', async t => {
 	const document = new Document();
-	const lightExt = document.createExtension(LightsPunctual);
+	const lightExt = document.createExtension(KHRLightsPunctual);
 	const lightDef = lightExt.createLight('MyLight')
 		.setColor([1, 1, 0])
 		.setIntensity(2000)
@@ -60,7 +60,7 @@ test('LightSubject | spot', async t => {
 
 test('LightSubject | directional', async t => {
 	const document = new Document();
-	const lightExt = document.createExtension(LightsPunctual);
+	const lightExt = document.createExtension(KHRLightsPunctual);
 	const lightDef = lightExt.createLight('MyLight')
 		.setColor([1, 1, 1])
 		.setIntensity(1.5)

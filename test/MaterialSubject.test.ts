@@ -1,7 +1,7 @@
 import test from 'ava';
 import { Document, Primitive as PrimitiveDef } from '@gltf-transform/core';
 import { DocumentView, NullImageProvider } from '@gltf-transform/view';
-import { MaterialsClearcoat, MaterialsUnlit } from '@gltf-transform/extensions';
+import { KHRMaterialsClearcoat, KHRMaterialsUnlit } from '@gltf-transform/extensions';
 import { BufferGeometry, LineBasicMaterial, LineSegments, Mesh, MeshStandardMaterial, Points, PointsMaterial, Texture } from 'three';
 
 const imageProvider = new NullImageProvider();
@@ -43,8 +43,8 @@ test('MaterialSubject', async t => {
 
 test('MaterialSubject | extensions', async t => {
 	const document = new Document();
-	const unlitExtension = document.createExtension(MaterialsUnlit);
-	const clearcoatExtension = document.createExtension(MaterialsClearcoat);
+	const unlitExtension = document.createExtension(KHRMaterialsUnlit);
+	const clearcoatExtension = document.createExtension(KHRMaterialsClearcoat);
 
 	const materialDef = document.createMaterial('Material');
 	const documentView = new DocumentView(document, {imageProvider});
@@ -134,7 +134,7 @@ test('MaterialSubject | dispose', async t => {
 
 test('MaterialSubject | texture memory', async t => {
 	const document = new Document();
-	const clearcoatExtension = document.createExtension(MaterialsClearcoat);
+	const clearcoatExtension = document.createExtension(KHRMaterialsClearcoat);
 	const texDef1 = document.createTexture('Tex1')
 		.setMimeType('image/png')
 		.setImage(new Uint8Array(0));
