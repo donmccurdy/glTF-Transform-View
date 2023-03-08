@@ -6,7 +6,7 @@ import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
 import { MeshoptDecoder, MeshoptEncoder } from 'meshoptimizer';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 
-const TRANSCODER_PATH = `https://unpkg.com/three@0.${REVISION}.x/examples/js/libs/basis/`;
+const TRANSCODER_PATH = `https://unpkg.com/three@0.${REVISION}.x/examples/jsm/libs/basis/`;
 
 // await MeshoptDecoder.ready;
 // await MeshoptEncoder.ready;
