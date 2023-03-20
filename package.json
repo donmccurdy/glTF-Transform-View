@@ -21,7 +21,7 @@
     "@gltf-transform/core": "3.1.1",
     "@gltf-transform/extensions": "3.1.1",
     "@gltf-transform/functions": "3.1.1",
-    "@tweakpane/core": "1.1.5",
+    "@tweakpane/core": "1.1.6",
     "@types/node": "^18.14.6",
     "@types/three": "0.149.0",
     "@typescript-eslint/eslint-plugin": "5.55.0",
@@ -39,10 +39,10 @@
     "suppress-experimental-warnings": "^1.1.4",
     "three": "0.150.1",
     "ts-node": "^10.9.1",
-    "tweakpane": "3.1.6",
+    "tweakpane": "3.1.7",
     "tweakpane-plugin-thumbnail-list": "0.3.0",
     "typescript": "4.9.5",
-    "vite": "4.1.4"
+    "vite": "4.2.1"
   },
   "scripts": {
     "dist": "microbundle --no-compress --format modern",
