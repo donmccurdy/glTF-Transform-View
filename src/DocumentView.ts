@@ -1,5 +1,5 @@
-import { Group, Material, Object3D, Texture } from 'three';
-import { Document, Scene as SceneDef, Node as NodeDef, Material as MaterialDef, Mesh as MeshDef, Primitive as PrimitiveDef, Property as PropertyDef, Texture as TextureDef } from '@gltf-transform/core';
+import { AnimationClip, Group, Material, Object3D, Texture } from 'three';
+import { Document, Animation as AnimationDef, Scene as SceneDef, Node as NodeDef, Material as MaterialDef, Mesh as MeshDef, Primitive as PrimitiveDef, Property as PropertyDef, Texture as TextureDef } from '@gltf-transform/core';
 import { Light as LightDef } from '@gltf-transform/extensions';
 import { DocumentViewConfig, DocumentViewImpl } from './DocumentViewImpl';
 import { LightLike, MeshLike } from './constants';
@@ -28,6 +28,7 @@ export class DocumentView {
 	 * returns a THREE.Group representing that scene. Repeated calls with the
 	 * same input will yield the same output objects.
 	 */
+	public view(def: AnimationDef): AnimationClip;
 	public view(def: TextureDef): Texture;
 	public view(def: LightDef): LightLike;
 	public view(def: MaterialDef): Material;
@@ -46,6 +47,7 @@ export class DocumentView {
 	 * For a given source glTF-Transform Property definition, returns a list of rendered three.js
 	 * objects.
 	 */
+	public listViews(source: AnimationDef): AnimationClip[];
 	public listViews(source: TextureDef): Texture[];
 	public listViews(source: LightDef): LightLike[];
 	public listViews(source: MaterialDef): Material[];
@@ -59,11 +61,12 @@ export class DocumentView {
 	}
 
 	/** For a given Object3D target, finds the source glTF-Transform Property definition. */
-	public getProperty(view: Texture): TextureDef | null
-	public getProperty(view: LightLike): LightDef | null
-	public getProperty(view: Material): MaterialDef | null
-	public getProperty(view: MeshLike): PrimitiveDef | null
-	public getProperty(view: Object3D): MeshDef | NodeDef | SceneDef | null
+	public getProperty(view: AnimationClip): AnimationDef | null;
+	public getProperty(view: Texture): TextureDef | null;
+	public getProperty(view: LightLike): LightDef | null;
+	public getProperty(view: Material): MaterialDef | null;
+	public getProperty(view: MeshLike): PrimitiveDef | null;
+	public getProperty(view: Object3D): MeshDef | NodeDef | SceneDef | null;
 	public getProperty(view: object): PropertyDef | null {
 		assert(this._ready);
 		return this._impl.findDef(view as any);
