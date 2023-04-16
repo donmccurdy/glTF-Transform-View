@@ -34,7 +34,7 @@
     "jsdom-global": "^3.0.2",
     "meshoptimizer": "^0.18.1",
     "microbundle": "0.15.1",
-    "rimraf": "^4.3.1",
+    "rimraf": "^5.0.0",
     "simple-dropzone": "0.8.1",
     "suppress-experimental-warnings": "^1.1.4",
     "three": "0.150.1",
