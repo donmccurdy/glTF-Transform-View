@@ -1,6 +1,6 @@
 import { DoubleSide, FrontSide, Material, MeshBasicMaterial, MeshPhysicalMaterial, MeshStandardMaterial, Texture, SRGBColorSpace, NoColorSpace, ColorSpace } from 'three';
 import { ExtensionProperty as ExtensionPropertyDef, Material as MaterialDef, Texture as TextureDef, TextureInfo as TextureInfoDef, vec3 } from '@gltf-transform/core';
-import { Clearcoat, EmissiveStrength, IOR, Iridescence, Sheen, Specular, Transmission, Volume } from '@gltf-transform/extensions';
+import { Anisotropy, Clearcoat, EmissiveStrength, IOR, Iridescence, Sheen, Specular, Transmission, Volume } from '@gltf-transform/extensions';
 import type { DocumentViewImpl } from '../DocumentViewImpl';
 import { eq } from '../utils';
 import { Subject } from './Subject';
@@ -27,6 +27,9 @@ export class MaterialSubject extends Subject<MaterialDef, Material> {
 	protected readonly normalTexture = new RefObserver<TextureDef, Texture, TextureParams>('normalTexture', this._documentView);
 	protected readonly occlusionTexture = new RefObserver<TextureDef, Texture, TextureParams>('occlusionTexture', this._documentView);
 	protected readonly metallicRoughnessTexture = new RefObserver<TextureDef, Texture, TextureParams>('metallicRoughnessTexture', this._documentView);
+
+	// KHR_materials_anisotropy
+	protected readonly anisotropyTexture = new RefObserver<TextureDef, Texture, TextureParams>('anisotropyTexture', this._documentView);
 
 	// KHR_materials_clearcoat
 	protected readonly clearcoatTexture = new RefObserver<TextureDef, Texture, TextureParams>('clearcoatTexture', this._documentView);
@@ -68,6 +71,10 @@ export class MaterialSubject extends Subject<MaterialDef, Material> {
 		this.bindTexture(['normalMap'], this.normalTexture, () => def.getNormalTexture(), () => def.getNormalTextureInfo(), NoColorSpace);
 		this.bindTexture(['aoMap'], this.occlusionTexture, () => def.getOcclusionTexture(), () => def.getOcclusionTextureInfo(), NoColorSpace);
 		this.bindTexture(['roughnessMap', 'metalnessMap'], this.metallicRoughnessTexture, () => def.getMetallicRoughnessTexture(), () => def.getMetallicRoughnessTextureInfo(), NoColorSpace);
+
+		// KHR_materials_anisotropy
+		const anisotropyExt = (): Anisotropy | null => def.getExtension<Anisotropy>('KHR_materials_anisotropy');
+		this.bindTexture(['anisotropyMap'], this.anisotropyTexture, () => anisotropyExt()?.getAnisotropyTexture() || null, () => anisotropyExt()?.getAnisotropyTextureInfo() || null, NoColorSpace);
 
 		// KHR_materials_clearcoat
 		const clearcoatExt = (): Clearcoat | null => def.getExtension<Clearcoat>('KHR_materials_clearcoat');
@@ -245,6 +252,20 @@ export class MaterialSubject extends Subject<MaterialDef, Material> {
 			return;
 		}
 
+		// KHR_materials_anisotropy
+		const anisotropy = def.getExtension<Anisotropy>('KHR_materials_anisotropy');
+		if (anisotropy) {
+			if (anisotropy.getAnisotropyStrength() !== target.anisotropy) {
+				if (target.anisotropy === 0) target.needsUpdate = true;
+				target.anisotropy = anisotropy.getAnisotropyStrength();
+			}
+			if (anisotropy.getAnisotropyRotation() !== target.anisotropyRotation) {
+				target.anisotropyRotation = anisotropy.getAnisotropyRotation();
+			}
+		} else {
+			target.anisotropy = 0;
+		}
+
 		// KHR_materials_clearcoat
 		const clearcoat = def.getExtension<Clearcoat>('KHR_materials_clearcoat');
 		if (clearcoat) {
@@ -379,6 +400,7 @@ function getShadingModel(def: MaterialDef): ShadingModel {
 			case 'KHR_materials_unlit':
 				return ShadingModel.UNLIT;
 
+			case 'KHR_materials_anisotropy':
 			case 'KHR_materials_clearcoat':
 			case 'KHR_materials_ior':
 			case 'KHR_materials_iridescence':
