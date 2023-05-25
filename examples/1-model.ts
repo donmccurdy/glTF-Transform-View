@@ -9,10 +9,9 @@ import { createMaterialPane } from './material-pane.js';
 import { createEnvironment, createIO } from './util.js';
 
 const renderer = new WebGLRenderer({antialias: true});
-renderer.setPixelRatio( window.devicePixelRatio );
+renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.outputEncoding = sRGBEncoding;
-renderer.physicallyCorrectLights = true;
+renderer.useLegacyLights = false;
 renderer.toneMapping = ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1;
 
@@ -92,7 +91,7 @@ io.read('./DamagedHelmet.glb').then(async (doc) => {
 	pane.addButton({title: 'stats'}).on('click', () => {
 		documentView.gc();
 		console.table(documentView.stats());
-	})
+	});
 });
 
 //

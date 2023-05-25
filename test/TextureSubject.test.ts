@@ -1,5 +1,5 @@
 import test from 'ava';
-import { LinearEncoding, MeshStandardMaterial, sRGBEncoding, Texture } from 'three';
+import { MeshStandardMaterial, NoColorSpace, SRGBColorSpace, Texture } from 'three';
 import { Document } from '@gltf-transform/core';
 import { DocumentView, NullImageProvider } from '@gltf-transform/view';
 
@@ -14,6 +14,8 @@ test('TextureBinding', async t => {
 	const materialDef = document.createMaterial()
 		.setBaseColorTexture(textureDef)
 		.setMetallicRoughnessTexture(textureDef);
+	materialDef.getMetallicRoughnessTextureInfo()!
+		.setTexCoord(1);
 
 	const documentView = new DocumentView(document, {imageProvider});
 	const texture = documentView.view(textureDef);
@@ -23,9 +25,12 @@ test('TextureBinding', async t => {
 	const roughnessMap = material.roughnessMap as Texture;
 
 	t.truthy(texture, 'texture');
-	t.is(map.encoding, sRGBEncoding, 'sRGB');
-	t.is(roughnessMap.encoding, LinearEncoding, 'Linear-sRGB');
-	t.is(metalnessMap.encoding, LinearEncoding, 'Linear-sRGB');
+	t.is(map.colorSpace, SRGBColorSpace, 'map.colorSpace = "srgb"');
+	t.is(map.channel, 0, 'map.channel = 0');
+	t.is(roughnessMap.colorSpace, NoColorSpace, 'no color space');
+	t.is(metalnessMap.colorSpace, NoColorSpace, 'no color space');
+	t.is(roughnessMap.channel, 1, 'roughnessMap.channel = 1');
+	t.is(metalnessMap.channel, 1, 'metalnessMap.channel = 1');
 	t.true(map.source === metalnessMap.source, 'map.source === metalnessMap.source');
 	t.true(metalnessMap === roughnessMap, 'metalnessMap === roughnessMap');
 	t.falsy(texture.flipY || map.flipY || roughnessMap.flipY || metalnessMap.flipY, 'flipY=false');

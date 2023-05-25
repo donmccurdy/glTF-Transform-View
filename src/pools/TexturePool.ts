@@ -1,5 +1,5 @@
 import { TextureInfo, vec2 } from '@gltf-transform/core';
-import { ClampToEdgeWrapping, LinearFilter, LinearMipmapLinearFilter, LinearMipmapNearestFilter, MirroredRepeatWrapping, NearestFilter, NearestMipmapLinearFilter, NearestMipmapNearestFilter, RepeatWrapping, Texture, TextureEncoding, TextureFilter, Wrapping } from 'three';
+import { ClampToEdgeWrapping, ColorSpace, LinearFilter, LinearMipmapLinearFilter, LinearMipmapNearestFilter, MagnificationTextureFilter, MinificationTextureFilter, MirroredRepeatWrapping, NearestFilter, NearestMipmapLinearFilter, NearestMipmapNearestFilter, RepeatWrapping, Texture, TextureEncoding, TextureFilter, Wrapping } from 'three';
 import type { Transform } from '@gltf-transform/extensions';
 import { Pool } from './Pool';
 
@@ -19,7 +19,8 @@ const WEBGL_WRAPPINGS: Record<number, Wrapping> = {
 };
 
 export interface TextureParams {
-	encoding: TextureEncoding,
+	colorSpace: ColorSpace,
+	channel: number,
 	minFilter: TextureFilter,
 	magFilter: TextureFilter,
 	wrapS: Wrapping,
@@ -33,14 +34,15 @@ const _VEC2 = {ZERO: [0, 0] as vec2, ONE: [1, 1] as vec2};
 
 /** @internal */
 export class TexturePool extends Pool<Texture, TextureParams> {
-    static createParams(textureInfo: TextureInfo, encoding: TextureEncoding): TextureParams {
+    static createParams(textureInfo: TextureInfo, colorSpace: ColorSpace): TextureParams {
 		const transform = textureInfo.getExtension<Transform>('KHR_texture_transform');
 		return {
+			colorSpace: colorSpace,
+			channel: textureInfo.getTexCoord(),
 			minFilter: WEBGL_FILTERS[textureInfo.getMinFilter() as number] || LinearMipmapLinearFilter,
 			magFilter: WEBGL_FILTERS[textureInfo.getMagFilter() as number] || LinearFilter,
 			wrapS: WEBGL_WRAPPINGS[textureInfo.getWrapS()] || RepeatWrapping,
 			wrapT: WEBGL_WRAPPINGS[textureInfo.getWrapT()] || RepeatWrapping,
-			encoding: encoding,
 			offset: transform?.getOffset() || _VEC2.ZERO,
 			rotation: transform?.getRotation() || 0,
 			repeat: transform?.getScale() || _VEC2.ONE,
@@ -62,16 +64,17 @@ export class TexturePool extends Pool<Texture, TextureParams> {
 
 	protected _updateVariant(srcTexture: Texture, dstTexture: Texture, params: TextureParams): Texture {
 		const needsUpdate = srcTexture.image !== dstTexture.image
-			|| dstTexture.encoding !== params.encoding
+			|| dstTexture.colorSpace !== params.colorSpace
 			|| dstTexture.wrapS !== params.wrapS
 			|| dstTexture.wrapT !== params.wrapT;
 
 		dstTexture.copy(srcTexture);
-		dstTexture.minFilter = params.minFilter;
-		dstTexture.magFilter = params.magFilter;
+		dstTexture.colorSpace = params.colorSpace;
+		dstTexture.channel = params.channel;
+		dstTexture.minFilter = params.minFilter as MinificationTextureFilter;
+		dstTexture.magFilter = params.magFilter as MagnificationTextureFilter;
 		dstTexture.wrapS = params.wrapS;
 		dstTexture.wrapT = params.wrapT;
-		dstTexture.encoding = params.encoding;
 		dstTexture.offset.fromArray(params.offset || _VEC2.ZERO);
 		dstTexture.rotation = params.rotation || 0;
 		dstTexture.repeat.fromArray(params.repeat || _VEC2.ONE);

@@ -23,7 +23,9 @@ function semanticToAttributeName(semantic: string): string {
 		case 'JOINTS_0': return 'skinIndex';
 		case 'WEIGHTS_0': return 'skinWeight';
 		case 'TEXCOORD_0': return 'uv';
-		case 'TEXCOORD_1': return 'uv2';
+		case 'TEXCOORD_1': return 'uv1';
+		case 'TEXCOORD_2': return 'uv2';
+		case 'TEXCOORD_3': return 'uv3';
 		default: return '_' + semantic.toLowerCase();
 	}
 }

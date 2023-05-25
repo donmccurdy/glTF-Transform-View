@@ -1,4 +1,4 @@
-import { DoubleSide, FrontSide, LinearEncoding, Material, MeshBasicMaterial, MeshPhysicalMaterial, MeshStandardMaterial, Texture, TextureEncoding, sRGBEncoding } from 'three';
+import { DoubleSide, FrontSide, Material, MeshBasicMaterial, MeshPhysicalMaterial, MeshStandardMaterial, Texture, SRGBColorSpace, NoColorSpace, ColorSpace } from 'three';
 import { ExtensionProperty as ExtensionPropertyDef, Material as MaterialDef, Texture as TextureDef, TextureInfo as TextureInfoDef, vec3 } from '@gltf-transform/core';
 import { Clearcoat, EmissiveStrength, IOR, Iridescence, Sheen, Specular, Transmission, Volume } from '@gltf-transform/extensions';
 import type { DocumentViewImpl } from '../DocumentViewImpl';
@@ -63,40 +63,40 @@ export class MaterialSubject extends Subject<MaterialDef, Material> {
 			this.publishAll();
 		});
 
-		this.bindTexture(['map'], this.baseColorTexture, () => def.getBaseColorTexture(), () => def.getBaseColorTextureInfo(), sRGBEncoding);
-		this.bindTexture(['emissiveMap'], this.emissiveTexture, () => def.getEmissiveTexture(), () => def.getEmissiveTextureInfo(), sRGBEncoding);
-		this.bindTexture(['normalMap'], this.normalTexture, () => def.getNormalTexture(), () => def.getNormalTextureInfo(), LinearEncoding);
-		this.bindTexture(['aoMap'], this.occlusionTexture, () => def.getOcclusionTexture(), () => def.getOcclusionTextureInfo(), LinearEncoding);
-		this.bindTexture(['roughnessMap', 'metalnessMap'], this.metallicRoughnessTexture, () => def.getMetallicRoughnessTexture(), () => def.getMetallicRoughnessTextureInfo(), LinearEncoding);
+		this.bindTexture(['map'], this.baseColorTexture, () => def.getBaseColorTexture(), () => def.getBaseColorTextureInfo(), SRGBColorSpace);
+		this.bindTexture(['emissiveMap'], this.emissiveTexture, () => def.getEmissiveTexture(), () => def.getEmissiveTextureInfo(), SRGBColorSpace);
+		this.bindTexture(['normalMap'], this.normalTexture, () => def.getNormalTexture(), () => def.getNormalTextureInfo(), NoColorSpace);
+		this.bindTexture(['aoMap'], this.occlusionTexture, () => def.getOcclusionTexture(), () => def.getOcclusionTextureInfo(), NoColorSpace);
+		this.bindTexture(['roughnessMap', 'metalnessMap'], this.metallicRoughnessTexture, () => def.getMetallicRoughnessTexture(), () => def.getMetallicRoughnessTextureInfo(), NoColorSpace);
 
 		// KHR_materials_clearcoat
 		const clearcoatExt = (): Clearcoat | null => def.getExtension<Clearcoat>('KHR_materials_clearcoat');
-		this.bindTexture(['clearcoatMap'], this.clearcoatTexture, () => clearcoatExt()?.getClearcoatTexture() || null, () => clearcoatExt()?.getClearcoatTextureInfo() || null, LinearEncoding);
-		this.bindTexture(['clearcoatRoughnessMap'], this.clearcoatRoughnessTexture, () => clearcoatExt()?.getClearcoatRoughnessTexture() || null, () => clearcoatExt()?.getClearcoatRoughnessTextureInfo() || null, LinearEncoding);
-		this.bindTexture(['clearcoatNormalMap'], this.clearcoatNormalTexture, () => clearcoatExt()?.getClearcoatNormalTexture() || null, () => clearcoatExt()?.getClearcoatNormalTextureInfo() || null, LinearEncoding);
+		this.bindTexture(['clearcoatMap'], this.clearcoatTexture, () => clearcoatExt()?.getClearcoatTexture() || null, () => clearcoatExt()?.getClearcoatTextureInfo() || null, NoColorSpace);
+		this.bindTexture(['clearcoatRoughnessMap'], this.clearcoatRoughnessTexture, () => clearcoatExt()?.getClearcoatRoughnessTexture() || null, () => clearcoatExt()?.getClearcoatRoughnessTextureInfo() || null, NoColorSpace);
+		this.bindTexture(['clearcoatNormalMap'], this.clearcoatNormalTexture, () => clearcoatExt()?.getClearcoatNormalTexture() || null, () => clearcoatExt()?.getClearcoatNormalTextureInfo() || null, NoColorSpace);
 
 		// KHR_materials_iridescence
 		const iridescenceExt = (): Iridescence | null => def.getExtension<Iridescence>('KHR_materials_iridescence');
-		this.bindTexture(['iridescenceTexture'], this.iridescenceTexture, () => iridescenceExt()?.getIridescenceTexture() || null, () => iridescenceExt()?.getIridescenceTextureInfo() || null, LinearEncoding);
-		this.bindTexture(['iridescenceThicknessTexture'], this.iridescenceThicknessTexture, () => iridescenceExt()?.getIridescenceThicknessTexture() || null, () => iridescenceExt()?.getIridescenceThicknessTextureInfo() || null, LinearEncoding);
+		this.bindTexture(['iridescenceTexture'], this.iridescenceTexture, () => iridescenceExt()?.getIridescenceTexture() || null, () => iridescenceExt()?.getIridescenceTextureInfo() || null, NoColorSpace);
+		this.bindTexture(['iridescenceThicknessTexture'], this.iridescenceThicknessTexture, () => iridescenceExt()?.getIridescenceThicknessTexture() || null, () => iridescenceExt()?.getIridescenceThicknessTextureInfo() || null, NoColorSpace);
 
 		// KHR_materials_sheen
 		const sheenExt = (): Sheen | null => def.getExtension<Sheen>('KHR_materials_sheen');
-		this.bindTexture(['sheenColorMap'], this.sheenColorTexture, () => sheenExt()?.getSheenColorTexture() || null, () => sheenExt()?.getSheenColorTextureInfo() || null, sRGBEncoding);
-		this.bindTexture(['sheenRoughnessMap'], this.sheenRoughnessTexture, () => sheenExt()?.getSheenRoughnessTexture() || null, () => sheenExt()?.getSheenRoughnessTextureInfo() || null, LinearEncoding);
+		this.bindTexture(['sheenColorMap'], this.sheenColorTexture, () => sheenExt()?.getSheenColorTexture() || null, () => sheenExt()?.getSheenColorTextureInfo() || null, SRGBColorSpace);
+		this.bindTexture(['sheenRoughnessMap'], this.sheenRoughnessTexture, () => sheenExt()?.getSheenRoughnessTexture() || null, () => sheenExt()?.getSheenRoughnessTextureInfo() || null, NoColorSpace);
 
 		// KHR_materials_specular
 		const specularExt = (): Specular | null => def.getExtension<Specular>('KHR_materials_specular');
-		this.bindTexture(['specularIntensityMap'], this.specularTexture, () => specularExt()?.getSpecularTexture() || null, () => specularExt()?.getSpecularTextureInfo() || null, LinearEncoding);
-		this.bindTexture(['specularColorMap'], this.specularColorTexture, () => specularExt()?.getSpecularColorTexture() || null, () => specularExt()?.getSpecularColorTextureInfo() || null, sRGBEncoding);
+		this.bindTexture(['specularIntensityMap'], this.specularTexture, () => specularExt()?.getSpecularTexture() || null, () => specularExt()?.getSpecularTextureInfo() || null, NoColorSpace);
+		this.bindTexture(['specularColorMap'], this.specularColorTexture, () => specularExt()?.getSpecularColorTexture() || null, () => specularExt()?.getSpecularColorTextureInfo() || null, SRGBColorSpace);
 
 		// KHR_materials_transmission
 		const transmissionExt = (): Transmission | null => def.getExtension<Transmission>('KHR_materials_transmission');
-		this.bindTexture(['transmissionMap'], this.transmissionTexture, () => transmissionExt()?.getTransmissionTexture() || null, () => transmissionExt()?.getTransmissionTextureInfo() || null, LinearEncoding);
+		this.bindTexture(['transmissionMap'], this.transmissionTexture, () => transmissionExt()?.getTransmissionTexture() || null, () => transmissionExt()?.getTransmissionTextureInfo() || null, NoColorSpace);
 
 		// KHR_materials_volume
 		const volumeExt = (): Volume | null => def.getExtension<Volume>('KHR_materials_volume');
-		this.bindTexture(['thicknessMap'], this.thicknessTexture, () => volumeExt()?.getThicknessTexture() || null, () => volumeExt()?.getThicknessTextureInfo() || null, LinearEncoding);
+		this.bindTexture(['thicknessMap'], this.thicknessTexture, () => volumeExt()?.getThicknessTexture() || null, () => volumeExt()?.getThicknessTextureInfo() || null, NoColorSpace);
 	}
 
 	private bindTexture(
@@ -104,9 +104,9 @@ export class MaterialSubject extends Subject<MaterialDef, Material> {
 			observer: RefObserver<TextureDef, Texture, TextureParams>,
 			textureFn: () => TextureDef | null,
 			textureInfoFn: () => TextureInfoDef | null,
-			encoding: TextureEncoding): Subscription {
+			colorSpace: ColorSpace): Subscription {
 
-		observer.setParamsFn(() => TexturePool.createParams(textureInfoFn()!, encoding));
+		observer.setParamsFn(() => TexturePool.createParams(textureInfoFn()!, colorSpace));
 
 		const applyTextureFn = (texture: Texture | null) => {
 			const material = this.value as any;

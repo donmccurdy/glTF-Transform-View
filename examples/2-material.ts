@@ -8,10 +8,9 @@ import { Pane } from 'tweakpane';
 import { createEnvironment } from './util.js';
 
 const renderer = new WebGLRenderer({antialias: true});
-renderer.setPixelRatio( window.devicePixelRatio );
+renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.outputEncoding = sRGBEncoding;
-renderer.physicallyCorrectLights = true;
+renderer.useLegacyLights = false;
 renderer.toneMapping = ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1;
 
