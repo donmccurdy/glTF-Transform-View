@@ -1,4 +1,4 @@
-import { ACESFilmicToneMapping, AmbientLight, DirectionalLight, PMREMGenerator, PerspectiveCamera, Scene, WebGLRenderer, sRGBEncoding, TorusKnotGeometry } from 'three';
+import { ACESFilmicToneMapping, AmbientLight, DirectionalLight, PMREMGenerator, PerspectiveCamera, Scene, WebGLRenderer, TorusKnotGeometry } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { Document, Material } from '@gltf-transform/core';
 import { DocumentView, NullImageProvider } from '../dist/view.modern.js';

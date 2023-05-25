@@ -1,5 +1,5 @@
 import { Document, Material, Texture } from '@gltf-transform/core';
-import { MaterialsClearcoat, MaterialsIOR, MaterialsSheen, MaterialsSpecular, MaterialsTransmission, MaterialsUnlit, MaterialsVolume } from '@gltf-transform/extensions';
+import { KHRMaterialsClearcoat, KHRMaterialsIOR, KHRMaterialsSheen, KHRMaterialsSpecular, KHRMaterialsTransmission, KHRMaterialsUnlit, KHRMaterialsVolume } from '@gltf-transform/extensions';
 import { FolderApi, Pane } from 'tweakpane';
 import * as TweakpanePluginThumbnailList from 'tweakpane-plugin-thumbnail-list';
 
@@ -14,25 +14,25 @@ const textureValue = (texture: Texture | null, options: TextureOption[]): string
 	if (!texture) return '';
 	const option = options.find((option) => option.data === texture)!;
 	return option.value;
-}
+};
 
 export function createMaterialPane(_pane: Pane, document: Document, material: Material): FolderApi {
 	_pane.registerPlugin(TweakpanePluginThumbnailList);
 	const pane = _pane.addFolder({title: 'Material'});
 
-	const clearcoatExtension = document.createExtension(MaterialsClearcoat);
+	const clearcoatExtension = document.createExtension(KHRMaterialsClearcoat);
 	const clearcoat = clearcoatExtension.createClearcoat();
-	const iorExtension = document.createExtension(MaterialsIOR);
+	const iorExtension = document.createExtension(KHRMaterialsIOR);
 	const ior = iorExtension.createIOR();
-	const sheenExtension = document.createExtension(MaterialsSheen);
+	const sheenExtension = document.createExtension(KHRMaterialsSheen);
 	const sheen = sheenExtension.createSheen();
-	const specularExtension = document.createExtension(MaterialsSpecular);
+	const specularExtension = document.createExtension(KHRMaterialsSpecular);
 	const specular = specularExtension.createSpecular();
-	const transmissionExtension = document.createExtension(MaterialsTransmission);
+	const transmissionExtension = document.createExtension(KHRMaterialsTransmission);
 	const transmission = transmissionExtension.createTransmission();
-	const volumeExtension = document.createExtension(MaterialsVolume);
+	const volumeExtension = document.createExtension(KHRMaterialsVolume);
 	const volume = volumeExtension.createVolume();
-	const unlitExtension = document.createExtension(MaterialsUnlit);
+	const unlitExtension = document.createExtension(KHRMaterialsUnlit);
 	const unlit = unlitExtension.createUnlit();
 
 	const textureOptions = document.getRoot().listTextures().map((texture, index) => {
@@ -41,7 +41,7 @@ export function createMaterialPane(_pane: Pane, document: Document, material: Ma
 			value: index.toString(),
 			src: URL.createObjectURL(new Blob([texture.getImage()!], {type: texture.getMimeType()})),
 			data: texture,
-		}
+		};
 	});
 
 	const params = {
