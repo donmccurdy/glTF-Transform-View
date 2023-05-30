@@ -1,8 +1,8 @@
 import { PropertyType, ExtensionProperty as ExtensionPropertyDef } from '@gltf-transform/core';
 import type { Accessor as AccessorDef, Material as MaterialDef, Mesh as MeshDef, Node as NodeDef, Primitive as PrimitiveDef, Property as PropertyDef, Scene as SceneDef, Skin as SkinDef, Texture as TextureDef } from '@gltf-transform/core';
-import type { Light as LightDef } from '@gltf-transform/extensions';
-import type { Object3D, BufferAttribute, Group, Texture, Material, Skeleton } from 'three';
-import { AccessorSubject, Subject, ExtensionSubject, MaterialSubject, MeshSubject, NodeSubject, PrimitiveSubject, SceneSubject, SkinSubject, TextureSubject, LightSubject } from './subjects';
+import type { Light as LightDef, InstancedMesh as InstancedMeshDef } from '@gltf-transform/extensions';
+import type { Object3D, BufferAttribute, Group, Texture, Material, Skeleton, InstancedMesh } from 'three';
+import { AccessorSubject, Subject, ExtensionSubject, MaterialSubject, MeshSubject, NodeSubject, PrimitiveSubject, SceneSubject, SkinSubject, TextureSubject, LightSubject, InstancedMeshSubject } from './subjects';
 import type { LightLike, MeshLike, THREEObject } from './constants';
 import { DefaultImageProvider, ImageProvider } from './ImageProvider';
 import { MaterialPool, SingleUserPool, Pool, TexturePool } from './pools';
@@ -10,6 +10,7 @@ import { MaterialPool, SingleUserPool, Pool, TexturePool } from './pools';
 export interface DocumentViewSubjectAPI {
 	readonly accessorPool: Pool<BufferAttribute>;
 	readonly extensionPool: Pool<ExtensionPropertyDef>;
+	readonly instancedMeshPool: Pool<InstancedMesh>;
 	readonly lightPool: SingleUserPool<LightLike>;
 	readonly materialPool: MaterialPool;
 	readonly meshPool: SingleUserPool<Group>;
@@ -23,6 +24,7 @@ export interface DocumentViewSubjectAPI {
 
 	bind(def: null): null;
 	bind(def: AccessorDef): AccessorSubject;
+	bind(def: InstancedMeshDef): InstancedMeshSubject;
 	bind(def: LightDef): LightSubject;
 	bind(def: MaterialDef): MaterialSubject;
 	bind(def: MeshDef): MeshSubject;
@@ -53,6 +55,7 @@ export class DocumentViewImpl implements DocumentViewSubjectAPI {
 	readonly accessorPool: Pool<BufferAttribute> = new Pool<BufferAttribute>('accessors', this);
 	readonly extensionPool: Pool<ExtensionPropertyDef> = new Pool<ExtensionPropertyDef>('extensions', this);
 	readonly materialPool: MaterialPool = new MaterialPool('materials', this);
+	readonly instancedMeshPool: Pool<InstancedMesh> = new Pool<InstancedMesh>('instancedMeshes', this);
 	readonly lightPool: SingleUserPool<LightLike> = new SingleUserPool<LightLike>('lights', this);
 	readonly meshPool: SingleUserPool<Group> = new SingleUserPool<Group>('meshes', this);
 	readonly nodePool: Pool<Object3D> = new Pool<Object3D>('nodes', this);
@@ -77,6 +80,7 @@ export class DocumentViewImpl implements DocumentViewSubjectAPI {
 
 	bind(def: null): null;
 	bind(def: AccessorDef): AccessorSubject;
+	bind(def: InstancedMeshDef): InstancedMeshSubject;
 	bind(def: LightDef): LightSubject;
 	bind(def: MaterialDef): MaterialSubject;
 	bind(def: MeshDef): MeshSubject;
@@ -93,6 +97,9 @@ export class DocumentViewImpl implements DocumentViewSubjectAPI {
 		switch (def.propertyType) {
 			case PropertyType.ACCESSOR:
 				subject = new AccessorSubject(this, def as AccessorDef);
+				break;
+			case 'InstancedMesh':
+				subject = new InstancedMeshSubject(this, def as InstancedMeshDef);
 				break;
 			case 'Light':
 				subject = new LightSubject(this, def as LightDef);
@@ -152,6 +159,7 @@ export class DocumentViewImpl implements DocumentViewSubjectAPI {
 		return {
 			accessors: this.accessorPool.size(),
 			extensions: this.extensionPool.size(),
+			instancedMeshes: this.instancedMeshPool.size(),
 			lights: this.lightPool.size(),
 			materials: this.materialPool.size(),
 			meshes: this.meshPool.size(),
@@ -166,6 +174,7 @@ export class DocumentViewImpl implements DocumentViewSubjectAPI {
 	gc() {
 		this.accessorPool.gc();
 		this.extensionPool.gc();
+		this.instancedMeshPool.gc();
 		this.lightPool.gc();
 		this.materialPool.gc();
 		this.meshPool.gc();
@@ -215,6 +224,7 @@ export class DocumentViewImpl implements DocumentViewSubjectAPI {
 
 		// Last, to clean up anything left after disposal.
 		this.accessorPool.dispose();
+		this.instancedMeshPool.dispose();
 		this.lightPool.dispose();
 		this.materialPool.dispose();
 		this.meshPool.dispose();

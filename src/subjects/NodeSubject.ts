@@ -1,6 +1,6 @@
-import { Bone, BufferAttribute, Group, Matrix4, Object3D, Skeleton, SkinnedMesh } from 'three';
+import { Bone, Group, Matrix4, Object3D, Skeleton, SkinnedMesh, InstancedMesh, Mesh } from 'three';
 import { Mesh as MeshDef, Node as NodeDef, Skin as SkinDef, vec3, vec4 } from '@gltf-transform/core';
-import { Light as LightDef } from '@gltf-transform/extensions';
+import { Light as LightDef, InstancedMesh as InstancedMeshDef } from '@gltf-transform/extensions';
 import type { DocumentViewSubjectAPI } from '../DocumentViewImpl';
 import { eq } from '../utils';
 import { Subject } from './Subject';
@@ -19,6 +19,7 @@ export class NodeSubject extends Subject<NodeDef, Object3D> {
 		.setParamsFn(() => SingleUserPool.createParams(this.def));
 	protected skin = new RefObserver<SkinDef, Skeleton>('skin', this._documentView);
 	protected light = new RefObserver<LightDef, LightLike>('light', this._documentView);
+	protected instancedMesh = new RefObserver<InstancedMeshDef, InstancedMesh>('instancedMesh', this._documentView);
 
 	/** Output (Object3D) is never cloned by an observer. */
 	protected _outputSingleton = true;
@@ -36,29 +37,65 @@ export class NodeSubject extends Subject<NodeDef, Object3D> {
 			if (nextChildren.length) this.value.add(...nextChildren);
 			this.publishAll();
 		});
-		this.mesh.subscribe((nextMesh, prevMesh) => {
-			if (prevMesh) this.value.remove(prevMesh);
-			if (nextMesh) this.value.add(nextMesh);
-			this.bindSkeleton(this.skin.value);
+		this.mesh.subscribe(() => {
+			this.detachMesh();
+			this.attachMesh();
+			this.bindSkeleton();
 			this.publishAll();
 		});
-		this.skin.subscribe((skin) => {
-			this.bindSkeleton(skin);
-			this.publishAll;
+		this.skin.subscribe(() => {
+			this.bindSkeleton();
+			this.publishAll();
 		});
 		this.light.subscribe((nextLight, prevLight) => {
 			if (prevLight) this.value.remove(prevLight);
 			if (nextLight) this.value.add(nextLight);
 			this.publishAll();
 		});
+		this.instancedMesh.subscribe(() => {
+			this.detachMesh();
+			this.attachMesh();
+			this.publishAll();
+		});
 	}
 
-	private bindSkeleton(skeleton: Skeleton | null) {
-		if (!this.mesh.value || !skeleton) return;
+	private detachMesh() {
+		let group: Group | undefined;
+		for (const child of this.value.children) {
+			if ((child as Group).isGroup) {
+				group = child as Group;
+				break;
+			}
+		}
+		if (group) this.value.remove(group);
+	}
+
+	private attachMesh() {
+		const srcGroup = this.mesh.value;
+		const srcInstancedMesh = this.instancedMesh.value;
+		if (srcGroup && srcInstancedMesh) {
+			const dstGroup = new Group();
+			for (const mesh of srcGroup.children as Mesh[]) {
+				const instancedMesh = new InstancedMesh(
+					mesh.geometry,
+					mesh.material,
+					srcInstancedMesh.count,
+				);
+				instancedMesh.instanceMatrix.copy(srcInstancedMesh.instanceMatrix);
+				dstGroup.add(instancedMesh);
+			}
+			this.value.add(dstGroup);
+		} else if (srcGroup) {
+			this.value.add(srcGroup);
+		}
+	}
+
+	private bindSkeleton() {
+		if (!this.mesh.value || !this.skin.value) return;
 
 		for (const prim of this.mesh.value.children) {
 			if (prim instanceof SkinnedMesh) {
-				prim.bind(skeleton, IDENTITY);
+				prim.bind(this.skin.value, IDENTITY);
 				prim.normalizeSkinWeights(); // three.js#15319
 			}
 		}
@@ -88,6 +125,7 @@ export class NodeSubject extends Subject<NodeDef, Object3D> {
 		this.mesh.update(def.getMesh());
 		this.skin.update(def.getSkin());
 		this.light.update(def.getExtension('KHR_lights_punctual'));
+		this.instancedMesh.update(def.getExtension('EXT_mesh_gpu_instancing'));
 	}
 
 	dispose() {
@@ -95,6 +133,7 @@ export class NodeSubject extends Subject<NodeDef, Object3D> {
 		this.mesh.dispose();
 		this.skin.dispose();
 		this.light.dispose();
+		this.instancedMesh.dispose();
 		super.dispose();
 	}
 }
