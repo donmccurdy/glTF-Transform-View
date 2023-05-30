@@ -5,30 +5,7 @@ import { Subject } from './Subject';
 import { RefMapObserver, RefObserver } from '../observers';
 import { MeshLike } from '../constants';
 import { MaterialParams, MaterialPool, ValuePool } from '../pools';
-
-// https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#default-material
-const DEFAULT_MATERIAL = new MeshStandardMaterial({
-	name: '__DefaultMaterial',
-	color: 0xFFFFFF,
-	roughness: 1.0,
-	metalness: 1.0
-});
-
-function semanticToAttributeName(semantic: string): string {
-	switch (semantic) {
-		case 'POSITION': return 'position';
-		case 'NORMAL': return 'normal';
-		case 'TANGENT': return 'tangent';
-		case 'COLOR_0': return 'color';
-		case 'JOINTS_0': return 'skinIndex';
-		case 'WEIGHTS_0': return 'skinWeight';
-		case 'TEXCOORD_0': return 'uv';
-		case 'TEXCOORD_1': return 'uv1';
-		case 'TEXCOORD_2': return 'uv2';
-		case 'TEXCOORD_3': return 'uv3';
-		default: return '_' + semantic.toLowerCase();
-	}
-}
+import { DEFAULT_MATERIAL, semanticToAttributeName } from '../utils';
 
 /** @internal */
 export class PrimitiveSubject extends Subject<PrimitiveDef, MeshLike> {
