@@ -1,8 +1,8 @@
 import { PropertyType, ExtensionProperty as ExtensionPropertyDef } from '@gltf-transform/core';
-import type { Accessor as AccessorDef, Material as MaterialDef, Mesh as MeshDef, Node as NodeDef, Primitive as PrimitiveDef, Property as PropertyDef, Scene as SceneDef, Skin as SkinDef, Texture as TextureDef } from '@gltf-transform/core';
+import type { Accessor as AccessorDef, Animation as AnimationDef, AnimationChannel as AnimationChannelDef, Material as MaterialDef, Mesh as MeshDef, Node as NodeDef, Primitive as PrimitiveDef, Property as PropertyDef, Scene as SceneDef, Skin as SkinDef, Texture as TextureDef } from '@gltf-transform/core';
 import type { Light as LightDef } from '@gltf-transform/extensions';
-import type { Object3D, BufferAttribute, Group, Texture, Material, Skeleton } from 'three';
-import { AccessorSubject, Subject, ExtensionSubject, MaterialSubject, MeshSubject, NodeSubject, PrimitiveSubject, SceneSubject, SkinSubject, TextureSubject, LightSubject } from './subjects';
+import type { Object3D, BufferAttribute, Group, Texture, Material, Skeleton, AnimationClip, KeyframeTrack } from 'three';
+import { AccessorSubject, Subject, ExtensionSubject, MaterialSubject, MeshSubject, NodeSubject, PrimitiveSubject, SceneSubject, SkinSubject, TextureSubject, LightSubject, AnimationSubject, AnimationChannelSubject } from './subjects';
 import type { LightLike, MeshLike, THREEObject } from './constants';
 import { DefaultImageProvider, ImageProvider } from './ImageProvider';
 import { MaterialPool, SingleUserPool, Pool, TexturePool } from './pools';
@@ -51,6 +51,8 @@ export class DocumentViewImpl implements DocumentViewSubjectAPI {
 	private _outputValuesInverse = new WeakMap<object, PropertyDef>();
 
 	readonly accessorPool: Pool<BufferAttribute> = new Pool<BufferAttribute>('accessors', this);
+	readonly animationPool: Pool<AnimationClip> = new Pool<AnimationClip>('animations', this);
+	readonly animationChannelPool: Pool<KeyframeTrack[]> = new Pool<KeyframeTrack[]>('animationChannels', this);
 	readonly extensionPool: Pool<ExtensionPropertyDef> = new Pool<ExtensionPropertyDef>('extensions', this);
 	readonly materialPool: MaterialPool = new MaterialPool('materials', this);
 	readonly lightPool: SingleUserPool<LightLike> = new SingleUserPool<LightLike>('lights', this);
@@ -77,6 +79,8 @@ export class DocumentViewImpl implements DocumentViewSubjectAPI {
 
 	bind(def: null): null;
 	bind(def: AccessorDef): AccessorSubject;
+	bind(def: AnimationDef): AnimationSubject;
+	bind(def: AnimationChannelDef): AnimationChannelSubject;
 	bind(def: LightDef): LightSubject;
 	bind(def: MaterialDef): MaterialSubject;
 	bind(def: MeshDef): MeshSubject;
@@ -93,6 +97,12 @@ export class DocumentViewImpl implements DocumentViewSubjectAPI {
 		switch (def.propertyType) {
 			case PropertyType.ACCESSOR:
 				subject = new AccessorSubject(this, def as AccessorDef);
+				break;
+			case PropertyType.ANIMATION:
+				subject = new AnimationSubject(this, def as AnimationDef);
+				break;
+			case PropertyType.ANIMATION_CHANNEL:
+				subject = new AnimationChannelSubject(this, def as AnimationChannelDef);
 				break;
 			case 'Light':
 				subject = new LightSubject(this, def as LightDef);
@@ -151,6 +161,8 @@ export class DocumentViewImpl implements DocumentViewSubjectAPI {
 	stats() {
 		return {
 			accessors: this.accessorPool.size(),
+			animations: this.animationPool.size(),
+			animationChannels: this.animationChannelPool.size(),
 			extensions: this.extensionPool.size(),
 			lights: this.lightPool.size(),
 			materials: this.materialPool.size(),
@@ -165,6 +177,8 @@ export class DocumentViewImpl implements DocumentViewSubjectAPI {
 
 	gc() {
 		this.accessorPool.gc();
+		this.animationPool.gc();
+		this.animationChannelPool.gc();
 		this.extensionPool.gc();
 		this.lightPool.gc();
 		this.materialPool.gc();
@@ -215,6 +229,8 @@ export class DocumentViewImpl implements DocumentViewSubjectAPI {
 
 		// Last, to clean up anything left after disposal.
 		this.accessorPool.dispose();
+		this.animationPool.dispose();
+		this.animationChannelPool.dispose();
 		this.lightPool.dispose();
 		this.materialPool.dispose();
 		this.meshPool.dispose();

@@ -1,5 +1,7 @@
 export * from './Subject';
 export * from './AccessorSubject';
+export * from './AnimationSubject';
+export * from './AnimationChannelSubject';
 export * from './ExtensionSubject';
 export * from './LightSubject';
 export * from './MaterialSubject';
