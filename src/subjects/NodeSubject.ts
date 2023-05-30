@@ -1,4 +1,4 @@
-import { Bone, Group, Matrix4, Object3D, Skeleton, SkinnedMesh, InstancedMesh, BufferGeometry, Mesh } from 'three';
+import { Bone, Group, Matrix4, Object3D, Skeleton, SkinnedMesh, InstancedMesh, Mesh } from 'three';
 import { Mesh as MeshDef, Node as NodeDef, Skin as SkinDef, vec3, vec4 } from '@gltf-transform/core';
 import { Light as LightDef, InstancedMesh as InstancedMeshDef } from '@gltf-transform/extensions';
 import type { DocumentViewSubjectAPI } from '../DocumentViewImpl';

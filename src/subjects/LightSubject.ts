@@ -63,7 +63,7 @@ function getType(def: LightDef): string {
 		case LightDef.Type.SPOT:
 			return 'SpotLight';
 		case LightDef.Type.DIRECTIONAL:
-			return 'DirectionalLight;'
+			return 'DirectionalLight';
 		default:
 			throw new Error(`Unexpected light type: ${def.getType()}`);
 	}
