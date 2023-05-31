@@ -1054,28 +1054,28 @@
   resolved "https://registry.yarnpkg.com/@eslint/js/-/js-8.41.0.tgz#080321c3b68253522f7646b55b577dd99d2950b3"
   integrity sha512-LxcyMGxwmTh2lY9FwHPGWOHmYFCZvbrFCBZL4FzSSsxsRPuhrYUg/49/0KDfW8tnIEaEHtfmn6+NPN+1DqaNmA==
 
-"@gltf-transform/core@3.3.6", "@gltf-transform/core@^3.3.6":
-  version "3.3.6"
-  resolved "https://registry.yarnpkg.com/@gltf-transform/core/-/core-3.3.6.tgz#367573d8cfcc180f24cccb7fa25f3504101b3f86"
-  integrity sha512-fMJ43m+LdPV1w/uS9RZKQci55oH8AAgQyvYBy8BqESn/UgrwWpf/Dw5BtrhvLFhIKgsP0q5boslutYSf49lXUQ==
+"@gltf-transform/core@3.4.0", "@gltf-transform/core@^3.4.0":
+  version "3.4.0"
+  resolved "https://registry.yarnpkg.com/@gltf-transform/core/-/core-3.4.0.tgz#3d15f383cf3e35e0979005ac92fb4af29e99dbb1"
+  integrity sha512-5QuVILdTdXRDIn2FLO10VRQypvi7gC37ilO8w7Dnk5AusfoJlYTOXSY0KjPw/BYd476Oda2JQP/5/5+jvzLCYw==
   dependencies:
     property-graph "^1.2.0"
 
-"@gltf-transform/extensions@3.3.6", "@gltf-transform/extensions@^3.3.6":
-  version "3.3.6"
-  resolved "https://registry.yarnpkg.com/@gltf-transform/extensions/-/extensions-3.3.6.tgz#2858af73d42279754a5f3aecc7db6e261b15ffb3"
-  integrity sha512-cpo7iTohZGiZu1HdFgla6setEmrnZxyilEuslddI06L3d0+mCYrY88Rx4RyIj4ZwWSfohfQK9eXPOTFxMlHRCg==
+"@gltf-transform/extensions@3.4.0", "@gltf-transform/extensions@^3.4.0":
+  version "3.4.0"
+  resolved "https://registry.yarnpkg.com/@gltf-transform/extensions/-/extensions-3.4.0.tgz#49dde32df8b975b8955a9fade12dc8ee429f95f5"
+  integrity sha512-6DAExo0bEej36dUb2U/Br8xoMOIrfMfTxi0P/yoEkiWw2L9B+bsCTOk5MRpWfCDdTDAVDMFekHTeBi1GP3+XoA==
   dependencies:
-    "@gltf-transform/core" "^3.3.6"
+    "@gltf-transform/core" "^3.4.0"
     ktx-parse "^0.5.0"
 
-"@gltf-transform/functions@3.3.6":
-  version "3.3.6"
-  resolved "https://registry.yarnpkg.com/@gltf-transform/functions/-/functions-3.3.6.tgz#03f9459503d0aed1a5712c4763c4e6b2e35b21a2"
-  integrity sha512-SZtzS7FjC7iSOunqt+X2y/OyZ8NA3eXcuUf+AxkMOZqappATVZQO6vaK6jQjUA3086N0j4aCACLyrLSgWLR8MQ==
+"@gltf-transform/functions@3.4.0":
+  version "3.4.0"
+  resolved "https://registry.yarnpkg.com/@gltf-transform/functions/-/functions-3.4.0.tgz#b0a09571f73a6ffa34c034f2bc9c1693de715985"
+  integrity sha512-h3q997qchpZv7PZaLsrTnFeiCffNAffbGB3ru/IJPerZIWFrbX7ohvboQLFEq1IcA6cP91d3NkvrP4PoPOdNYw==
   dependencies:
-    "@gltf-transform/core" "^3.3.6"
-    "@gltf-transform/extensions" "^3.3.6"
+    "@gltf-transform/core" "^3.4.0"
+    "@gltf-transform/extensions" "^3.4.0"
     ktx-parse "^0.5.0"
     ndarray "^1.0.19"
     ndarray-lanczos "^0.3.0"
@@ -1334,10 +1334,10 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-14.14.25.tgz#15967a7b577ff81383f9b888aa6705d43fbbae93"
   integrity sha512-EPpXLOVqDvisVxtlbvzfyqSsFeQxltFbluZNRndIb8tr9KiBnYNLzrc1N3pyKUCww2RNrfHDViqDWWE1LCJQtQ==
 
-"@types/node@^20.2.3":
-  version "20.2.3"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.2.3.tgz#b31eb300610c3835ac008d690de6f87e28f9b878"
-  integrity sha512-pg9d0yC4rVNWQzX8U7xb4olIOFuuVL9za3bzMT2pu2SU0SNEi66i2qrvhE2qt0HvkhuCaWJu7pLNOt/Pj8BIrw==
+"@types/node@^20.2.5":
+  version "20.2.5"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.2.5.tgz#26d295f3570323b2837d322180dfbf1ba156fefb"
+  integrity sha512-JJulVEQXmiY9Px5axXHeYGLSjhkZEnD+MDPDGbCbIAbMslkKwmygtZFy1X6s/075Yo94sf8GuSlFfPzysQrWZQ==
 
 "@types/parse-json@^4.0.0":
   version "4.0.0"
@@ -5863,10 +5863,10 @@ text-table@^0.2.0:
   resolved "https://registry.yarnpkg.com/text-table/-/text-table-0.2.0.tgz#7f5ee823ae805207c00af2df4a84ec3fcfa570b4"
   integrity sha512-N+8UisAXDGk8PFXP4HAzVR9nbfmVJ3zYLAWiTIoqC5v5isinhr+r5uaO8+7r3BMfuNIufIsA7RdpVgacC2cSpw==
 
-three@0.152.2:
-  version "0.152.2"
-  resolved "https://registry.yarnpkg.com/three/-/three-0.152.2.tgz#2ee0f2c504d31a4bc29b45495c12bded9fda7bfc"
-  integrity sha512-Ff9zIpSfkkqcBcpdiFo2f35vA9ZucO+N8TNacJOqaEE6DrB0eufItVMib8bK8Pcju/ZNT6a7blE1GhTpkdsILw==
+three@0.153.0:
+  version "0.153.0"
+  resolved "https://registry.yarnpkg.com/three/-/three-0.153.0.tgz#d8f2aab7b49ae4ac947fd0e24cebec11378758f0"
+  integrity sha512-OCP2/uQR6GcDpSLnJt/3a4mdS0kNWcbfUXIwLoEMgLzEUIVIYsSDwskpmOii/AkDM+BBwrl6+CKgrjX9+E2aWg==
 
 through@^2.3.4:
   version "2.3.8"
