@@ -4,7 +4,7 @@
   "repository": "github:donmccurdy/glTF-Transform-View",
   "description": "Syncs a glTF-Transform Document with a three.js scene graph",
   "author": "Don McCurdy <dm@donmccurdy.com>",
-  "license": "MIT",
+  "license": "Prosperity-3.0.0",
   "type": "module",
   "sideEffects": false,
   "source": "./src/index.ts",
