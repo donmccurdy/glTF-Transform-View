@@ -27,7 +27,7 @@
     "@typescript-eslint/eslint-plugin": "5.59.11",
     "@typescript-eslint/parser": "5.59.11",
     "ava": "^5.3.0",
-    "c8": "^7.13.0",
+    "c8": "^8.0.0",
     "concurrently": "8.2.0",
     "eslint": "^8.41.0",
     "jsdom": "^22.0.0",
