@@ -23,12 +23,12 @@
     "@gltf-transform/functions": "3.5.1",
     "@tweakpane/core": "1.1.9",
     "@types/node": "^20.2.5",
-    "@types/three": "0.155.0",
+    "@types/three": "0.155.1",
     "@typescript-eslint/eslint-plugin": "5.62.0",
     "@typescript-eslint/parser": "5.62.0",
     "ava": "^5.3.0",
     "c8": "^8.0.0",
-    "concurrently": "8.2.0",
+    "concurrently": "8.2.1",
     "eslint": "^8.41.0",
     "jsdom": "^22.0.0",
     "jsdom-global": "^3.0.2",
@@ -41,7 +41,7 @@
     "ts-node": "^10.9.1",
     "tweakpane": "3.1.10",
     "tweakpane-plugin-thumbnail-list": "0.3.0",
-    "typescript": "5.1.6",
+    "typescript": "5.2.2",
     "vite": "4.4.9"
   },
   "scripts": {
