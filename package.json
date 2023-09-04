@@ -18,9 +18,9 @@
     "three": ">=0.152.0"
   },
   "devDependencies": {
-    "@gltf-transform/core": "3.5.1",
-    "@gltf-transform/extensions": "3.5.1",
-    "@gltf-transform/functions": "3.5.1",
+    "@gltf-transform/core": "3.6.0",
+    "@gltf-transform/extensions": "3.6.0",
+    "@gltf-transform/functions": "3.6.0",
     "@tweakpane/core": "1.1.9",
     "@types/node": "^20.2.5",
     "@types/three": "0.155.1",
@@ -37,7 +37,7 @@
     "rimraf": "^5.0.1",
     "simple-dropzone": "0.8.3",
     "suppress-experimental-warnings": "^1.1.4",
-    "three": "0.155.0",
+    "three": "0.156.0",
     "ts-node": "^10.9.1",
     "tweakpane": "3.1.10",
     "tweakpane-plugin-thumbnail-list": "0.3.0",
