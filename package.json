@@ -21,7 +21,7 @@
     "@gltf-transform/core": "3.7.0",
     "@gltf-transform/extensions": "3.7.0",
     "@gltf-transform/functions": "3.7.0",
-    "@tweakpane/core": "1.1.9",
+    "@tweakpane/core": "2.0.1",
     "@types/node": "^20.2.5",
     "@types/three": "0.156.0",
     "@typescript-eslint/eslint-plugin": "6.7.2",
