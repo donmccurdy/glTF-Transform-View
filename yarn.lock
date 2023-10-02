@@ -1278,10 +1278,10 @@
   resolved "https://registry.yarnpkg.com/@tsconfig/node16/-/node16-1.0.3.tgz#472eaab5f15c1ffdd7f8628bd4c4f753995ec79e"
   integrity sha512-yOlFc+7UtL/89t2ZhjPvvB/DeAr3r+Dq58IgzsFkOAvVC6NMJXmCGjbptdXdR9qsX7pKcTL+s87FtYREi2dEEQ==
 
-"@tweakpane/core@1.1.9":
-  version "1.1.9"
-  resolved "https://registry.yarnpkg.com/@tweakpane/core/-/core-1.1.9.tgz#29d54fea38a489e140958616088f9d09d3c04379"
-  integrity sha512-9tq+KAhaqPiOgsFyLPAz1IMXkVfhRqxGzAgy1ps3As6o3W7XjnU7sev6OlD/Z+Pzw8uZVMukkSHf2e0uCU6u0A==
+"@tweakpane/core@2.0.1":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@tweakpane/core/-/core-2.0.1.tgz#358d4396d65ae7787e5c92601f6cf657dcb2833b"
+  integrity sha512-iJNrLrLffQR0I8mWgAWcMVO9ZPNdNeXZl66WNT+Op5L9FW7BSF6lwG3izR6Ki9CaI3HzIownwjzYS5xWUaokTA==
 
 "@types/estree@*":
   version "0.0.46"
