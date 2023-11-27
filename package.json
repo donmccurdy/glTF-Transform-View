@@ -30,7 +30,7 @@
     "c8": "^8.0.0",
     "concurrently": "8.2.1",
     "eslint": "^8.41.0",
-    "jsdom": "^22.0.0",
+    "jsdom": "^23.0.0",
     "jsdom-global": "^3.0.2",
     "meshoptimizer": "^0.19.0",
     "microbundle": "0.15.1",
