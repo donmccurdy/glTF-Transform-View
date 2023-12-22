@@ -39,7 +39,7 @@
     "suppress-experimental-warnings": "^1.1.4",
     "three": "0.156.1",
     "ts-node": "^10.9.1",
-    "tweakpane": "3.1.10",
+    "tweakpane": "4.0.3",
     "tweakpane-plugin-thumbnail-list": "0.3.0",
     "typescript": "5.2.2",
     "vite": "5.0.6"

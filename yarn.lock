@@ -5917,10 +5917,10 @@ tweakpane-plugin-thumbnail-list@0.3.0:
   resolved "https://registry.yarnpkg.com/tweakpane-plugin-thumbnail-list/-/tweakpane-plugin-thumbnail-list-0.3.0.tgz#e77740e60fa068a3340b4eabd74ae2859182d7d4"
   integrity sha512-2/DOmCoWbzEnP1yhRZGaMN6Z5BrqX9Zc0/4jMeuHzvrNkpnx3k/d9y1u6rs1J96qFl9zNhsSAnmt/D6Tt9H22Q==
 
-tweakpane@3.1.10:
-  version "3.1.10"
-  resolved "https://registry.yarnpkg.com/tweakpane/-/tweakpane-3.1.10.tgz#d2e11a3ee668017f7572ce53417f06eed41f5ab8"
-  integrity sha512-rqwnl/pUa7+inhI2E9ayGTqqP0EPOOn/wVvSWjZsRbZUItzNShny7pzwL3hVlaN4m9t/aZhsP0aFQ9U5VVR2VQ==
+tweakpane@4.0.3:
+  version "4.0.3"
+  resolved "https://registry.yarnpkg.com/tweakpane/-/tweakpane-4.0.3.tgz#6bb8a24706916a33d59ab0e478c2a66a9928fc60"
+  integrity sha512-BlcWOAe8oe4c+k9pmLBARGdWB6MVZMszayekkixQXTgkxTaYoTUpHpwVEp+3HkoamZkomodpbBf0CkguIHTgLg==
 
 type-check@^0.4.0, type-check@~0.4.0:
   version "0.4.0"
