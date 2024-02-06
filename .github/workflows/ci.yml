@@ -5,23 +5,23 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [18.x]
+        node-version: [18.x, 20.x]
     env:
       CI: true
     steps:
-    # Setup.
-    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-    - run: yarn install
-    - run: yarn dist
-    - run: yarn test
+      # Setup.
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: yarn install
+      - run: yarn dist
+      - run: yarn test
 
-    # Coverage.
-    - run: yarn coverage --no-worker-threads # https://github.com/avajs/ava/discussions/3158
-    - run: yarn coverage:report
-    - uses: codecov/codecov-action@v3
-      with:
-        files: coverage/coverage.lcov
+      # Coverage.
+      - run: yarn coverage --no-worker-threads # https://github.com/avajs/ava/discussions/3158
+      - run: yarn coverage:report
+      - uses: codecov/codecov-action@v3
+        with:
+          files: coverage/coverage.lcov
