@@ -97,7 +97,9 @@ export function createMaterialPane(_pane: Pane, document: Document, material: Ma
 		thicknessFactor: volume.getThicknessFactor(),
 		thicknessTexture: textureValue(volume.getThicknessTexture(), textureOptions),
 		attenuationColorFactor: volume.getAttenuationColorHex(),
-		attenuationDistance: volume.getAttenuationDistance(),
+		attenuationDistance: Number.isFinite(volume.getAttenuationDistance())
+			? volume.getAttenuationDistance()
+			: 0,
 
 		// Unlit.
 		unlitEnabled: !!material.getExtension('KHR_materials_unlit'),
