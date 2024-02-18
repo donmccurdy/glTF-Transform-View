@@ -2,7 +2,7 @@
 
 [![Latest NPM release](https://img.shields.io/npm/v/@gltf-transform/view.svg)](https://www.npmjs.com/package/@gltf-transform/view)
 [![Minzipped size](https://badgen.net/bundlephobia/minzip/@gltf-transform/view)](https://bundlephobia.com/result?p=@gltf-transform/view)
-[![License](https://img.shields.io/badge/license-Prosperity--3.0.0-007ec6.svg)](https://github.com/donmccurdy/glTF-Transform-View/blob/main/LICENSE.md)
+[![License](https://img.shields.io/badge/license-Apache--2.0-007ec6.svg)](https://github.com/donmccurdy/glTF-Transform-View/blob/main/LICENSE)
 [![Build Status](https://github.com/donmccurdy/glTF-Transform-View/workflows/build/badge.svg?branch=main&event=push)](https://github.com/donmccurdy/glTF-Transform-View/actions?query=workflow%3Abuild)
 [![Coverage](https://codecov.io/gh/donmccurdy/glTF-Transform-View/branch/main/graph/badge.svg?token=Z91ZYFEV09)](https://codecov.io/gh/donmccurdy/glTF-Transform-View)
 
@@ -87,4 +87,4 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ## License
 
-Published under [Prosperity Public License 3.0](/LICENSE.md), which allows you to use and share this software for noncommercial purposes for free and to try this software for commercial purposes for thirty days. Commercial licenses available upon request.
+Published under [Apache 2.0](/LICENSE).
