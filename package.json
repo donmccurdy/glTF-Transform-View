@@ -8,9 +8,12 @@
   "type": "module",
   "sideEffects": false,
   "source": "./src/index.ts",
-  "module": "./dist/view.modern.js",
-  "exports": "./dist/view.modern.js",
   "types": "./dist/index.d.ts",
+  "module": "./dist/view.modern.js",
+  "exports": {
+    "types": "./dist/index.d.ts",
+    "default": "./dist/view.modern.js"
+  },
   "peerDependencies": {
     "@gltf-transform/core": ">=3.3.0",
     "@gltf-transform/extensions": ">=3.3.0",
