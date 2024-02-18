@@ -1,6 +1,6 @@
 {
   "name": "@gltf-transform/view",
-  "version": "0.14.0",
+  "version": "0.14.1",
   "repository": "github:donmccurdy/glTF-Transform-View",
   "description": "Syncs a glTF-Transform Document with a three.js scene graph",
   "author": "Don McCurdy <dm@donmccurdy.com>",
