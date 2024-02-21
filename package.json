@@ -4,7 +4,7 @@
   "repository": "github:donmccurdy/glTF-Transform-View",
   "description": "Syncs a glTF-Transform Document with a three.js scene graph",
   "author": "Don McCurdy <dm@donmccurdy.com>",
-  "license": "Apache-2.0",
+  "license": "BlueOak-1.0.0",
   "type": "module",
   "sideEffects": false,
   "source": "./src/index.ts",
@@ -69,7 +69,7 @@
     "dist/",
     "src/",
     "README.md",
-    "LICENSE"
+    "LICENSE.md"
   ],
   "ava": {
     "extensions": {

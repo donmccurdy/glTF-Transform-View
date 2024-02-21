@@ -2,7 +2,7 @@
 
 [![Latest NPM release](https://img.shields.io/npm/v/@gltf-transform/view.svg)](https://www.npmjs.com/package/@gltf-transform/view)
 [![Minzipped size](https://badgen.net/bundlephobia/minzip/@gltf-transform/view)](https://bundlephobia.com/result?p=@gltf-transform/view)
-[![License](https://img.shields.io/badge/license-Apache--2.0-007ec6.svg)](https://github.com/donmccurdy/glTF-Transform-View/blob/main/LICENSE)
+[![License](https://img.shields.io/badge/license-Blue--Oak--1.0.0-007ec6.svg)](https://github.com/donmccurdy/glTF-Transform-View/blob/main/LICENSE.md)
 [![Build Status](https://github.com/donmccurdy/glTF-Transform-View/workflows/build/badge.svg?branch=main&event=push)](https://github.com/donmccurdy/glTF-Transform-View/actions?query=workflow%3Abuild)
 [![Coverage](https://codecov.io/gh/donmccurdy/glTF-Transform-View/branch/main/graph/badge.svg?token=Z91ZYFEV09)](https://codecov.io/gh/donmccurdy/glTF-Transform-View)
 
@@ -87,4 +87,4 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ## License
 
-Published under [Apache 2.0](/LICENSE).
+Published under [Blue Oak Model License 1.0.0](/LICENSE.md).
