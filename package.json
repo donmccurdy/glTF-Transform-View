@@ -33,7 +33,7 @@
     "c8": "^9.1.0",
     "concurrently": "8.2.2",
     "eslint": "^9.0.0",
-    "jsdom": "^22.0.0",
+    "jsdom": "^24.0.0",
     "jsdom-global": "^3.0.2",
     "meshoptimizer": "^0.20.0",
     "microbundle": "0.15.1",
