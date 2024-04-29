@@ -1,1 +1,15 @@
-{"extends": ["github>donmccurdy/renovate-config"]}
+{
+    "extends": ["github>donmccurdy/renovate-config"],
+    "packageRules": [
+		{
+			"description": "Tests failing in Ava",
+			"matchPackageNames": ["jsdom"],
+			"enabled": false
+		},
+        {
+			"description": "Requires updates to tweakpane-plugin-thumbnail-list",
+			"matchPackageNames": ["tweakpane"],
+			"enabled": false
+		}
+	]
+}
