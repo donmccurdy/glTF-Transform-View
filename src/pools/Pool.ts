@@ -72,14 +72,14 @@ export class Pool<Value, Params extends EmptyParams = EmptyParams> implements Va
 		}
 	}
 
-    size(): number {
-        return this._users.size;
-    }
+	size(): number {
+		return this._users.size;
+	}
 
-    dispose(): void {
-		for (const [value, _] of this._users) {
+	dispose(): void {
+		for (const [value] of this._users) {
 			this._disposeValue(value);
 		}
 		this._users.clear();
-    }
+	}
 }

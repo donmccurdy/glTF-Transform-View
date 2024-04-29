@@ -7,9 +7,7 @@ const TRANSCODER_PATH = `https://unpkg.com/three@0.${REVISION}.x/examples/jsm/li
 // Use a single KTX2Loader instance to pool Web Workers.
 function createKTX2Loader() {
 	const renderer = new WebGLRenderer();
-	const loader = new KTX2Loader()
-		.detectSupport(renderer)
-		.setTranscoderPath(TRANSCODER_PATH);
+	const loader = new KTX2Loader().detectSupport(renderer).setTranscoderPath(TRANSCODER_PATH);
 	renderer.dispose();
 	return loader;
 }
@@ -25,10 +23,12 @@ function createTexture(name: string, uri: string): Texture {
 }
 
 // Placeholder images.
-// eslint-disable-next-line max-len
-const NULL_IMAGE_URI = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAAXNSR0IArs4c6QAAABNJREFUGFdj/M9w9z8DEmAkXQAAyCMLcU6pckIAAAAASUVORK5CYII=';
-// eslint-disable-next-line max-len
-const LOADING_IMAGE_URI = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdj+P///38ACfsD/QVDRcoAAAAASUVORK5CYII=';
+const NULL_IMAGE_URI =
+	// eslint-disable-next-line max-len
+	'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAAXNSR0IArs4c6QAAABNJREFUGFdj/M9w9z8DEmAkXQAAyCMLcU6pckIAAAAASUVORK5CYII=';
+const LOADING_IMAGE_URI =
+	// eslint-disable-next-line max-len
+	'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdj+P///38ACfsD/QVDRcoAAAAASUVORK5CYII=';
 
 export const NULL_TEXTURE = createTexture('__NULL_TEXTURE', NULL_IMAGE_URI);
 export const LOADING_TEXTURE = createTexture('__LOADING_TEXTURE', LOADING_IMAGE_URI);
@@ -42,13 +42,17 @@ export interface ImageProvider {
 
 export class NullImageProvider implements ImageProvider {
 	async initTexture(_textureDef: TextureDef): Promise<void> {}
-	async getTexture(_: TextureDef): Promise<Texture | CompressedTexture> { return NULL_TEXTURE; }
-	setKTX2Loader(_loader: KTX2Loader): this { return this; }
+	async getTexture(_: TextureDef): Promise<Texture | CompressedTexture> {
+		return NULL_TEXTURE;
+	}
+	setKTX2Loader(_loader: KTX2Loader): this {
+		return this;
+	}
 	clear(): void {}
 }
 
 export class DefaultImageProvider implements ImageProvider {
-	private _cache = new Map<ArrayBuffer, Texture|CompressedTexture>();
+	private _cache = new Map<ArrayBuffer, Texture | CompressedTexture>();
 	private _ktx2Loader: KTX2Loader | null = null;
 
 	async initTexture(textureDef: TextureDef): Promise<void> {
@@ -63,9 +67,7 @@ export class DefaultImageProvider implements ImageProvider {
 
 		if (texture) return texture;
 
-		texture = mimeType === 'image/ktx2'
-			? await this._loadKTX2Image(image)
-			: await this._loadImage(image, mimeType);
+		texture = mimeType === 'image/ktx2' ? await this._loadKTX2Image(image) : await this._loadImage(image, mimeType);
 
 		this._cache.set(image, texture);
 		return texture;
@@ -77,6 +79,7 @@ export class DefaultImageProvider implements ImageProvider {
 	}
 
 	clear(): void {
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		for (const [_, texture] of this._cache) {
 			texture.dispose();
 		}
@@ -91,7 +94,7 @@ export class DefaultImageProvider implements ImageProvider {
 	/** Load PNG, JPEG, or other browser-suppored image format. */
 	private async _loadImage(image: ArrayBuffer, mimeType: string): Promise<Texture> {
 		return new Promise((resolve, reject) => {
-			const blob = new Blob([image], {type: mimeType});
+			const blob = new Blob([image], { type: mimeType });
 			const imageURL = URL.createObjectURL(blob);
 			const imageEl = document.createElement('img');
 
@@ -110,7 +113,7 @@ export class DefaultImageProvider implements ImageProvider {
 	/** Load KTX2 + Basis Universal compressed texture format. */
 	private async _loadKTX2Image(image: ArrayBuffer): Promise<CompressedTexture> {
 		this._ktx2Loader ||= createKTX2Loader();
-		const blob = new Blob([image], {type: 'image/ktx2'});
+		const blob = new Blob([image], { type: 'image/ktx2' });
 		const imageURL = URL.createObjectURL(blob);
 		const texture = await this._ktx2Loader.loadAsync(imageURL);
 		URL.revokeObjectURL(imageURL);

@@ -27,11 +27,14 @@ export interface Output<Value> extends Observable<Value | null> {
  *
  * @internal
  */
-export class RefObserver<Def extends PropertyDef, Value, Params extends EmptyParams = EmptyParams> extends Observable<Value | null> implements Output<Value> {
+export class RefObserver<Def extends PropertyDef, Value, Params extends EmptyParams = EmptyParams>
+	extends Observable<Value | null>
+	implements Output<Value>
+{
 	readonly name: string;
 
 	private _subject: Subject<Def, Value> | null = null;
-	private _subjectParamsFn: () => Params = () => ({} as Params);
+	private _subjectParamsFn: () => Params = () => ({}) as Params;
 
 	private readonly _documentView: DocumentViewSubjectAPI;
 
@@ -70,7 +73,7 @@ export class RefObserver<Def extends PropertyDef, Value, Params extends EmptyPar
 	}
 
 	update(def: Def | null) {
-		const subject = def ? this._documentView.bind(def) as Subject<Def, Value> : null;
+		const subject = def ? (this._documentView.bind(def) as Subject<Def, Value>) : null;
 		if (subject === this._subject) return;
 
 		this._clear();

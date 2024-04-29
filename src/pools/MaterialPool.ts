@@ -1,21 +1,33 @@
 import { GLTF, Primitive as PrimitiveDef } from '@gltf-transform/core';
-import { LineBasicMaterial, Material, MeshBasicMaterial, MeshPhysicalMaterial, MeshStandardMaterial, PointsMaterial } from 'three';
+import {
+	LineBasicMaterial,
+	Material,
+	MeshBasicMaterial,
+	MeshPhysicalMaterial,
+	MeshStandardMaterial,
+	PointsMaterial,
+} from 'three';
 import { Pool } from './Pool';
 
 export type BaseMaterial = MeshBasicMaterial | MeshStandardMaterial | MeshPhysicalMaterial;
-export type VariantMaterial = MeshBasicMaterial | MeshStandardMaterial | MeshPhysicalMaterial | LineBasicMaterial | PointsMaterial;
+export type VariantMaterial =
+	| MeshBasicMaterial
+	| MeshStandardMaterial
+	| MeshPhysicalMaterial
+	| LineBasicMaterial
+	| PointsMaterial;
 
 export interface MaterialParams {
-	mode: GLTF.MeshPrimitiveMode,
-	useVertexTangents: boolean,
-	useVertexColors: boolean,
-	useMorphTargets: boolean,
-	useFlatShading: boolean,
+	mode: GLTF.MeshPrimitiveMode;
+	useVertexTangents: boolean;
+	useVertexColors: boolean;
+	useMorphTargets: boolean;
+	useFlatShading: boolean;
 }
 
 /** @internal */
 export class MaterialPool extends Pool<Material, MaterialParams> {
-    static createParams(primitive: PrimitiveDef): MaterialParams {
+	static createParams(primitive: PrimitiveDef): MaterialParams {
 		return {
 			mode: primitive.getMode(),
 			useVertexTangents: !!primitive.getAttribute('TANGENT'),
@@ -25,9 +37,9 @@ export class MaterialPool extends Pool<Material, MaterialParams> {
 		};
 	}
 
-    requestVariant(srcMaterial: Material, params: MaterialParams): Material {
-        return this._request(this._createVariant(srcMaterial as BaseMaterial, params));
-    }
+	requestVariant(srcMaterial: Material, params: MaterialParams): Material {
+		return this._request(this._createVariant(srcMaterial as BaseMaterial, params));
+	}
 
 	protected _disposeValue(value: Material): void {
 		value.dispose();
@@ -58,7 +70,11 @@ export class MaterialPool extends Pool<Material, MaterialParams> {
 	 * NOTICE: Changes to MaterialParams should _NOT_ be applied with this method.
 	 * Instead, create a new variant and dispose the old if unused.
 	 */
-	protected _updateVariant(srcMaterial: BaseMaterial, dstMaterial: VariantMaterial, params: MaterialParams): VariantMaterial {
+	protected _updateVariant(
+		srcMaterial: BaseMaterial,
+		dstMaterial: VariantMaterial,
+		params: MaterialParams,
+	): VariantMaterial {
 		if (srcMaterial.type === dstMaterial.type) {
 			dstMaterial.copy(srcMaterial);
 		} else if (dstMaterial instanceof LineBasicMaterial) {

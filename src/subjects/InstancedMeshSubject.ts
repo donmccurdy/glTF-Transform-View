@@ -14,9 +14,7 @@ const _matrix = new Matrix4();
 
 /** @internal */
 export class InstancedMeshSubject extends Subject<InstancedMeshDef, InstancedMesh> {
-	protected attributes = new RefMapObserver<AccessorDef, BufferAttribute>(
-		'attributes', this._documentView
-	);
+	protected attributes = new RefMapObserver<AccessorDef, BufferAttribute>('attributes', this._documentView);
 
 	constructor(documentView: DocumentViewSubjectAPI, def: InstancedMeshDef) {
 		super(
@@ -30,9 +28,7 @@ export class InstancedMeshSubject extends Subject<InstancedMeshDef, InstancedMes
 			let value = this.value;
 			if (value) this.pool.releaseBase(value);
 
-			value = InstancedMeshSubject.createValue(
-				getCount(nextAttributes), documentView.instancedMeshPool
-			);
+			value = InstancedMeshSubject.createValue(getCount(nextAttributes), documentView.instancedMeshPool);
 
 			let translation: BufferAttribute | null = null;
 			let rotation: BufferAttribute | null = null;

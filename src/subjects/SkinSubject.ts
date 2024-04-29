@@ -17,13 +17,16 @@ import { ValuePool } from '../pools';
  */
 export class SkinSubject extends Subject<SkinDef, Skeleton> {
 	protected joints = new RefListObserver<NodeDef, Bone>('children', this._documentView);
-	protected inverseBindMatrices = new RefObserver<AccessorDef, BufferAttribute>('inverseBindMatrices', this._documentView);
+	protected inverseBindMatrices = new RefObserver<AccessorDef, BufferAttribute>(
+		'inverseBindMatrices',
+		this._documentView,
+	);
 
 	/** Output (Skeleton) is never cloned by an observer. */
 	protected _outputSingleton = true;
 
 	constructor(documentView: DocumentViewSubjectAPI, def: SkinDef) {
-		super(documentView, def, SkinSubject.createValue(def, [], null,  documentView.skinPool), documentView.skinPool);
+		super(documentView, def, SkinSubject.createValue(def, [], null, documentView.skinPool), documentView.skinPool);
 
 		this.joints.subscribe((joints) => {
 			this.pool.releaseBase(this.value);
@@ -37,7 +40,12 @@ export class SkinSubject extends Subject<SkinDef, Skeleton> {
 		});
 	}
 
-	private static createValue(def: SkinDef, bones: Bone[], ibm: BufferAttribute | null, pool: ValuePool<Skeleton>): Skeleton {
+	private static createValue(
+		_def: SkinDef,
+		bones: Bone[],
+		ibm: BufferAttribute | null,
+		pool: ValuePool<Skeleton>,
+	): Skeleton {
 		const boneInverses: Matrix4[] = [];
 
 		for (let i = 0; i < bones.length; i++) {

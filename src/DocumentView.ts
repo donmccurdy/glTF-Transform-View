@@ -1,5 +1,14 @@
 import { Group, Material, Object3D, Texture } from 'three';
-import { Document, Scene as SceneDef, Node as NodeDef, Material as MaterialDef, Mesh as MeshDef, Primitive as PrimitiveDef, Property as PropertyDef, Texture as TextureDef } from '@gltf-transform/core';
+import {
+	Document,
+	Scene as SceneDef,
+	Node as NodeDef,
+	Material as MaterialDef,
+	Mesh as MeshDef,
+	Primitive as PrimitiveDef,
+	Property as PropertyDef,
+	Texture as TextureDef,
+} from '@gltf-transform/core';
 import { Light as LightDef } from '@gltf-transform/extensions';
 import { DocumentViewConfig, DocumentViewImpl } from './DocumentViewImpl';
 import { LightLike, MeshLike } from './constants';
@@ -59,11 +68,11 @@ export class DocumentView {
 	}
 
 	/** For a given Object3D target, finds the source glTF-Transform Property definition. */
-	public getProperty(view: Texture): TextureDef | null
-	public getProperty(view: LightLike): LightDef | null
-	public getProperty(view: Material): MaterialDef | null
-	public getProperty(view: MeshLike): PrimitiveDef | null
-	public getProperty(view: Object3D): MeshDef | NodeDef | SceneDef | null
+	public getProperty(view: Texture): TextureDef | null;
+	public getProperty(view: LightLike): LightDef | null;
+	public getProperty(view: Material): MaterialDef | null;
+	public getProperty(view: MeshLike): PrimitiveDef | null;
+	public getProperty(view: Object3D): MeshDef | NodeDef | SceneDef | null;
 	public getProperty(view: object): PropertyDef | null {
 		assert(this._ready);
 		return this._impl.findDef(view as any);

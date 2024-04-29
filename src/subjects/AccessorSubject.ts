@@ -16,20 +16,18 @@ export class AccessorSubject extends Subject<AccessorDef, BufferAttribute> {
 	}
 
 	private static createValue(def: AccessorDef, pool: ValuePool<BufferAttribute>) {
-		return pool.requestBase(new BufferAttribute(
-			def.getArray()!,
-			def.getElementSize(),
-			def.getNormalized()
-		));
+		return pool.requestBase(new BufferAttribute(def.getArray()!, def.getElementSize(), def.getNormalized()));
 	}
 
 	update() {
 		const def = this.def;
 		const value = this.value;
 
-		if (def.getArray() !== value.array
-			|| def.getElementSize() !== value.itemSize
-			|| def.getNormalized() !== value.normalized) {
+		if (
+			def.getArray() !== value.array ||
+			def.getElementSize() !== value.itemSize ||
+			def.getNormalized() !== value.normalized
+		) {
 			this.pool.releaseBase(value);
 			this.value = AccessorSubject.createValue(def, this.pool);
 		} else {

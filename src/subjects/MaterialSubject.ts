@@ -1,6 +1,33 @@
-import { DoubleSide, FrontSide, Material, MeshBasicMaterial, MeshPhysicalMaterial, MeshStandardMaterial, Texture, SRGBColorSpace, NoColorSpace, ColorSpace } from 'three';
-import { ExtensionProperty as ExtensionPropertyDef, Material as MaterialDef, Texture as TextureDef, TextureInfo as TextureInfoDef, vec3 } from '@gltf-transform/core';
-import { Anisotropy, Clearcoat, EmissiveStrength, IOR, Iridescence, Sheen, Specular, Transmission, Volume } from '@gltf-transform/extensions';
+import {
+	DoubleSide,
+	FrontSide,
+	Material,
+	MeshBasicMaterial,
+	MeshPhysicalMaterial,
+	MeshStandardMaterial,
+	Texture,
+	SRGBColorSpace,
+	NoColorSpace,
+	ColorSpace,
+} from 'three';
+import {
+	ExtensionProperty as ExtensionPropertyDef,
+	Material as MaterialDef,
+	Texture as TextureDef,
+	TextureInfo as TextureInfoDef,
+	vec3,
+} from '@gltf-transform/core';
+import {
+	Anisotropy,
+	Clearcoat,
+	EmissiveStrength,
+	IOR,
+	Iridescence,
+	Sheen,
+	Specular,
+	Transmission,
+	Volume,
+} from '@gltf-transform/extensions';
 import type { DocumentViewImpl } from '../DocumentViewImpl';
 import { eq } from '../utils';
 import { Subject } from './Subject';
@@ -20,99 +47,260 @@ enum ShadingModel {
 
 /** @internal */
 export class MaterialSubject extends Subject<MaterialDef, Material> {
-	protected readonly extensions = new RefListObserver<ExtensionPropertyDef, ExtensionPropertyDef>('extensions', this._documentView);
+	protected readonly extensions = new RefListObserver<ExtensionPropertyDef, ExtensionPropertyDef>(
+		'extensions',
+		this._documentView,
+	);
 
-	protected readonly baseColorTexture = new RefObserver<TextureDef, Texture, TextureParams>('baseColorTexture', this._documentView);
-	protected readonly emissiveTexture = new RefObserver<TextureDef, Texture, TextureParams>('emissiveTexture', this._documentView);
-	protected readonly normalTexture = new RefObserver<TextureDef, Texture, TextureParams>('normalTexture', this._documentView);
-	protected readonly occlusionTexture = new RefObserver<TextureDef, Texture, TextureParams>('occlusionTexture', this._documentView);
-	protected readonly metallicRoughnessTexture = new RefObserver<TextureDef, Texture, TextureParams>('metallicRoughnessTexture', this._documentView);
+	protected readonly baseColorTexture = new RefObserver<TextureDef, Texture, TextureParams>(
+		'baseColorTexture',
+		this._documentView,
+	);
+	protected readonly emissiveTexture = new RefObserver<TextureDef, Texture, TextureParams>(
+		'emissiveTexture',
+		this._documentView,
+	);
+	protected readonly normalTexture = new RefObserver<TextureDef, Texture, TextureParams>(
+		'normalTexture',
+		this._documentView,
+	);
+	protected readonly occlusionTexture = new RefObserver<TextureDef, Texture, TextureParams>(
+		'occlusionTexture',
+		this._documentView,
+	);
+	protected readonly metallicRoughnessTexture = new RefObserver<TextureDef, Texture, TextureParams>(
+		'metallicRoughnessTexture',
+		this._documentView,
+	);
 
 	// KHR_materials_anisotropy
-	protected readonly anisotropyTexture = new RefObserver<TextureDef, Texture, TextureParams>('anisotropyTexture', this._documentView);
+	protected readonly anisotropyTexture = new RefObserver<TextureDef, Texture, TextureParams>(
+		'anisotropyTexture',
+		this._documentView,
+	);
 
 	// KHR_materials_clearcoat
-	protected readonly clearcoatTexture = new RefObserver<TextureDef, Texture, TextureParams>('clearcoatTexture', this._documentView);
-	protected readonly clearcoatRoughnessTexture = new RefObserver<TextureDef, Texture, TextureParams>('clearcoatRoughnessTexture', this._documentView);
-	protected readonly clearcoatNormalTexture = new RefObserver<TextureDef, Texture, TextureParams>('clearcoatNormalTexture', this._documentView);
+	protected readonly clearcoatTexture = new RefObserver<TextureDef, Texture, TextureParams>(
+		'clearcoatTexture',
+		this._documentView,
+	);
+	protected readonly clearcoatRoughnessTexture = new RefObserver<TextureDef, Texture, TextureParams>(
+		'clearcoatRoughnessTexture',
+		this._documentView,
+	);
+	protected readonly clearcoatNormalTexture = new RefObserver<TextureDef, Texture, TextureParams>(
+		'clearcoatNormalTexture',
+		this._documentView,
+	);
 
 	// KHR_materials_iridescence
-	protected readonly iridescenceTexture = new RefObserver<TextureDef, Texture, TextureParams>('iridescenceTexture', this._documentView);
-	protected readonly iridescenceThicknessTexture = new RefObserver<TextureDef, Texture, TextureParams>('iridescenceThicknessTexture', this._documentView);
+	protected readonly iridescenceTexture = new RefObserver<TextureDef, Texture, TextureParams>(
+		'iridescenceTexture',
+		this._documentView,
+	);
+	protected readonly iridescenceThicknessTexture = new RefObserver<TextureDef, Texture, TextureParams>(
+		'iridescenceThicknessTexture',
+		this._documentView,
+	);
 
 	// KHR_materials_sheen
-	protected readonly sheenColorTexture = new RefObserver<TextureDef, Texture, TextureParams>('sheenColorTexture', this._documentView);
-	protected readonly sheenRoughnessTexture = new RefObserver<TextureDef, Texture, TextureParams>('sheenRoughnessTexture', this._documentView);
+	protected readonly sheenColorTexture = new RefObserver<TextureDef, Texture, TextureParams>(
+		'sheenColorTexture',
+		this._documentView,
+	);
+	protected readonly sheenRoughnessTexture = new RefObserver<TextureDef, Texture, TextureParams>(
+		'sheenRoughnessTexture',
+		this._documentView,
+	);
 
 	// KHR_materials_specular
-	protected readonly specularTexture = new RefObserver<TextureDef, Texture, TextureParams>('specularTexture', this._documentView);
-	protected readonly specularColorTexture = new RefObserver<TextureDef, Texture, TextureParams>('specularColorTexture', this._documentView);
+	protected readonly specularTexture = new RefObserver<TextureDef, Texture, TextureParams>(
+		'specularTexture',
+		this._documentView,
+	);
+	protected readonly specularColorTexture = new RefObserver<TextureDef, Texture, TextureParams>(
+		'specularColorTexture',
+		this._documentView,
+	);
 
 	// KHR_materials_transmission
-	protected readonly transmissionTexture = new RefObserver<TextureDef, Texture, TextureParams>('transmissionTexture', this._documentView);
+	protected readonly transmissionTexture = new RefObserver<TextureDef, Texture, TextureParams>(
+		'transmissionTexture',
+		this._documentView,
+	);
 
 	// KHR_materials_volume
-	protected readonly thicknessTexture = new RefObserver<TextureDef, Texture, TextureParams>('thicknessTexture', this._documentView);
+	protected readonly thicknessTexture = new RefObserver<TextureDef, Texture, TextureParams>(
+		'thicknessTexture',
+		this._documentView,
+	);
 
 	private readonly _textureObservers: RefObserver<TextureDef, Texture, TextureParams>[] = [];
 	private readonly _textureUpdateFns: (() => void)[] = [];
 	private readonly _textureApplyFns: (() => void)[] = [];
 
 	constructor(documentView: DocumentViewImpl, def: MaterialDef) {
-		super(documentView, def, MaterialSubject.createValue(def, documentView.materialPool), documentView.materialPool);
+		super(
+			documentView,
+			def,
+			MaterialSubject.createValue(def, documentView.materialPool),
+			documentView.materialPool,
+		);
 
 		this.extensions.subscribe(() => {
 			this.update();
 			this.publishAll();
 		});
 
-		this.bindTexture(['map'], this.baseColorTexture, () => def.getBaseColorTexture(), () => def.getBaseColorTextureInfo(), SRGBColorSpace);
-		this.bindTexture(['emissiveMap'], this.emissiveTexture, () => def.getEmissiveTexture(), () => def.getEmissiveTextureInfo(), SRGBColorSpace);
-		this.bindTexture(['normalMap'], this.normalTexture, () => def.getNormalTexture(), () => def.getNormalTextureInfo(), NoColorSpace);
-		this.bindTexture(['aoMap'], this.occlusionTexture, () => def.getOcclusionTexture(), () => def.getOcclusionTextureInfo(), NoColorSpace);
-		this.bindTexture(['roughnessMap', 'metalnessMap'], this.metallicRoughnessTexture, () => def.getMetallicRoughnessTexture(), () => def.getMetallicRoughnessTextureInfo(), NoColorSpace);
+		this.bindTexture(
+			['map'],
+			this.baseColorTexture,
+			() => def.getBaseColorTexture(),
+			() => def.getBaseColorTextureInfo(),
+			SRGBColorSpace,
+		);
+		this.bindTexture(
+			['emissiveMap'],
+			this.emissiveTexture,
+			() => def.getEmissiveTexture(),
+			() => def.getEmissiveTextureInfo(),
+			SRGBColorSpace,
+		);
+		this.bindTexture(
+			['normalMap'],
+			this.normalTexture,
+			() => def.getNormalTexture(),
+			() => def.getNormalTextureInfo(),
+			NoColorSpace,
+		);
+		this.bindTexture(
+			['aoMap'],
+			this.occlusionTexture,
+			() => def.getOcclusionTexture(),
+			() => def.getOcclusionTextureInfo(),
+			NoColorSpace,
+		);
+		this.bindTexture(
+			['roughnessMap', 'metalnessMap'],
+			this.metallicRoughnessTexture,
+			() => def.getMetallicRoughnessTexture(),
+			() => def.getMetallicRoughnessTextureInfo(),
+			NoColorSpace,
+		);
 
 		// KHR_materials_anisotropy
 		const anisotropyExt = (): Anisotropy | null => def.getExtension<Anisotropy>('KHR_materials_anisotropy');
-		this.bindTexture(['anisotropyMap'], this.anisotropyTexture, () => anisotropyExt()?.getAnisotropyTexture() || null, () => anisotropyExt()?.getAnisotropyTextureInfo() || null, NoColorSpace);
+		this.bindTexture(
+			['anisotropyMap'],
+			this.anisotropyTexture,
+			() => anisotropyExt()?.getAnisotropyTexture() || null,
+			() => anisotropyExt()?.getAnisotropyTextureInfo() || null,
+			NoColorSpace,
+		);
 
 		// KHR_materials_clearcoat
 		const clearcoatExt = (): Clearcoat | null => def.getExtension<Clearcoat>('KHR_materials_clearcoat');
-		this.bindTexture(['clearcoatMap'], this.clearcoatTexture, () => clearcoatExt()?.getClearcoatTexture() || null, () => clearcoatExt()?.getClearcoatTextureInfo() || null, NoColorSpace);
-		this.bindTexture(['clearcoatRoughnessMap'], this.clearcoatRoughnessTexture, () => clearcoatExt()?.getClearcoatRoughnessTexture() || null, () => clearcoatExt()?.getClearcoatRoughnessTextureInfo() || null, NoColorSpace);
-		this.bindTexture(['clearcoatNormalMap'], this.clearcoatNormalTexture, () => clearcoatExt()?.getClearcoatNormalTexture() || null, () => clearcoatExt()?.getClearcoatNormalTextureInfo() || null, NoColorSpace);
+		this.bindTexture(
+			['clearcoatMap'],
+			this.clearcoatTexture,
+			() => clearcoatExt()?.getClearcoatTexture() || null,
+			() => clearcoatExt()?.getClearcoatTextureInfo() || null,
+			NoColorSpace,
+		);
+		this.bindTexture(
+			['clearcoatRoughnessMap'],
+			this.clearcoatRoughnessTexture,
+			() => clearcoatExt()?.getClearcoatRoughnessTexture() || null,
+			() => clearcoatExt()?.getClearcoatRoughnessTextureInfo() || null,
+			NoColorSpace,
+		);
+		this.bindTexture(
+			['clearcoatNormalMap'],
+			this.clearcoatNormalTexture,
+			() => clearcoatExt()?.getClearcoatNormalTexture() || null,
+			() => clearcoatExt()?.getClearcoatNormalTextureInfo() || null,
+			NoColorSpace,
+		);
 
 		// KHR_materials_iridescence
 		const iridescenceExt = (): Iridescence | null => def.getExtension<Iridescence>('KHR_materials_iridescence');
-		this.bindTexture(['iridescenceTexture'], this.iridescenceTexture, () => iridescenceExt()?.getIridescenceTexture() || null, () => iridescenceExt()?.getIridescenceTextureInfo() || null, NoColorSpace);
-		this.bindTexture(['iridescenceThicknessTexture'], this.iridescenceThicknessTexture, () => iridescenceExt()?.getIridescenceThicknessTexture() || null, () => iridescenceExt()?.getIridescenceThicknessTextureInfo() || null, NoColorSpace);
+		this.bindTexture(
+			['iridescenceTexture'],
+			this.iridescenceTexture,
+			() => iridescenceExt()?.getIridescenceTexture() || null,
+			() => iridescenceExt()?.getIridescenceTextureInfo() || null,
+			NoColorSpace,
+		);
+		this.bindTexture(
+			['iridescenceThicknessTexture'],
+			this.iridescenceThicknessTexture,
+			() => iridescenceExt()?.getIridescenceThicknessTexture() || null,
+			() => iridescenceExt()?.getIridescenceThicknessTextureInfo() || null,
+			NoColorSpace,
+		);
 
 		// KHR_materials_sheen
 		const sheenExt = (): Sheen | null => def.getExtension<Sheen>('KHR_materials_sheen');
-		this.bindTexture(['sheenColorMap'], this.sheenColorTexture, () => sheenExt()?.getSheenColorTexture() || null, () => sheenExt()?.getSheenColorTextureInfo() || null, SRGBColorSpace);
-		this.bindTexture(['sheenRoughnessMap'], this.sheenRoughnessTexture, () => sheenExt()?.getSheenRoughnessTexture() || null, () => sheenExt()?.getSheenRoughnessTextureInfo() || null, NoColorSpace);
+		this.bindTexture(
+			['sheenColorMap'],
+			this.sheenColorTexture,
+			() => sheenExt()?.getSheenColorTexture() || null,
+			() => sheenExt()?.getSheenColorTextureInfo() || null,
+			SRGBColorSpace,
+		);
+		this.bindTexture(
+			['sheenRoughnessMap'],
+			this.sheenRoughnessTexture,
+			() => sheenExt()?.getSheenRoughnessTexture() || null,
+			() => sheenExt()?.getSheenRoughnessTextureInfo() || null,
+			NoColorSpace,
+		);
 
 		// KHR_materials_specular
 		const specularExt = (): Specular | null => def.getExtension<Specular>('KHR_materials_specular');
-		this.bindTexture(['specularIntensityMap'], this.specularTexture, () => specularExt()?.getSpecularTexture() || null, () => specularExt()?.getSpecularTextureInfo() || null, NoColorSpace);
-		this.bindTexture(['specularColorMap'], this.specularColorTexture, () => specularExt()?.getSpecularColorTexture() || null, () => specularExt()?.getSpecularColorTextureInfo() || null, SRGBColorSpace);
+		this.bindTexture(
+			['specularIntensityMap'],
+			this.specularTexture,
+			() => specularExt()?.getSpecularTexture() || null,
+			() => specularExt()?.getSpecularTextureInfo() || null,
+			NoColorSpace,
+		);
+		this.bindTexture(
+			['specularColorMap'],
+			this.specularColorTexture,
+			() => specularExt()?.getSpecularColorTexture() || null,
+			() => specularExt()?.getSpecularColorTextureInfo() || null,
+			SRGBColorSpace,
+		);
 
 		// KHR_materials_transmission
 		const transmissionExt = (): Transmission | null => def.getExtension<Transmission>('KHR_materials_transmission');
-		this.bindTexture(['transmissionMap'], this.transmissionTexture, () => transmissionExt()?.getTransmissionTexture() || null, () => transmissionExt()?.getTransmissionTextureInfo() || null, NoColorSpace);
+		this.bindTexture(
+			['transmissionMap'],
+			this.transmissionTexture,
+			() => transmissionExt()?.getTransmissionTexture() || null,
+			() => transmissionExt()?.getTransmissionTextureInfo() || null,
+			NoColorSpace,
+		);
 
 		// KHR_materials_volume
 		const volumeExt = (): Volume | null => def.getExtension<Volume>('KHR_materials_volume');
-		this.bindTexture(['thicknessMap'], this.thicknessTexture, () => volumeExt()?.getThicknessTexture() || null, () => volumeExt()?.getThicknessTextureInfo() || null, NoColorSpace);
+		this.bindTexture(
+			['thicknessMap'],
+			this.thicknessTexture,
+			() => volumeExt()?.getThicknessTexture() || null,
+			() => volumeExt()?.getThicknessTextureInfo() || null,
+			NoColorSpace,
+		);
 	}
 
 	private bindTexture(
-			maps: string[],
-			observer: RefObserver<TextureDef, Texture, TextureParams>,
-			textureFn: () => TextureDef | null,
-			textureInfoFn: () => TextureInfoDef | null,
-			colorSpace: ColorSpace): Subscription {
-
+		maps: string[],
+		observer: RefObserver<TextureDef, Texture, TextureParams>,
+		textureFn: () => TextureDef | null,
+		textureInfoFn: () => TextureInfoDef | null,
+		colorSpace: ColorSpace,
+	): Subscription {
 		observer.setParamsFn(() => TexturePool.createParams(textureInfoFn()!, colorSpace));
 
 		const applyTextureFn = (texture: Texture | null) => {
@@ -155,9 +343,11 @@ export class MaterialSubject extends Subject<MaterialDef, Material> {
 		this.extensions.update(def.listExtensions());
 
 		const shadingModel = getShadingModel(def);
-		if (shadingModel === ShadingModel.UNLIT && value.type !== 'MeshBasicMaterial'
-			|| shadingModel === ShadingModel.STANDARD && value.type !== 'MeshStandardMaterial'
-			|| shadingModel === ShadingModel.PHYSICAL && value.type !== 'MeshPhysicalMaterial') {
+		if (
+			(shadingModel === ShadingModel.UNLIT && value.type !== 'MeshBasicMaterial') ||
+			(shadingModel === ShadingModel.STANDARD && value.type !== 'MeshStandardMaterial') ||
+			(shadingModel === ShadingModel.PHYSICAL && value.type !== 'MeshPhysicalMaterial')
+		) {
 			this.pool.releaseBase(this.value);
 			this.value = MaterialSubject.createValue(def, this.pool);
 			value = this.value;
@@ -279,7 +469,7 @@ export class MaterialSubject extends Subject<MaterialDef, Material> {
 			}
 			if (clearcoat.getClearcoatNormalScale() !== target.clearcoatNormalScale.x) {
 				target.clearcoatNormalScale.x = clearcoat.getClearcoatNormalScale();
-				target.clearcoatNormalScale.y = - clearcoat.getClearcoatNormalScale();
+				target.clearcoatNormalScale.y = -clearcoat.getClearcoatNormalScale();
 			}
 		} else {
 			target.clearcoat = 0;
@@ -311,10 +501,7 @@ export class MaterialSubject extends Subject<MaterialDef, Material> {
 			if (iridescence.getIridescenceFactor() !== target.iridescence) {
 				target.iridescence = iridescence.getIridescenceFactor();
 			}
-			const range = [
-				iridescence.getIridescenceThicknessMinimum(),
-				iridescence.getIridescenceThicknessMaximum(),
-			];
+			const range = [iridescence.getIridescenceThicknessMinimum(), iridescence.getIridescenceThicknessMaximum()];
 			if (!eq(range, target.iridescenceThicknessRange)) {
 				target.iridescenceThicknessRange[0] = range[0];
 				target.iridescenceThicknessRange[1] = range[1];

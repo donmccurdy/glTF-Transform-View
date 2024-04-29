@@ -1,8 +1,21 @@
-import { BufferGeometry, DirectionalLight, Line, LineLoop, LineSegments, Material, Mesh, PointLight, Points, SkinnedMesh, SpotLight } from 'three';
+import {
+	BufferGeometry,
+	DirectionalLight,
+	Line,
+	LineLoop,
+	LineSegments,
+	Material,
+	Mesh,
+	PointLight,
+	Points,
+	SkinnedMesh,
+	SpotLight,
+} from 'three';
 
 export type Subscription = () => void;
 
-export type MeshLike = Mesh<BufferGeometry, Material>
+export type MeshLike =
+	| Mesh<BufferGeometry, Material>
 	| SkinnedMesh<BufferGeometry, Material>
 	| Points<BufferGeometry, Material>
 	| Line<BufferGeometry, Material>
@@ -11,4 +24,7 @@ export type MeshLike = Mesh<BufferGeometry, Material>
 
 export type LightLike = PointLight | SpotLight | DirectionalLight;
 
-export interface THREEObject { name: string; type: string; };
+export interface THREEObject {
+	name: string;
+	type: string;
+}

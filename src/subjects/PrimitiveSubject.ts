@@ -1,5 +1,15 @@
-import { BufferAttribute, BufferGeometry, Line, LineLoop, LineSegments, Material, Mesh, MeshStandardMaterial, Points, SkinnedMesh } from 'three';
-import { Accessor as AccessorDef, GLTF, Material as MaterialDef, Primitive as PrimitiveDef } from '@gltf-transform/core';
+import {
+	BufferAttribute,
+	BufferGeometry,
+	Line,
+	LineLoop,
+	LineSegments,
+	Material,
+	Mesh,
+	Points,
+	SkinnedMesh,
+} from 'three';
+import { Accessor as AccessorDef, Material as MaterialDef, Primitive as PrimitiveDef } from '@gltf-transform/core';
 import type { DocumentViewSubjectAPI } from '../DocumentViewImpl';
 import { Subject } from './Subject';
 import { RefMapObserver, RefObserver } from '../observers';
@@ -9,8 +19,10 @@ import { DEFAULT_MATERIAL, semanticToAttributeName } from '../utils';
 
 /** @internal */
 export class PrimitiveSubject extends Subject<PrimitiveDef, MeshLike> {
-	protected material = new RefObserver<MaterialDef, Material, MaterialParams>('material', this._documentView)
-		.setParamsFn(() => MaterialPool.createParams(this.def));
+	protected material = new RefObserver<MaterialDef, Material, MaterialParams>(
+		'material',
+		this._documentView,
+	).setParamsFn(() => MaterialPool.createParams(this.def));
 	protected indices = new RefObserver<AccessorDef, BufferAttribute>('indices', this._documentView);
 	protected attributes = new RefMapObserver<AccessorDef, BufferAttribute>('attributes', this._documentView);
 
@@ -70,7 +82,12 @@ export class PrimitiveSubject extends Subject<PrimitiveDef, MeshLike> {
 		}
 	}
 
-	private static createValue(def: PrimitiveDef, geometry: BufferGeometry, material: Material, pool: ValuePool<MeshLike>): MeshLike {
+	private static createValue(
+		def: PrimitiveDef,
+		geometry: BufferGeometry,
+		material: Material,
+		pool: ValuePool<MeshLike>,
+	): MeshLike {
 		switch (def.getMode()) {
 			case PrimitiveDef.Mode.TRIANGLES:
 			case PrimitiveDef.Mode.TRIANGLE_FAN:
@@ -105,24 +122,24 @@ export class PrimitiveSubject extends Subject<PrimitiveDef, MeshLike> {
 }
 
 /** Returns equivalent GL mode enum for the given THREE.Object3D type. */
-function getObject3DMode(mesh: MeshLike): GLTF.MeshPrimitiveMode {
-	switch (mesh.type) {
-		case 'Mesh':
-		case 'SkinnedMesh':
-			// TODO(feat): Support triangle fan and triangle strip.
-			return PrimitiveDef.Mode.TRIANGLES;
-		case 'LineSegments':
-			return PrimitiveDef.Mode.LINES;
-		case 'LineLoop':
-			return PrimitiveDef.Mode.LINE_LOOP;
-		case 'Line':
-			return PrimitiveDef.Mode.LINE_STRIP;
-		case 'Points':
-			return PrimitiveDef.Mode.POINTS;
-		default:
-			throw new Error(`Unexpected type: ${mesh.type}`);
-	}
-}
+// function getObject3DMode(mesh: MeshLike): GLTF.MeshPrimitiveMode {
+// 	switch (mesh.type) {
+// 		case 'Mesh':
+// 		case 'SkinnedMesh':
+// 			// TODO(feat): Support triangle fan and triangle strip.
+// 			return PrimitiveDef.Mode.TRIANGLES;
+// 		case 'LineSegments':
+// 			return PrimitiveDef.Mode.LINES;
+// 		case 'LineLoop':
+// 			return PrimitiveDef.Mode.LINE_LOOP;
+// 		case 'Line':
+// 			return PrimitiveDef.Mode.LINE_STRIP;
+// 		case 'Points':
+// 			return PrimitiveDef.Mode.POINTS;
+// 		default:
+// 			throw new Error(`Unexpected type: ${mesh.type}`);
+// 	}
+// }
 
 function getType(def: PrimitiveDef): string {
 	switch (def.getMode()) {

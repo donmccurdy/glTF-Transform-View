@@ -7,7 +7,6 @@ import { LightLike } from '../constants';
 
 /** @internal */
 export class LightSubject extends Subject<LightDef, LightLike> {
-
 	constructor(documentView: DocumentViewSubjectAPI, def: LightDef) {
 		super(documentView, def, LightSubject.createValue(def, documentView.lightPool), documentView.lightPool);
 	}
@@ -47,10 +46,10 @@ export class LightSubject extends Subject<LightDef, LightLike> {
 			value.angle = def.getOuterConeAngle();
 			value.penumbra = 1.0 - def.getInnerConeAngle() / def.getOuterConeAngle();
 			value.decay = 2;
-			value.target.position.set( 0, 0, - 1 );
+			value.target.position.set(0, 0, -1);
 			value.add(value.target);
 		} else if (value instanceof DirectionalLight) {
-			value.target.position.set( 0, 0, - 1 );
+			value.target.position.set(0, 0, -1);
 			value.add(value.target);
 		}
 	}

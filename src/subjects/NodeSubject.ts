@@ -15,8 +15,9 @@ const IDENTITY = new Matrix4().identity();
 /** @internal */
 export class NodeSubject extends Subject<NodeDef, Object3D> {
 	protected children = new RefListObserver<NodeDef, Object3D>('children', this._documentView);
-	protected mesh = new RefObserver<MeshDef, Group>('mesh', this._documentView)
-		.setParamsFn(() => SingleUserPool.createParams(this.def));
+	protected mesh = new RefObserver<MeshDef, Group>('mesh', this._documentView).setParamsFn(() =>
+		SingleUserPool.createParams(this.def),
+	);
 	protected skin = new RefObserver<SkinDef, Skeleton>('skin', this._documentView);
 	protected light = new RefObserver<LightDef, LightLike>('light', this._documentView);
 	protected instancedMesh = new RefObserver<InstancedMeshDef, InstancedMesh>('instancedMesh', this._documentView);
@@ -29,7 +30,7 @@ export class NodeSubject extends Subject<NodeDef, Object3D> {
 			documentView,
 			def,
 			documentView.nodePool.requestBase(isJoint(def) ? new Bone() : new Object3D()),
-			documentView.nodePool
+			documentView.nodePool,
 		);
 
 		this.children.subscribe((nextChildren, prevChildren) => {
@@ -76,11 +77,7 @@ export class NodeSubject extends Subject<NodeDef, Object3D> {
 		if (srcGroup && srcInstancedMesh) {
 			const dstGroup = new Group();
 			for (const mesh of srcGroup.children as Mesh[]) {
-				const instancedMesh = new InstancedMesh(
-					mesh.geometry,
-					mesh.material,
-					srcInstancedMesh.count,
-				);
+				const instancedMesh = new InstancedMesh(mesh.geometry, mesh.material, srcInstancedMesh.count);
 				instancedMesh.instanceMatrix.copy(srcInstancedMesh.instanceMatrix);
 				dstGroup.add(instancedMesh);
 			}

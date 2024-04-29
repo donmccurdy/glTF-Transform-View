@@ -3,7 +3,9 @@ import { Object3D } from 'three';
 import { LightLike } from '../constants';
 import { Pool } from './Pool';
 
-export interface SingleUserParams {id: string}
+export interface SingleUserParams {
+	id: string;
+}
 
 /** @internal */
 export class SingleUserPool<T extends Object3D> extends Pool<T, SingleUserParams> {
@@ -13,7 +15,7 @@ export class SingleUserPool<T extends Object3D> extends Pool<T, SingleUserParams
 	static createParams(property: MeshDef | NodeDef): SingleUserParams {
 		const id = this._parentIDs.get(property) || uuid();
 		this._parentIDs.set(property, id);
-		return {id};
+		return { id };
 	}
 
 	requestVariant(base: T, params: SingleUserParams): T {
@@ -33,7 +35,7 @@ export class SingleUserPool<T extends Object3D> extends Pool<T, SingleUserParams
 		return dstObject;
 	}
 
-	protected _updateVariant(srcObject: T, dstObject: T): T {
+	protected _updateVariant(_srcObject: T, _dstObject: T): T {
 		throw new Error('Not implemented');
 	}
 }

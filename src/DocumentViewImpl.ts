@@ -1,8 +1,31 @@
 import { PropertyType, ExtensionProperty as ExtensionPropertyDef } from '@gltf-transform/core';
-import type { Accessor as AccessorDef, Material as MaterialDef, Mesh as MeshDef, Node as NodeDef, Primitive as PrimitiveDef, Property as PropertyDef, Scene as SceneDef, Skin as SkinDef, Texture as TextureDef } from '@gltf-transform/core';
+import type {
+	Accessor as AccessorDef,
+	Material as MaterialDef,
+	Mesh as MeshDef,
+	Node as NodeDef,
+	Primitive as PrimitiveDef,
+	Property as PropertyDef,
+	Scene as SceneDef,
+	Skin as SkinDef,
+	Texture as TextureDef,
+} from '@gltf-transform/core';
 import type { Light as LightDef, InstancedMesh as InstancedMeshDef } from '@gltf-transform/extensions';
 import type { Object3D, BufferAttribute, Group, Texture, Material, Skeleton, InstancedMesh } from 'three';
-import { AccessorSubject, Subject, ExtensionSubject, MaterialSubject, MeshSubject, NodeSubject, PrimitiveSubject, SceneSubject, SkinSubject, TextureSubject, LightSubject, InstancedMeshSubject } from './subjects';
+import {
+	AccessorSubject,
+	Subject,
+	ExtensionSubject,
+	MaterialSubject,
+	MeshSubject,
+	NodeSubject,
+	PrimitiveSubject,
+	SceneSubject,
+	SkinSubject,
+	TextureSubject,
+	LightSubject,
+	InstancedMeshSubject,
+} from './subjects';
 import type { LightLike, MeshLike, THREEObject } from './constants';
 import { DefaultImageProvider, ImageProvider } from './ImageProvider';
 import { MaterialPool, SingleUserPool, Pool, TexturePool } from './pools';
@@ -189,11 +212,11 @@ export class DocumentViewImpl implements DocumentViewSubjectAPI {
 	 * Given a target object (currently any THREE.Object3D), finds and returns the source
 	 * glTF-Transform Property definition.
 	 */
-	findDef(target: Texture): TextureDef | null
-	findDef(target: LightLike): LightDef | null
-	findDef(target: Material): MaterialDef | null
-	findDef(target: MeshLike): PrimitiveDef | null
-	findDef(target: Object3D): SceneDef | NodeDef | MeshDef | null
+	findDef(target: Texture): TextureDef | null;
+	findDef(target: LightLike): LightDef | null;
+	findDef(target: Material): MaterialDef | null;
+	findDef(target: MeshLike): PrimitiveDef | null;
+	findDef(target: Object3D): SceneDef | NodeDef | MeshDef | null;
 	findDef(target: object): PropertyDef | null {
 		return this._outputValuesInverse.get(target) || null;
 	}
@@ -219,6 +242,7 @@ export class DocumentViewImpl implements DocumentViewSubjectAPI {
 		// First, to prevent updates during disposal.
 		this._disposed = true;
 
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		for (const [_, subject] of this._subjects) subject.dispose();
 		this._subjects.clear();
 

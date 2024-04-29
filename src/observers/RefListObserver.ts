@@ -7,7 +7,11 @@ import { EmptyParams } from '../pools';
 import { RefObserver } from './RefObserver';
 
 /** @internal */
-export class RefListObserver<Def extends PropertyDef, Value, Params extends EmptyParams = EmptyParams> extends Observable<Value[]> {
+export class RefListObserver<
+	Def extends PropertyDef,
+	Value,
+	Params extends EmptyParams = EmptyParams,
+> extends Observable<Value[]> {
 	readonly name: string;
 
 	protected readonly _documentView: DocumentViewSubjectAPI;
@@ -71,12 +75,14 @@ export class RefListObserver<Def extends PropertyDef, Value, Params extends Empt
 		const observer = new RefObserver(this.name + '[]', this._documentView) as RefObserver<Def, Value>;
 		observer.update(subject.def);
 		this._observers.push(observer);
-		this._subscriptions.push(observer.subscribe((next) => {
-			if (!next) {
-				this._remove(this._observers.indexOf(observer));
-			}
-			this._publish();
-		}));
+		this._subscriptions.push(
+			observer.subscribe((next) => {
+				if (!next) {
+					this._remove(this._observers.indexOf(observer));
+				}
+				this._publish();
+			}),
+		);
 	}
 
 	private _remove(index: number) {

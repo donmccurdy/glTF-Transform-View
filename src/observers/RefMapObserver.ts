@@ -7,7 +7,11 @@ import { EmptyParams } from '../pools';
 import { RefObserver } from './RefObserver';
 
 /** @internal */
-export class RefMapObserver<Def extends PropertyDef, Value, Params extends EmptyParams = EmptyParams> extends Observable<Record<string, Value>> {
+export class RefMapObserver<
+	Def extends PropertyDef,
+	Value,
+	Params extends EmptyParams = EmptyParams,
+> extends Observable<Record<string, Value>> {
 	readonly name: string;
 
 	protected readonly _documentView: DocumentViewSubjectAPI;
@@ -84,8 +88,7 @@ export class RefMapObserver<Def extends PropertyDef, Value, Params extends Empty
 	}
 
 	private _publish() {
-		const entries = Object.entries(this._observers)
-			.map(([key, observer]) => [key, observer.value]);
+		const entries = Object.entries(this._observers).map(([key, observer]) => [key, observer.value]);
 		this.next(Object.fromEntries(entries));
 	}
 
